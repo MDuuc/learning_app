@@ -23,14 +23,21 @@ class AppTheme {
           borderRadius: BorderRadius.circular(30),
           borderSide: const BorderSide(
             color: Colors.white,
-            width: 0.4
+            width: 0.8
           )
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(30),
           borderSide: const BorderSide(
             color: Colors.black,
-            width: 0.4
+            width: 0.8
+          )
+        ),
+          focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(30),
+          borderSide: const BorderSide(
+            color: Colors.blue,
+            width: 0.8
           )
         )
       ),

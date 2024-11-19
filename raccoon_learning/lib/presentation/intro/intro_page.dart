@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:raccoon_learning/constants/assets/app_images.dart';
-import 'package:raccoon_learning/constants/assets/app_vectors.dart';
 import 'package:raccoon_learning/constants/theme/app_colors.dart';
+import 'package:raccoon_learning/presentation/intro/signin_or_signin_page.dart';
 import 'package:raccoon_learning/presentation/widgets/button/basic_app_button.dart';
 
 class IntroPage extends StatelessWidget {
@@ -56,7 +55,7 @@ class IntroPage extends StatelessWidget {
                 onPressed: () {
                   Navigator.push(
                     context,
-                   MaterialPageRoute(builder: (BuildContext context) =>const IntroPage())
+                   MaterialPageRoute(builder: (BuildContext context) =>const SignupOrSigninPage())
                    );
                 },
                  title: 'Get Started')
