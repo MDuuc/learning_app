@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:raccoon_learning/constants/theme/app_theme.dart';
+import 'package:raccoon_learning/presentation/home/control_page.dart';
 import 'package:raccoon_learning/presentation/intro/intro_page.dart';
 
 void main() {
@@ -15,7 +16,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      home: const IntroPage(),
+      // home: const IntroPage(),
+      home: const ControlPage(),
+
     );
   }
 }

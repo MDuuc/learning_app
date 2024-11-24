@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:raccoon_learning/constants/theme/app_colors.dart';
 import 'package:raccoon_learning/presentation/home/home_page.dart';
 import 'package:raccoon_learning/presentation/home/notification_page.dart';
-import 'package:raccoon_learning/presentation/home/profile_page.dart';
+import 'package:raccoon_learning/presentation/home/profile/profile_page.dart';
 
 class ControlPage extends StatefulWidget {
   const ControlPage({super.key});
