@@ -11,6 +11,10 @@ class AppImages{
   static const String raccoon_learning = '${basePath}raccoon_learning.png';
   static const String raccoon_achievement = '${basePath}raccoon_achievement.png';
   static const String raccoon_custom = '${basePath}raccoon_custom.png';
-
+  static const String raccoon_grade_1 = '${basePath}raccoon_grade_1.png';
+  static const String raccoon_grade_2 = '${basePath}raccoon_grade_2.png';
+  static const String raccoon_grade_3 = '${basePath}raccoon_grade_3.png';
+  static const String raccoon_grade_4 = '${basePath}raccoon_grade_4.png';
+  static const String raccoon_grade_5 = '${basePath}raccoon_grade_5.png';
 
 }

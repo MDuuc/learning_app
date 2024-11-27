@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:raccoon_learning/constants/theme/app_theme.dart';
 import 'package:raccoon_learning/presentation/home/control_page.dart';
+import 'package:raccoon_learning/presentation/home/learning/draw_page.dart';
 import 'package:raccoon_learning/presentation/intro/intro_page.dart';
+import 'package:raccoon_learning/presentation/widgets/dialog/pause_dialog.dart';
 
 void main() {
   runApp(const MyApp());
@@ -17,7 +19,10 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       // home: const IntroPage(),
-      home: const ControlPage(),
+      // home: const ControlPage(),
+      home: const DrawPage(),
+
+
 
     );
   }

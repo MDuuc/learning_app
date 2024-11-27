@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:raccoon_learning/constants/assets/app_images.dart';
 import 'package:raccoon_learning/constants/theme/app_colors.dart';
+import 'package:raccoon_learning/presentation/home/learning/choose_grade_page.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -131,7 +132,13 @@ class HomePage extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   _menuHome(context, AppImages.raccoon_playing, "Competitive", (){ }),
-                  _menuHome(context, AppImages.raccoon_learning, "Learning", (){ }),
+
+                  _menuHome(context, AppImages.raccoon_learning, "Learning", (){Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (BuildContext context) => const ChooseGradePage()
+                      )
+                    ); }),
                 ],
               ),
             ),
