@@ -95,7 +95,7 @@ class PauseDialog extends StatelessWidget {
             right: 20,
             child: IconButton(
               icon: const Icon(Icons.close, color: Colors.white),
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () => Navigator.of(context).pop('resume'),
             ),
           ),
         ],
@@ -138,7 +138,7 @@ class PauseDialog extends StatelessWidget {
 }
 
 // Usage in your game/activity
-void showPauseDialog(BuildContext context) async {
+Future<String?> showPauseDialog(BuildContext context) async {
   final result = await showDialog<String>(
     context: context,
     barrierColor: Colors.transparent,
@@ -156,4 +156,5 @@ void showPauseDialog(BuildContext context) async {
       // Handle exit logic
       break;
   }
+  return result;
 }

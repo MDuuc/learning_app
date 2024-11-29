@@ -1,6 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart' hide Ink;
 import 'package:google_mlkit_digital_ink_recognition/google_mlkit_digital_ink_recognition.dart';
 import 'package:raccoon_learning/constants/theme/app_colors.dart';
+import 'package:raccoon_learning/presentation/home/control_page.dart';
+import 'package:raccoon_learning/presentation/home/home_page.dart';
+import 'package:raccoon_learning/presentation/home/learning/choose_grade_page.dart';
 import 'package:raccoon_learning/presentation/home/learning/grade/grade1.dart';
 import 'package:raccoon_learning/presentation/widgets/dialog/pause_dialog.dart';
 import 'package:raccoon_learning/presentation/widgets/draw/model_manage.dart';
@@ -19,6 +24,14 @@ class _DrawPageState extends State<DrawPage> {
   final Ink _ink = Ink();
   List<StrokePoint> _points = [];
   String _recognizedText = '';
+
+  //countime bar
+  static int maxSeconds = 10;
+  int seconds = maxSeconds;
+  Timer? timer;
+
+  // Score point
+  int _scorePoint = 0;
 
 //3 heart for beginning
   List<String> heartIcons = ['heart', 'heart', 'heart'];
@@ -48,14 +61,17 @@ void _updateQuestion(String userAnswer) {
     }
     });
     //delay and check awnser correct or not
-  Future.delayed(const Duration(seconds: 1), () {
-    if (int.parse(userAnswer) == _correctAnswer) {
+  Future.delayed(const Duration(milliseconds: 500), () {
+    if (int.parse(userAnswer) == _correctAnswer && seconds>0) {
       _generateQuestion();
+      _handleScore(true);
       _clearPad();
-    } else {
+      startTimer();
+    } else{
       _generateQuestion();
       _clearPad();
       _handleHeart(false);
+      startTimer();
     }
   });
 }
@@ -70,6 +86,7 @@ void _updateQuestion(String userAnswer) {
     await _modelManager.ensureModelDownloaded(_language, context);
     _digitalInkRecognizer = DigitalInkRecognizer(languageCode: _language);
     _generateQuestion();
+    startTimer();
   }
 
 
@@ -77,6 +94,7 @@ void _updateQuestion(String userAnswer) {
   void dispose() {
     // Close the recognizer to free resources
     _digitalInkRecognizer.close();
+    stopTimer();
     super.dispose();
   }
 
@@ -94,12 +112,11 @@ void _updateQuestion(String userAnswer) {
           // Header with icons
           Container(
             color: Colors.blue.shade400,
-            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 60),
             height: screenHeight / 7,
             width: screenWidth,
             child: 
             Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.only(left: 8, right: 8, top: 30),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -116,33 +133,66 @@ void _updateQuestion(String userAnswer) {
                   );
                 })
                 ),
-                  // Container(
-                  //   height: 10,
-                  //   width: 10,
-                  //   decoration: const BoxDecoration(
-                  //     color: Colors.redAccent,
-                  //     shape: BoxShape.circle,
-                  //   ),
-                  // ),
-                  Padding(
-                    padding: const EdgeInsets.all(10.0),
-                    child: IconButton(
-                      onPressed: (){
-                        showDialog(context: context, builder: (context) => const PauseDialog());
-                      }, 
-                      icon:  Icon(Icons.pause, color: Colors.white, size: 30),
-                      ),
+          
+                  IconButton(
+                    onPressed: () async {
+                      stopTimer(reset: false);
+                      final result = await showPauseDialog(context);
+
+                      // Handle the result from the dialog
+                      switch (result) {
+                        case 'resume':
+                          startTimer(reset: false);
+                          break;
+                        case 'restart':
+                          _restartGameForPauseDialog();
+                          break;
+                        case 'exit':
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(builder: (context) =>const ControlPage()), 
+                             );
+                          break;
+                        default:
+                          print('No action selected');
+                          print(result);
+                      }
+                    },
+                    icon: const Icon(Icons.pause, color: Colors.white, size: 50,),
                   ),
                 ],
               ),
             ),
           ),
 
-           IconButton(
-                  onPressed: (){
-                    showDialog(context: context, builder: (context) => const PauseDialog());
-                  }, 
-                  icon:  Icon(Icons.pause, color: Colors.white, size: 50)),
+          //Countime
+          buildTimer(),
+
+          //Score 
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child:  Row(
+              children: [
+                Spacer(),
+                Text(
+                  "Score:",
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600
+                ),
+                ),
+                SizedBox(width: 10,),
+                Text(
+                  _scorePoint.toString(),
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600
+                  ),
+                  ),
+                  const SizedBox(width: 20,),
+              ],
+            ),
+          ),
                 
           // Main content
           Expanded(
@@ -197,9 +247,8 @@ void _updateQuestion(String userAnswer) {
     ],
   ),
   child: Column(
-    mainAxisAlignment: MainAxisAlignment.spaceBetween, // Đặt các widget ở dưới đáy
+    mainAxisAlignment: MainAxisAlignment.spaceBetween, 
     children: [
-      // Chứa các nội dung khác, bạn có thể để trống nếu không cần hiển thị
       Expanded(
         child: GestureDetector(
           onPanStart: (DragStartDetails details) {
@@ -257,22 +306,23 @@ void _updateQuestion(String userAnswer) {
                           tooltip: 'Clear Drawing',
                         ),
                       ),
-                      ElevatedButton(
-                        onPressed: () {
-                          _generateQuestion();
-                          _clearPad();
-                          setState(() {});
-                        },
-                        child: Text("Create new question"),
-                      ),
-                      ElevatedButton(
-                        onPressed: () {
-                          if (_recognizedText != 'No match found') {
+
+                      Container(
+                        padding: EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.green,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: IconButton(
+                          icon: const Icon(Icons.verified, color: Colors.white, size: 35),
+                          onPressed: (){
+                            if (_recognizedText != 'No match found') {
                             _updateQuestion(_recognizedText);
                           }
                           setState(() {});
-                        },
-                        child: Text("Submit"),
+                          },
+                          tooltip: 'Confirm Anwser',
+                        ),
                       ),
                     ],
                   ),
@@ -338,8 +388,17 @@ void _updateQuestion(String userAnswer) {
       }
     }
     if (heartIcons.every((icon) => icon == 'broken_heart')) {
+        stopTimer(reset: false);
         _showGameOverDialog();
       }
+  });
+}
+//handle Score
+  void _handleScore(bool isCorrect) {
+  setState(() {
+    if (isCorrect) {
+      _scorePoint +=10;
+    }
   });
 }
 
@@ -353,11 +412,7 @@ void _showGameOverDialog() {
         TextButton(
           onPressed: () {
             // Reset game state
-            setState(() {
-              heartIcons = ['heart', 'heart', 'heart'];
-              _generateQuestion();
-            });
-            Navigator.of(context).pop();
+            _restartGame();
           },
           child: Text('Restart'),
         ),
@@ -366,7 +421,92 @@ void _showGameOverDialog() {
   );
 }
 
+void _restartGame(){
+  setState(() {
+      heartIcons = ['heart', 'heart', 'heart'];
+      _scorePoint=0;
+      _generateQuestion();
+      startTimer();
+    });
+    Navigator.pop(context);
+  }
+
+  void _restartGameForPauseDialog(){
+  setState(() {
+      heartIcons = ['heart', 'heart', 'heart'];
+      _scorePoint=0;
+      _generateQuestion();
+      startTimer();
+    });
+  }
+
+  //countime bar handle
+ void startTimer({bool reset = true}) {
+    if (reset) {
+      resetTimer();
+    }
+
+    timer = Timer.periodic(Duration(seconds: 1), (_) {
+      if (seconds > 0) {
+        setState(() => seconds--);
+      } else {
+        stopTimer(reset: false);
+      _generateQuestion();
+      _clearPad();
+        startTimer();
+      _handleHeart(false);
+      }
+    });
+  }
+
+  void stopTimer({bool reset = true}) {
+    if (reset) {
+      resetTimer();
+    }
+    setState(() => timer?.cancel());
+  }
+
+  void resetTimer() => setState(() => seconds = maxSeconds);
+
+  Color _getProgressColor() {
+    double progress = seconds / maxSeconds;
+
+    if (progress > 0.5) {
+      return Colors.green; // Color for more than 50%
+    } else if (progress > 0.3) {
+      return Colors.orange; // Color for between 30% and 50%
+    } else {
+      return Colors.red; // Color for less than 30%
+    }
+  }
+
+  Widget buildTimer() {
+    Color progressColor = _getProgressColor();
+
+    return SizedBox(
+      width: MediaQuery.of(context).size.width , // Full width minus padding
+      height: 10, // Adjust the height of the progress bar
+      child: Stack(
+        children: [
+          LinearProgressIndicator(
+            value: seconds / maxSeconds,
+            minHeight: 10,
+            backgroundColor: Colors.transparent,
+            valueColor: AlwaysStoppedAnimation<Color>(progressColor),
+          ),
+          // Center(
+          //   child: buildTime(),
+          // ),
+        ],
+      ),
+    );
+  }
+  // end widget countime bar handle
+
+
 }
+
+
 
 // Painter for rendering strokes
 class Signature extends CustomPainter {
