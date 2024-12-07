@@ -3,8 +3,8 @@ import 'dart:math';
 class Grade1 {
   String generateRandomQuestion({required Function(int) onAnswerGenerated}) {
     final random = Random();
-    int a = random.nextInt(9) + 1;
-    int b = random.nextInt(9) + 1;
+    int a = random.nextInt(10) + 1;
+    int b = random.nextInt(10) + 1;
     String operator = random.nextBool() ? "+" : "-";
 
   // check it valid question 

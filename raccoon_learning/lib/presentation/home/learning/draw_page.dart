@@ -1,11 +1,8 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart' hide Ink;
 import 'package:google_mlkit_digital_ink_recognition/google_mlkit_digital_ink_recognition.dart';
 import 'package:raccoon_learning/constants/theme/app_colors.dart';
 import 'package:raccoon_learning/presentation/home/control_page.dart';
-import 'package:raccoon_learning/presentation/home/home_page.dart';
-import 'package:raccoon_learning/presentation/home/learning/choose_grade_page.dart';
 import 'package:raccoon_learning/presentation/home/learning/grade/grade1.dart';
 import 'package:raccoon_learning/presentation/widgets/dialog/pause_dialog.dart';
 import 'package:raccoon_learning/presentation/widgets/draw/model_manage.dart';
@@ -26,9 +23,9 @@ class _DrawPageState extends State<DrawPage> {
   String _recognizedText = '';
 
   //countime bar
-  static int maxSeconds = 10;
+  static int maxSeconds = 100000;
   int seconds = maxSeconds;
-  Timer? timer;
+  static Timer? timer;
 
   // Score point
   int _scorePoint = 0;
@@ -54,24 +51,81 @@ class _DrawPageState extends State<DrawPage> {
   }
 
   //update user awnser on screen
+// void _updateQuestion(String userAnswer) {
+//   setState(() {
+//     if (userAnswer != ''){
+//       _currentQuestion = _currentQuestion.replaceFirst("?", userAnswer);
+//     }
+//     });
+//     //delay and check awnser correct or not
+//   Future.delayed(const Duration(milliseconds: 500), () {
+//     if (int.parse(userAnswer) == _correctAnswer && seconds>0) {
+//       _generateQuestion();
+//       _handleScore(true);
+//       _clearPad();
+//       startTimer();
+//     }else{
+//       _generateQuestion();
+//       _clearPad();
+//       _handleHeart(false);
+//       _clearPad();
+//       startTimer();
+//     }
+//   });
+// }
+
 void _updateQuestion(String userAnswer) {
   setState(() {
-    if (userAnswer != ''){
+    if (userAnswer.isNotEmpty) {
       _currentQuestion = _currentQuestion.replaceFirst("?", userAnswer);
     }
-    });
-    //delay and check awnser correct or not
+  });
+  _recogniseText();
   Future.delayed(const Duration(milliseconds: 500), () {
-    if (int.parse(userAnswer) == _correctAnswer && seconds>0) {
+    try {
+      // Handle empty answer
+      if (userAnswer.isEmpty) {
+        _generateQuestion();
+        _clearPad();
+        startTimer();
+        _handleHeart(false);
+        return;
+      }
+
+      // Safely parse the user answer
+      int parsedUserAnswer;
+      try {
+        parsedUserAnswer = int.parse(userAnswer);
+      } catch (e) {
+        // Handle parsing error
+        _generateQuestion();
+        _clearPad();
+        startTimer();
+        _handleHeart(false);
+        return;
+      }
+
+      // Check answer correctness and remaining time
+      if (parsedUserAnswer == _correctAnswer && seconds > 0) {
+        _generateQuestion();
+        _clearPad();
+        startTimer();
+        _handleScore(true);
+
+      } else {
+        // Incorrect answer or no time left
+        _generateQuestion();
+        _clearPad();
+        startTimer();
+        _handleHeart(false);
+
+      }
+    } catch (e) {
+      // Catch any unexpected errors
       _generateQuestion();
-      _handleScore(true);
       _clearPad();
       startTimer();
-    } else{
-      _generateQuestion();
-      _clearPad();
       _handleHeart(false);
-      startTimer();
     }
   });
 }
@@ -153,9 +207,6 @@ void _updateQuestion(String userAnswer) {
                             MaterialPageRoute(builder: (context) =>const ControlPage()), 
                              );
                           break;
-                        default:
-                          print('No action selected');
-                          print(result);
                       }
                     },
                     icon: const Icon(Icons.pause, color: Colors.white, size: 50,),
@@ -173,18 +224,18 @@ void _updateQuestion(String userAnswer) {
             padding: const EdgeInsets.all(8.0),
             child:  Row(
               children: [
-                Spacer(),
-                Text(
+                const Spacer(),
+                const Text(
                   "Score:",
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w600
                 ),
                 ),
-                SizedBox(width: 10,),
+                const SizedBox(width: 10,),
                 Text(
                   _scorePoint.toString(),
-                  style: TextStyle(
+                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w600
                   ),
@@ -279,7 +330,6 @@ void _updateQuestion(String userAnswer) {
             setState(() {
               _points.clear();
             });
-            _recogniseText();
           },
           child: CustomPaint(
             painter: Signature(ink: _ink),
@@ -288,57 +338,55 @@ void _updateQuestion(String userAnswer) {
         ),
       ),
 
-                // Button
-                Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly, 
-                    children: [
-                      Container(
-                        padding: EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: Colors.red,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: IconButton(
-                          icon: const Icon(Icons.delete_outline, color: Colors.white, size: 35),
-                          onPressed: _clearPad,
-                          tooltip: 'Clear Drawing',
-                        ),
-                      ),
-
-                      Container(
-                        padding: EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: Colors.green,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: IconButton(
-                          icon: const Icon(Icons.verified, color: Colors.white, size: 35),
-                          onPressed: (){
-                            if (_recognizedText != 'No match found') {
-                            _updateQuestion(_recognizedText);
-                          }
-                          setState(() {});
-                          },
-                          tooltip: 'Confirm Anwser',
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+    // Button
+    Padding(
+      padding: const EdgeInsets.all(10),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly, 
+        children: [
+          Container(
+            padding: EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.red,
+              borderRadius: BorderRadius.circular(12),
             ),
-          )
-
-                ],
-              ),
+            child: IconButton(
+              icon: const Icon(Icons.delete_outline, color: Colors.white, size: 35),
+              onPressed: _clearPad,
+              tooltip: 'Clear Drawing',
             ),
           ),
-        ],
-      ),
-    );
-  }
+
+        Container(
+          padding: EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: Colors.green,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: IconButton(
+            icon: const Icon(Icons.verified, color: Colors.white, size: 35),
+            onPressed: (){
+              if (_recognizedText != 'No match found') {
+              _updateQuestion(_recognizedText);
+            }
+            setState(() {});
+            },
+            tooltip: 'Confirm Anwser',
+          ),
+        ),
+      ],
+    ),
+  ),],
+),
+)
+],
+),
+),
+),
+],
+),
+);
+}
 
   // Recognize text from strokes
   Future<void> _recogniseText() async {
@@ -354,8 +402,15 @@ void _updateQuestion(String userAnswer) {
       final candidates = await _digitalInkRecognizer.recognize(_ink);
       _recognizedText = candidates.isNotEmpty ? candidates[0].text : '';
       print(_recognizedText);
-
       setState(() {});
+
+  // final number = int.tryParse(_recognizedText);
+  //   if (number != null) {
+  //    print("that is number");
+  //   }else{
+  //     print("that not number");
+  //   }
+
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(e.toString())),
@@ -388,7 +443,7 @@ void _updateQuestion(String userAnswer) {
       }
     }
     if (heartIcons.every((icon) => icon == 'broken_heart')) {
-        stopTimer(reset: false);
+          timer?.cancel();
         _showGameOverDialog();
       }
   });
@@ -426,6 +481,7 @@ void _restartGame(){
       heartIcons = ['heart', 'heart', 'heart'];
       _scorePoint=0;
       _generateQuestion();
+      _clearPad();
       startTimer();
     });
     Navigator.pop(context);
@@ -436,25 +492,23 @@ void _restartGame(){
       heartIcons = ['heart', 'heart', 'heart'];
       _scorePoint=0;
       _generateQuestion();
+      _clearPad();
       startTimer();
     });
   }
 
   //countime bar handle
  void startTimer({bool reset = true}) {
+    timer?.cancel();
     if (reset) {
       resetTimer();
     }
 
-    timer = Timer.periodic(Duration(seconds: 1), (_) {
+     timer = Timer.periodic(Duration(seconds: 1), (_) {
       if (seconds > 0) {
         setState(() => seconds--);
       } else {
-        stopTimer(reset: false);
-      _generateQuestion();
-      _clearPad();
-        startTimer();
-      _handleHeart(false);
+        _updateQuestion(_recognizedText);
       }
     });
   }
@@ -508,7 +562,7 @@ void _restartGame(){
 
 
 
-// Painter for rendering strokes
+// Painter 
 class Signature extends CustomPainter {
   final Ink ink;
 
