@@ -6,6 +6,7 @@ import 'package:raccoon_learning/presentation/home/control_page.dart';
 import 'package:raccoon_learning/presentation/home/learning/grade/grade1.dart';
 import 'package:raccoon_learning/presentation/widgets/dialog/pause_dialog.dart';
 import 'package:raccoon_learning/presentation/widgets/draw/model_manage.dart';
+import 'package:raccoon_learning/presentation/widgets/score/best_score_manger.dart';
 
 class DrawPage extends StatefulWidget {
   const DrawPage({super.key});
@@ -29,6 +30,7 @@ class _DrawPageState extends State<DrawPage> {
 
   // Score point
   int _scorePoint = 0;
+  int bestScore=0;
 
 //3 heart for beginning
   List<String> heartIcons = ['heart', 'heart', 'heart'];
@@ -49,38 +51,13 @@ class _DrawPageState extends State<DrawPage> {
       );
     });
   }
-
-  //update user awnser on screen
-// void _updateQuestion(String userAnswer) {
-//   setState(() {
-//     if (userAnswer != ''){
-//       _currentQuestion = _currentQuestion.replaceFirst("?", userAnswer);
-//     }
-//     });
-//     //delay and check awnser correct or not
-//   Future.delayed(const Duration(milliseconds: 500), () {
-//     if (int.parse(userAnswer) == _correctAnswer && seconds>0) {
-//       _generateQuestion();
-//       _handleScore(true);
-//       _clearPad();
-//       startTimer();
-//     }else{
-//       _generateQuestion();
-//       _clearPad();
-//       _handleHeart(false);
-//       _clearPad();
-//       startTimer();
-//     }
-//   });
-// }
-
+  
 void _updateQuestion(String userAnswer) {
   setState(() {
     if (userAnswer.isNotEmpty) {
       _currentQuestion = _currentQuestion.replaceFirst("?", userAnswer);
     }
   });
-  _recogniseText();
   Future.delayed(const Duration(milliseconds: 500), () {
     try {
       // Handle empty answer
@@ -141,6 +118,7 @@ void _updateQuestion(String userAnswer) {
     _digitalInkRecognizer = DigitalInkRecognizer(languageCode: _language);
     _generateQuestion();
     startTimer();
+    bestScore = await ScoreManager.getBestScore();
   }
 
 
@@ -224,6 +202,21 @@ void _updateQuestion(String userAnswer) {
             padding: const EdgeInsets.all(8.0),
             child:  Row(
               children: [
+                const Text(
+                  "Best Score:",
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600
+                ),
+                ),
+                const SizedBox(width: 10,),
+                Text(
+                  bestScore.toString(),
+                   style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600
+                  ),
+                  ),
                 const Spacer(),
                 const Text(
                   "Score:",
@@ -330,6 +323,7 @@ void _updateQuestion(String userAnswer) {
             setState(() {
               _points.clear();
             });
+            _recogniseText();
           },
           child: CustomPaint(
             painter: Signature(ink: _ink),
@@ -390,34 +384,25 @@ void _updateQuestion(String userAnswer) {
 
   // Recognize text from strokes
   Future<void> _recogniseText() async {
-    showDialog(
-      context: context,
-      builder: (context) => const AlertDialog(
-        title: Text('Recognizing'),
-      ),
-      barrierDismissible: true,
-    );
-
     try {
       final candidates = await _digitalInkRecognizer.recognize(_ink);
       _recognizedText = candidates.isNotEmpty ? candidates[0].text : '';
+      // recognized wrong number
+      switch(_recognizedText){
+        case 'g':
+          _recognizedText = '9';
+        case 'o':
+        _recognizedText = '0';
+        case 'z':
+        _recognizedText = '2';
+      }
       print(_recognizedText);
       setState(() {});
-
-  // final number = int.tryParse(_recognizedText);
-  //   if (number != null) {
-  //    print("that is number");
-  //   }else{
-  //     print("that not number");
-  //   }
-
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(e.toString())),
       );
     }
-
-    Navigator.pop(context);
   }
 
   //clearPad
@@ -478,6 +463,7 @@ void _showGameOverDialog() {
 
 void _restartGame(){
   setState(() {
+      updateBestScore(_scorePoint);
       heartIcons = ['heart', 'heart', 'heart'];
       _scorePoint=0;
       _generateQuestion();
@@ -489,6 +475,7 @@ void _restartGame(){
 
   void _restartGameForPauseDialog(){
   setState(() {
+      updateBestScore(_scorePoint);
       heartIcons = ['heart', 'heart', 'heart'];
       _scorePoint=0;
       _generateQuestion();
@@ -557,6 +544,13 @@ void _restartGame(){
   }
   // end widget countime bar handle
 
+  // save best score
+  void updateBestScore(int newScore) async {
+    if (newScore > bestScore) {
+      await ScoreManager.saveBestScore(newScore);
+    }
+    bestScore = await ScoreManager.getBestScore();
+  }
 
 }
 
@@ -587,7 +581,6 @@ class Signature extends CustomPainter {
       }
     }
   }
-
   @override
   bool shouldRepaint(Signature oldDelegate) => true;
 }
