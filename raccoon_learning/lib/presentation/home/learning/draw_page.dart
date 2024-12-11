@@ -4,12 +4,16 @@ import 'package:google_mlkit_digital_ink_recognition/google_mlkit_digital_ink_re
 import 'package:raccoon_learning/constants/theme/app_colors.dart';
 import 'package:raccoon_learning/presentation/home/control_page.dart';
 import 'package:raccoon_learning/presentation/home/learning/grade/grade1.dart';
+import 'package:raccoon_learning/presentation/home/learning/grade/grade2.dart';
+import 'package:raccoon_learning/presentation/home/learning/grade/grade3.dart';
 import 'package:raccoon_learning/presentation/widgets/dialog/pause_dialog.dart';
 import 'package:raccoon_learning/presentation/widgets/draw/model_manage.dart';
 import 'package:raccoon_learning/presentation/widgets/score/best_score_manger.dart';
 
 class DrawPage extends StatefulWidget {
-  const DrawPage({super.key});
+  final String grade;
+  final String operation;
+   DrawPage({super.key, required this.grade, required this.operation});
 
   @override
   State<DrawPage> createState() => _DrawPageState();
@@ -38,75 +42,12 @@ class _DrawPageState extends State<DrawPage> {
   //for question 
   String _currentQuestion = "";
   int _correctAnswer = 0;
+  String _correctCompare="";
 
-  //for grade 1
-  final Grade1 _grade1 = Grade1();
+// Initialize Grade1 with the operation passed from the widget
+  // late final Grade1 _grade1;
 
-  void _generateQuestion() {
-    setState(() {
-      _currentQuestion = _grade1.generateRandomQuestion(
-        onAnswerGenerated: (answer) {
-          _correctAnswer = answer;
-        },
-      );
-    });
-  }
   
-void _updateQuestion(String userAnswer) {
-  setState(() {
-    if (userAnswer.isNotEmpty) {
-      _currentQuestion = _currentQuestion.replaceFirst("?", userAnswer);
-    }
-  });
-  Future.delayed(const Duration(milliseconds: 500), () {
-    try {
-      // Handle empty answer
-      if (userAnswer.isEmpty) {
-        _generateQuestion();
-        _clearPad();
-        startTimer();
-        _handleHeart(false);
-        return;
-      }
-
-      // Safely parse the user answer
-      int parsedUserAnswer;
-      try {
-        parsedUserAnswer = int.parse(userAnswer);
-      } catch (e) {
-        // Handle parsing error
-        _generateQuestion();
-        _clearPad();
-        startTimer();
-        _handleHeart(false);
-        return;
-      }
-
-      // Check answer correctness and remaining time
-      if (parsedUserAnswer == _correctAnswer && seconds > 0) {
-        _generateQuestion();
-        _clearPad();
-        startTimer();
-        _handleScore(true);
-
-      } else {
-        // Incorrect answer or no time left
-        _generateQuestion();
-        _clearPad();
-        startTimer();
-        _handleHeart(false);
-
-      }
-    } catch (e) {
-      // Catch any unexpected errors
-      _generateQuestion();
-      _clearPad();
-      startTimer();
-      _handleHeart(false);
-    }
-  });
-}
-
     @override
   void initState() {
     super.initState();
@@ -116,7 +57,7 @@ void _updateQuestion(String userAnswer) {
   Future<void> _initializeModel() async {
     await _modelManager.ensureModelDownloaded(_language, context);
     _digitalInkRecognizer = DigitalInkRecognizer(languageCode: _language);
-    _generateQuestion();
+    recognizeAndGenerateQuestion(widget.grade);
     startTimer();
     bestScore = await ScoreManager.getBestScore();
   }
@@ -129,6 +70,59 @@ void _updateQuestion(String userAnswer) {
     stopTimer();
     super.dispose();
   }
+  
+void _updateQuestion(String userAnswer) {
+  setState(() {
+    if (userAnswer.isNotEmpty) {
+      _currentQuestion = _currentQuestion.replaceFirst("?", userAnswer);
+    }
+  });
+  Future.delayed(const Duration(milliseconds: 500), () {
+    try {
+      // Handle empty answer
+      if (userAnswer.isEmpty) {
+        recognizeAndGenerateQuestion(widget.grade);
+        _clearPad();
+        startTimer();
+        _handleHeart(false);
+        return;
+      }
+      // check is number
+       bool isNumber = RegExp(r'^-?\d+$').hasMatch(userAnswer);
+       int parsedUserAnswer =0;
+       if (isNumber){
+          parsedUserAnswer = int.parse(userAnswer);
+       }
+      // Check answer correctness and remaining time
+      if ( _correctAnswer ==  parsedUserAnswer || _correctCompare == userAnswer) {
+      // if ( _correctCompare == userAnswer) {
+
+        recognizeAndGenerateQuestion(widget.grade);
+        _clearPad();
+        startTimer();
+        _handleScore(true);
+
+      } else {
+        // Incorrect answer or no time left
+//         print(userAnswer.split(''));
+// print(_correctCompare.split(''));
+        recognizeAndGenerateQuestion(widget.grade);
+        _clearPad();
+        startTimer();
+        _handleHeart(false);
+
+      }
+    } catch (e) {
+      // Catch any unexpected errors
+      recognizeAndGenerateQuestion(widget.grade);
+      _clearPad();
+      startTimer();
+      _handleHeart(false);
+      print(e);
+    }
+  });
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -466,7 +460,7 @@ void _restartGame(){
       updateBestScore(_scorePoint);
       heartIcons = ['heart', 'heart', 'heart'];
       _scorePoint=0;
-      _generateQuestion();
+      recognizeAndGenerateQuestion(widget.grade);
       _clearPad();
       startTimer();
     });
@@ -478,7 +472,7 @@ void _restartGame(){
       updateBestScore(_scorePoint);
       heartIcons = ['heart', 'heart', 'heart'];
       _scorePoint=0;
-      _generateQuestion();
+      recognizeAndGenerateQuestion(widget.grade);
       _clearPad();
       startTimer();
     });
@@ -550,6 +544,46 @@ void _restartGame(){
       await ScoreManager.saveBestScore(newScore);
     }
     bestScore = await ScoreManager.getBestScore();
+  }
+
+  void recognizeAndGenerateQuestion (String grade){
+    switch(grade){
+      case 'grade_1':
+       late final Grade1 _grade1;
+       _grade1 = Grade1(widget.operation);
+      setState(() {
+      _currentQuestion = _grade1.generateRandomQuestion(
+        onAnswerGenerated: (answer) {
+          _correctAnswer = answer;
+        },
+        onAnswerCompare: (answer){
+          _correctCompare = answer;
+        }
+      );
+    });
+
+    case 'grade_2':
+       late final Grade2 _grade2;
+       _grade2 = Grade2(widget.operation);
+      setState(() {
+      _currentQuestion = _grade2.generateRandomQuestion(
+        onAnswerGenerated: (answer) {
+          _correctAnswer = answer;
+        },
+      );
+    });
+
+        case 'grade_3':
+       late final Grade3 _grade3;
+       _grade3 = Grade3(widget.operation);
+      setState(() {
+      _currentQuestion = _grade3.generateRandomQuestion(
+        onAnswerGenerated: (answer) {
+          _correctAnswer = answer;
+        },
+      );
+    });
+    }
   }
 
 }

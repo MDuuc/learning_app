@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:raccoon_learning/constants/assets/app_images.dart';
 import 'package:raccoon_learning/constants/theme/app_colors.dart';
 import 'package:raccoon_learning/presentation/widgets/appbar/app_bar.dart';
+import 'package:raccoon_learning/presentation/widgets/dialog/operation_dialog.dart';
 
 class ChooseGradePage extends StatelessWidget {
   const ChooseGradePage({super.key});
@@ -37,8 +38,12 @@ class ChooseGradePage extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _menuGrade(context, AppImages.raccoon_grade_1, "Grade 1", (){}),
-                  _menuGrade(context, AppImages.raccoon_grade_2, "Grade 2", (){})
+                  _menuGrade(context, AppImages.raccoon_grade_1, "Grade 1", (){
+                    _showDialog(context, 'grade_1');
+                  }),
+                  _menuGrade(context, AppImages.raccoon_grade_2, "Grade 2", (){
+                    _showDialog(context, 'grade_2');
+                  })
                 ],
               ),
               const SizedBox(height: 50,),
@@ -47,8 +52,12 @@ class ChooseGradePage extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _menuGrade(context, AppImages.raccoon_grade_3, "Grade 3", (){}),
-                  _menuGrade(context, AppImages.raccoon_grade_4, "Grade 4", (){})
+                  _menuGrade(context, AppImages.raccoon_grade_3, "Grade 3", (){
+                    _showDialog(context, 'grade_3');
+                  }),
+                  _menuGrade(context, AppImages.raccoon_grade_4, "Grade 4", (){
+                    _showDialog(context, 'grade_4');
+                  })
                 ],
               ),
               const SizedBox(height: 50,),
@@ -57,7 +66,9 @@ class ChooseGradePage extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _menuGrade(context, AppImages.raccoon_grade_5, "Grade 5", (){}),
+                  _menuGrade(context, AppImages.raccoon_grade_5, "Grade 5", (){
+                    _showDialog(context, 'grade_5');
+                  }),
                 ],
               ),
               
@@ -98,4 +109,14 @@ class ChooseGradePage extends StatelessWidget {
       ),
     );
   }
+
+void _showDialog(BuildContext context, String grade) {
+  showDialog(
+    context: context,
+    barrierColor: Colors.black.withOpacity(0.5),
+    builder: (context) {
+      return OperationDialog(grade: grade); 
+    },
+  );
+}
 }

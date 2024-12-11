@@ -44,10 +44,6 @@ class ModelManage {
           SnackBar(content: Text('Model download failed.')),
         );
       }
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Model already downloaded.')),
-      );
     }
   }
 }

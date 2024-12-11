@@ -19,8 +19,8 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       // home: const IntroPage(),
-      // home: const ControlPage(),
-      home: const DrawPage(),
+      home: const ControlPage(),
+      // home: const DrawPage(),
 
 
 
