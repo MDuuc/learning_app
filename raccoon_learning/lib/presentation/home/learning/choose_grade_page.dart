@@ -33,7 +33,7 @@ class ChooseGradePage extends StatelessWidget {
                   color: AppColors.darkGrey
                 ),
               ),
-              const SizedBox(height: 50,),
+              const SizedBox(height: 100,),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -49,29 +49,14 @@ class ChooseGradePage extends StatelessWidget {
               const SizedBox(height: 50,),
         
                 Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _menuGrade(context, AppImages.raccoon_grade_3, "Grade 3", (){
                     _showDialog(context, 'grade_3');
                   }),
-                  _menuGrade(context, AppImages.raccoon_grade_4, "Grade 4", (){
-                    _showDialog(context, 'grade_4');
-                  })
                 ],
-              ),
-              const SizedBox(height: 50,),
-
-                Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _menuGrade(context, AppImages.raccoon_grade_5, "Grade 5", (){
-                    _showDialog(context, 'grade_5');
-                  }),
-                ],
-              ),
-              
+              ),              
             ],
           ),
         ),
