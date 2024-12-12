@@ -44,8 +44,8 @@ Widget notif(BuildContext context) {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(30),
         ),
-        foregroundColor: AppColors.brown_light,
-        backgroundColor: AppColors.black,
+        foregroundColor: AppColors.black,
+        backgroundColor: AppColors.brown_light,
       ),
       child: Container(
         constraints: BoxConstraints(

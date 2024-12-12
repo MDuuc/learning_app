@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:raccoon_learning/constants/assets/app_images.dart';
 import 'package:raccoon_learning/constants/theme/app_colors.dart';
+import 'package:raccoon_learning/presentation/home/achievement/learning_archie_page.dart';
+import 'package:raccoon_learning/presentation/home/achievement/tab_controler_achive.dart';
 import 'package:raccoon_learning/presentation/home/learning/choose_grade_page.dart';
 
 class HomePage extends StatelessWidget {
@@ -149,7 +151,12 @@ class HomePage extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 
                 children: [
-                  _menuHome(context, AppImages.raccoon_achievement, "Achievement", (){ }),
+                  _menuHome(context, AppImages.raccoon_achievement, "Achievement", (){ 
+                    Navigator.push(
+                      context, 
+                      MaterialPageRoute(builder: (BuildContext context) => const TabControlerAchive())
+                      );
+                  }),
                   _menuHome(context, AppImages.raccoon_custom, "Custom", (){ }),
                 ],
                             ),

@@ -28,7 +28,7 @@ class _DrawPageState extends State<DrawPage> {
   String _recognizedText = '';
 
   //countime bar
-  static int maxSeconds = 100000;
+  static int maxSeconds = 30;
   int seconds = maxSeconds;
   static Timer? timer;
 
