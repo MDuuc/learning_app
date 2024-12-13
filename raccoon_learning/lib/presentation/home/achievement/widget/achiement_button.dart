@@ -94,6 +94,7 @@ class _AchiementButtonState extends State<AchiementButton> {
 Future<dynamic> showFullImage(BuildContext context, ImageProvider  image) {
   return showDialog(
     context: context,
+    barrierDismissible: false,
     builder: (BuildContext context) {
       return Dialog(
         backgroundColor: Colors.transparent,

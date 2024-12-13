@@ -1,13 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:raccoon_learning/constants/assets/app_images.dart';
+import 'package:provider/provider.dart';
 import 'package:raccoon_learning/constants/theme/app_colors.dart';
+import 'package:raccoon_learning/presentation/home/achievement/widget/achiement_button.dart';
+import 'package:raccoon_learning/presentation/home/profile/change_avatar.dart';
 import 'package:raccoon_learning/presentation/home/profile/change_password_page.dart';
+import 'package:raccoon_learning/presentation/user/notify_provider/Avatar_notifier.dart';
 import 'package:raccoon_learning/presentation/widgets/appbar/app_bar.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 
   @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+ ImageProvider ?currentAvatar; 
+
+ @override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
     double screenWidth = MediaQuery.of(context).size.width;
@@ -21,7 +31,9 @@ class ProfilePage extends StatelessWidget {
         ),
         backgroundColor: AppColors.black,
       ),
-      body: Stack(
+      body: Consumer <AvatarNotifier>(builder: (context, avatar, child){
+        currentAvatar =AssetImage(avatar.avatarPath);
+        return  Stack(
         children: [
           // Background header
           Align(
@@ -79,10 +91,15 @@ class ProfilePage extends StatelessWidget {
                   width: 3,
                 ),
               ),
-              child: const CircleAvatar(
-                backgroundColor: Colors.transparent,
-                radius: 60,
-                backgroundImage: AssetImage(AppImages.user),
+              child: GestureDetector(
+                onTap: (){
+                  showFullImage(context, currentAvatar!);
+                },
+                child: CircleAvatar(
+                  backgroundColor: Colors.transparent,
+                  radius: 60,
+                  backgroundImage: currentAvatar,
+                ),
               ),
             ),
           ),
@@ -92,13 +109,15 @@ class ProfilePage extends StatelessWidget {
             left: screenWidth / 2 + 30,
             child: IconButton(
               onPressed: () {
-                // some activity here
+               showAvatarDialog(context);
               },
               icon: const Icon(Icons.add_a_photo_outlined),
             ),
           ),
         ],
-      ),
+      );
+      }
+      )
     );
   }
 
@@ -146,5 +165,4 @@ Widget _settingTitle(
     ),
   );
 }
-
 }

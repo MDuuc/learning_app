@@ -1,19 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:raccoon_learning/constants/assets/app_images.dart';
 import 'package:raccoon_learning/constants/theme/app_colors.dart';
-import 'package:raccoon_learning/presentation/home/achievement/learning_archie_page.dart';
 import 'package:raccoon_learning/presentation/home/achievement/tab_controler_achive.dart';
 import 'package:raccoon_learning/presentation/home/learning/choose_grade_page.dart';
+import 'package:raccoon_learning/presentation/user/notify_provider/Avatar_notifier.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+ ImageProvider ?currentAvatar; 
 
   @override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
     double screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
-      body: Column(
+      body: Consumer<AvatarNotifier>(builder: (context, avatar, child){
+        currentAvatar = AssetImage(avatar.avatarPath);
+        return Column(
         children: [
           Container(
             height: screenHeight / 4,
@@ -43,10 +53,10 @@ class HomePage extends StatelessWidget {
                           width: 2,
                         ),
                       ),
-                      child: const CircleAvatar(
+                      child: CircleAvatar(
                         backgroundColor: Colors.transparent,
                         radius: 30,
-                        backgroundImage: AssetImage(AppImages.user),
+                        backgroundImage: currentAvatar,
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -162,7 +172,8 @@ class HomePage extends StatelessWidget {
                             ),
               ),
           ],
-        )
+        );
+      })
     );
   }
   Widget _menuHome (BuildContext context, String image, String tilte, VoidCallback onTap){
