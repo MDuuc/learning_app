@@ -10,7 +10,7 @@ class AppColors {
   static const brown_light = Color(0xFFedd6c8);
   static const orange = Color(0xFFFDA300);
   static const red = Color(0xFFFC5A00);
-
+  static const yellow_coin = Color(0xFFf3c70d);
   
 
 

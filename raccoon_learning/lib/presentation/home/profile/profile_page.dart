@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:raccoon_learning/constants/theme/app_colors.dart';
+import 'package:raccoon_learning/main.dart';
 import 'package:raccoon_learning/presentation/home/achievement/widget/achiement_button.dart';
 import 'package:raccoon_learning/presentation/home/profile/change_avatar.dart';
 import 'package:raccoon_learning/presentation/home/profile/change_password_page.dart';
-import 'package:raccoon_learning/presentation/user/notify_provider/Avatar_notifier.dart';
+import 'package:raccoon_learning/presentation/user/notify_provider/User_notifier.dart';
 import 'package:raccoon_learning/presentation/widgets/appbar/app_bar.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -31,7 +32,7 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         backgroundColor: AppColors.black,
       ),
-      body: Consumer <AvatarNotifier>(builder: (context, avatar, child){
+      body: Consumer <UserNotifier>(builder: (context, avatar, child){
         currentAvatar =AssetImage(avatar.avatarPath);
         return  Stack(
         children: [

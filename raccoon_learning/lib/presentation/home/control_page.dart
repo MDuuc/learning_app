@@ -4,6 +4,7 @@ import 'package:raccoon_learning/constants/theme/app_colors.dart';
 import 'package:raccoon_learning/presentation/home/home_page.dart';
 import 'package:raccoon_learning/presentation/home/notification_page.dart';
 import 'package:raccoon_learning/presentation/home/profile/profile_page.dart';
+import 'package:raccoon_learning/presentation/home/store_page.dart';
 
 class ControlPage extends StatefulWidget {
   const ControlPage({super.key});
@@ -17,6 +18,7 @@ class _ControlPageState extends State<ControlPage> {
 
   final List<Widget> _page = [  
   const HomePage(),
+  const StorePage(),
   const NotificationPage(),
   const ProfilePage(),
 ];
@@ -27,6 +29,7 @@ class _ControlPageState extends State<ControlPage> {
       bottomNavigationBar: CurvedNavigationBar(items: <Widget>
       [
       const Icon(Icons.dashboard, size: 30, color: Colors.white,),
+      const Icon(Icons.store, size: 30, color: Colors.white,),
       const Icon(Icons.notifications, size: 30, color: Colors.white,),
       const Icon(Icons.person, size: 30, color: Colors.white,)
       ],

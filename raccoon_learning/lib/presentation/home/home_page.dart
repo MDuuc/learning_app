@@ -4,7 +4,7 @@ import 'package:raccoon_learning/constants/assets/app_images.dart';
 import 'package:raccoon_learning/constants/theme/app_colors.dart';
 import 'package:raccoon_learning/presentation/home/achievement/tab_controler_achive.dart';
 import 'package:raccoon_learning/presentation/home/learning/choose_grade_page.dart';
-import 'package:raccoon_learning/presentation/user/notify_provider/Avatar_notifier.dart';
+import 'package:raccoon_learning/presentation/user/notify_provider/User_notifier.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -21,7 +21,7 @@ class _HomePageState extends State<HomePage> {
     double screenHeight = MediaQuery.of(context).size.height;
     double screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
-      body: Consumer<AvatarNotifier>(builder: (context, avatar, child){
+      body: Consumer<UserNotifier>(builder: (context, avatar, child){
         currentAvatar = AssetImage(avatar.avatarPath);
         return Column(
         children: [

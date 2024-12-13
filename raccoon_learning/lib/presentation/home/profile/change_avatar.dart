@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:raccoon_learning/constants/assets/app_images.dart';
 import 'package:raccoon_learning/constants/theme/app_colors.dart';
-import 'package:raccoon_learning/presentation/user/notify_provider/Avatar_notifier.dart';
+import 'package:raccoon_learning/presentation/user/notify_provider/User_notifier.dart';
+import 'package:raccoon_learning/presentation/widgets/widget.dart';
 
 class ChangeAvatar extends StatefulWidget {
   const ChangeAvatar({super.key});
@@ -112,31 +113,8 @@ class _ChangeAvatarState extends State<ChangeAvatar> {
                     context: context,
                     builder: (context) {
                       //alert diaglog to check twice confirm
-                      return AlertDialog(
-                        title: const Text("Confirm avatar"),
-                        content: const Text("Do you want to choose this avatar?"),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context),
-                            child: const Text('Cancle', style: TextStyle(color: AppColors.black),),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              Provider.of<AvatarNotifier>(context, listen: false).saveAvatar(avatars[selectedIndex]);  //save image 
-                              Navigator.pop(context);
-                            },
-                            style: ButtonStyle(
-
-                            ),
-                            child: const Text(
-                              'Confirm',
-                              style: TextStyle(
-                                color: AppColors.primary
-                              ),
-                              ),
-                          ),
-                        ],
-                      );
+                      return 
+                      my_alert_dialog(context, 'Confirm avatar', 'Do you want to choose this avatar?', (){Provider.of<UserNotifier>(context, listen: false).saveAvatar(avatars[selectedIndex]);});  //save image  )
                     },
                   );
                 },
@@ -161,3 +139,4 @@ Future<dynamic> showAvatarDialog(BuildContext context) async {
     }
   );
 }
+

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:raccoon_learning/constants/theme/app_colors.dart';
 import 'package:raccoon_learning/presentation/home/achievement/learning_archie_page.dart';
 
 class TabControlerAchive extends StatefulWidget {
@@ -23,6 +24,8 @@ class _TabControlerAchiveState extends State<TabControlerAchive> with SingleTick
       appBar: AppBar(
         automaticallyImplyLeading: false, // Disable default back button
         title: const Text("Achievement"),
+        backgroundColor: AppColors.black,
+        foregroundColor: Colors.white,
         centerTitle: true,
         leading: GestureDetector(
           onTap: () {
@@ -39,14 +42,15 @@ class _TabControlerAchiveState extends State<TabControlerAchive> with SingleTick
             child: const Icon(
               Icons.arrow_back_ios_new,
               size: 15,
-              color: Colors.black,
+              color: Colors.white,
             ),
           ),
         ),
         bottom: TabBar(
           controller: _tabController,
-          labelColor: Colors.black,
-          indicatorColor: Colors.blue,
+          labelColor: AppColors.brown_light,
+          unselectedLabelColor: Colors.white,
+          indicatorColor: AppColors.brown_light,
           tabs: const [
             Tab(
               text: 'Competitive',
