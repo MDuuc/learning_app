@@ -6,6 +6,7 @@ import 'package:raccoon_learning/main.dart';
 import 'package:raccoon_learning/presentation/home/achievement/widget/achiement_button.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/User_notifier.dart';
 import 'package:raccoon_learning/presentation/widgets/appbar/app_bar.dart';
+import 'package:raccoon_learning/presentation/widgets/widget.dart';
 
 class StorePage extends StatefulWidget {
   const StorePage({super.key});
@@ -70,7 +71,7 @@ class _StorePageState extends State<StorePage> {
                             ),
                           ),
                           Text(
-                            "1000",
+                            user.coin.toString(),
                             style: TextStyle(
                               color: AppColors.yellow_coin,
                               fontSize: 30,
@@ -109,7 +110,14 @@ class _StorePageState extends State<StorePage> {
                      item["image"],
                      item["price"],
                      () {
-                      // Do something here
+                      my_alert_dialog(context, 'Purchase', 'Are you sure to purchase this one', (){});
+                      showDialog(context: context, builder: (BuildContext  context){
+                        return my_alert_dialog(context, 'Purchase', 'Are you sure to purchase this', (){
+                          Provider.of<UserNotifier>(context, listen: false).saveCoin(user.coin - int.parse(item["price"]));
+                          print(user.coin - int.parse(item["price"]));
+                          }
+                        );
+                      });
                     },
                   );
                 },
@@ -125,7 +133,7 @@ class _StorePageState extends State<StorePage> {
 
 
   @override
-  Widget storeItem (BuildContext context, String image,  String price,  final VoidCallback onPress) {
+  Widget storeItem (BuildContext context, String image,  String price,  VoidCallback onPress) {
     return Container(
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(

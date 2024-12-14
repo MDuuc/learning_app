@@ -12,7 +12,7 @@ Widget my_alert_dialog (BuildContext context, String title, String description, 
       ),
       TextButton(
         onPressed: () {
-          onpress; //save image 
+          onpress();
           Navigator.pop(context);
         },
         style: ButtonStyle(

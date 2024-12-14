@@ -1,11 +1,14 @@
 import 'dart:async';
 import 'package:flutter/material.dart' hide Ink;
 import 'package:google_mlkit_digital_ink_recognition/google_mlkit_digital_ink_recognition.dart';
+import 'package:provider/provider.dart';
+import 'package:raccoon_learning/constants/assets/app_images.dart';
 import 'package:raccoon_learning/constants/theme/app_colors.dart';
 import 'package:raccoon_learning/presentation/home/control_page.dart';
 import 'package:raccoon_learning/presentation/home/learning/grade/grade1.dart';
 import 'package:raccoon_learning/presentation/home/learning/grade/grade2.dart';
 import 'package:raccoon_learning/presentation/home/learning/grade/grade3.dart';
+import 'package:raccoon_learning/presentation/user/notify_provider/User_notifier.dart';
 import 'package:raccoon_learning/presentation/widgets/dialog/pause_dialog.dart';
 import 'package:raccoon_learning/presentation/widgets/draw/model_manage.dart';
 import 'package:raccoon_learning/presentation/widgets/score/best_score_manger.dart';
@@ -89,14 +92,12 @@ void _updateQuestion(String userAnswer) {
       }
       // check is number
        bool isNumber = RegExp(r'^-?\d+$').hasMatch(userAnswer);
-       int parsedUserAnswer =0;
+       int ?parsedUserAnswer;
        if (isNumber){
           parsedUserAnswer = int.parse(userAnswer);
        }
       // Check answer correctness and remaining time
       if ( _correctAnswer ==  parsedUserAnswer || _correctCompare == userAnswer) {
-      // if ( _correctCompare == userAnswer) {
-
         recognizeAndGenerateQuestion(widget.grade);
         _clearPad();
         startTimer();
@@ -174,10 +175,9 @@ void _updateQuestion(String userAnswer) {
                           _restartGameForPauseDialog();
                           break;
                         case 'exit':
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(builder: (context) =>const ControlPage()), 
-                             );
+                          _updateCoin();
+                          updateBestScore(_scorePoint);
+                          Navigator.pop(context);
                           break;
                       }
                     },
@@ -437,26 +437,70 @@ void _updateQuestion(String userAnswer) {
 }
 
 void _showGameOverDialog() {
+  double screenHeight = MediaQuery.of(context).size.height;
+  double gainedCoin = _scorePoint / 10;  // Calculate the gained coin based on the score
+
   showDialog(
     context: context,
     builder: (context) => AlertDialog(
       title: Text('Game Over'),
-      content: Text('You ran out of hearts!'),
+      content: Container(
+        height: screenHeight / 7,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text('You ran out of hearts!', style: TextStyle(fontSize: 14),),
+            const SizedBox(height: 20,),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text('Your score: ', style: TextStyle(fontSize: 14)),
+                Text(_scorePoint.toString(), style: TextStyle(fontSize: 14)),
+              ],
+            ),
+            const SizedBox(height: 10,),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text("Gained Coin: ", style: TextStyle(fontSize: 14)),
+                Text(gainedCoin.toStringAsFixed(0), style: TextStyle(fontSize: 14)), 
+                Container(
+              height: 20,
+              child: Image.asset(
+                AppImages.coin,
+              ),
+          ),
+              ],
+            ),
+          ],
+        ),
+      ),
       actions: [
         TextButton(
           onPressed: () {
             // Reset game state
             _restartGame();
           },
-          child: Text('Restart'),
+          child: Text('Restart', style: TextStyle(fontSize: 14, color: Colors.green)),
         ),
       ],
     ),
   );
 }
 
+// update the current coin
+void _updateCoin() {
+  double gainedCoin = _scorePoint / 10; 
+  final userNotifier = Provider.of<UserNotifier>(context, listen: false);
+  int updatedCoin = userNotifier.coin + gainedCoin.toInt();
+  userNotifier.saveCoin(updatedCoin);
+}
+
+
+
 void _restartGame(){
   setState(() {
+      _updateCoin();
       updateBestScore(_scorePoint);
       heartIcons = ['heart', 'heart', 'heart'];
       _scorePoint=0;
@@ -469,6 +513,7 @@ void _restartGame(){
 
   void _restartGameForPauseDialog(){
   setState(() {
+      _updateCoin();
       updateBestScore(_scorePoint);
       heartIcons = ['heart', 'heart', 'heart'];
       _scorePoint=0;

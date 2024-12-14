@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class UserNotifier extends ChangeNotifier {
   String _avatarPath = AppImages.user;  // Avatar default
   String _username = '';               
-  int _coin = 0;   
+  int _coin = 100000;   
   String get avatarPath => _avatarPath;
   String get username => _username;
   int get coin => _coin;
@@ -14,7 +14,7 @@ class UserNotifier extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     _avatarPath = prefs.getString('user_avatar') ?? AppImages.user;
     _username = prefs.getString('username') ?? '';
-    _coin = prefs.getInt('user_coin') ?? 0;
+    _coin = prefs.getInt('user_coin') ?? 100000;
     notifyListeners();
   }
 
