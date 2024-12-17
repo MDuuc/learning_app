@@ -11,7 +11,7 @@ import 'package:raccoon_learning/presentation/home/learning/grade/grade3.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/User_notifier.dart';
 import 'package:raccoon_learning/presentation/widgets/dialog/pause_dialog.dart';
 import 'package:raccoon_learning/presentation/widgets/draw/model_manage.dart';
-import 'package:raccoon_learning/presentation/widgets/score/best_score_manger.dart';
+import 'package:raccoon_learning/presentation/user/local_data/best_score_manger.dart';
 
 class DrawPage extends StatefulWidget {
   final String grade;
