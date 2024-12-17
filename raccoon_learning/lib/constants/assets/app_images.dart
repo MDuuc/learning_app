@@ -17,4 +17,18 @@ class AppImages{
   static const String raccoon_grade_3 = '${basePath}raccoon_grade_3.png';
   static const String raccoon_notifi = '${basePath}raccoon_notifi.png';
 
+  //store
+  static const String raccoon_store_1 = '${basePath}raccoon_store_1.png';
+  static const String raccoon_store_2 = '${basePath}raccoon_store_2.png';
+  static const String raccoon_store_3 = '${basePath}raccoon_store_3.png';
+  static const String raccoon_store_4 = '${basePath}raccoon_store_4.png';
+  static const String raccoon_store_5 = '${basePath}raccoon_store_5.png';
+  static const String raccoon_store_6 = '${basePath}raccoon_store_6.png';
+  static const String raccoon_store_7 = '${basePath}raccoon_store_7.png';
+  static const String raccoon_store_8 = '${basePath}raccoon_store_8.png';
+  static const String raccoon_store_9 = '${basePath}raccoon_store_9.png';
+  static const String raccoon_store_10 = '${basePath}raccoon_store_10.png';
+
+
+
 }

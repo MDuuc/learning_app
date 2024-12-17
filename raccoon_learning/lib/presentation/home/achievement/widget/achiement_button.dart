@@ -12,7 +12,7 @@ class AchiementButton extends StatefulWidget {
   final String text;
   final String coin;
   final String score;
-  AchiementButton({super.key, required this.image, required this.text, required this.coin, required this.score});
+   AchiementButton({super.key, required this.image, required this.text, required this.coin, required this.score});
 
   @override
   State<AchiementButton> createState() => _AchiementButtonState();

@@ -16,16 +16,19 @@ class StorePage extends StatefulWidget {
 }
 
 class _StorePageState extends State<StorePage> {
-  final List<Map<String, dynamic>> storeItems = [
-    {"image": AppImages.raccoon_notifi, "price": "80"},
-    {"image": AppImages.raccoon_notifi, "price": "120"},
-    {"image": AppImages.raccoon_notifi, "price": "100"},
-    {"image": AppImages.raccoon_notifi, "price": "70"},
-    {"image": AppImages.raccoon_notifi, "price": "80"},
-    {"image": AppImages.raccoon_notifi, "price": "120"},
-    {"image": AppImages.raccoon_notifi, "price": "100"},
-    {"image": AppImages.raccoon_notifi, "price": "70"},
-  ];
+final List<Map<String, dynamic>> storeItems = [
+    {"image": AppImages.raccoon_store_1, "price": 80},
+    {"image": AppImages.raccoon_store_2, "price": 120},
+    {"image": AppImages.raccoon_store_3, "price": 100},
+    {"image": AppImages.raccoon_store_4, "price": 70},
+    {"image": AppImages.raccoon_store_5, "price": 80},
+    {"image": AppImages.raccoon_store_6, "price": 120},
+    {"image": AppImages.raccoon_store_7, "price": 100},
+    {"image": AppImages.raccoon_store_8, "price": 70},
+    {"image": AppImages.raccoon_store_9, "price": 70},
+    {"image": AppImages.raccoon_store_10, "price": 70},
+];
+
 
   @override
   Widget build(BuildContext context) {
@@ -34,6 +37,13 @@ class _StorePageState extends State<StorePage> {
 
     return Scaffold(
       body: Consumer<UserNotifier>(builder: (context, user, child) {
+        final sortedItems = [...storeItems];  
+        // to list item do not purchase yet, be listed on top
+      sortedItems.sort((a, b) {
+        bool aPurchased = user.purchasedAvatars.contains(a['image']);
+        bool bPurchased = user.purchasedAvatars.contains(b['image']);
+        return aPurchased ? 1 : (bPurchased ? -1 : 0);
+      });
         return Column(
           children: [
             Container(
@@ -102,23 +112,34 @@ class _StorePageState extends State<StorePage> {
                   mainAxisSpacing: 16,
                   childAspectRatio: 0.8, 
                 ),
-                itemCount: storeItems.length,
+                itemCount: sortedItems.length,
                 itemBuilder: (context, index) {
-                  final item = storeItems[index];
+                  final item = sortedItems[index];
+                  bool isPurchased = user.purchasedAvatars.contains(item['image']);
                   return storeItem(
                     context,
-                     item["image"],
-                     item["price"],
-                     () {
-                      my_alert_dialog(context, 'Purchase', 'Are you sure to purchase this one', (){});
-                      showDialog(context: context, builder: (BuildContext  context){
-                        return my_alert_dialog(context, 'Purchase', 'Are you sure to purchase this', (){
-                          Provider.of<UserNotifier>(context, listen: false).saveCoin(user.coin - int.parse(item["price"]));
-                          print(user.coin - int.parse(item["price"]));
-                          }
-                        );
-                      });
-                    },
+                    item["image"],
+                    item["price"],
+                    isPurchased
+                        ? null
+                        : () async {
+                            showDialog(context: context, builder: (BuildContext  context){
+                              return my_alert_dialog(context, 'Purchase', 'Are you sure to purchase this', () async {
+                                                            if (user.coin >= item["price"]) {
+                                    await user.purchaseAvatar(item["image"], item["price"]);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('Avatar purchased successfully!')),
+                                    );
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('Not enough coins!')),
+                                    );
+                                  }
+                                }
+                              );
+                            });
+                          },
+                    isPurchased,
                   );
                 },
               ),
@@ -133,7 +154,7 @@ class _StorePageState extends State<StorePage> {
 
 
   @override
-  Widget storeItem (BuildContext context, String image,  String price,  VoidCallback onPress) {
+  Widget storeItem(BuildContext context, String image, int price, VoidCallback? onPress, bool isPurchased) {
     return Container(
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
@@ -151,40 +172,36 @@ class _StorePageState extends State<StorePage> {
         mainAxisSize: MainAxisSize.min,
         children: [
           GestureDetector(
-            onTap: (){showFullImage(context, AssetImage(image));},
+            onTap: () {
+              showFullImage(context, AssetImage(image));
+            },
             child: CircleAvatar(
               radius: 50,
               backgroundImage: AssetImage(image),
             ),
           ),
           const SizedBox(height: 16),
-          SizedBox(
-            child: ElevatedButton(
-              onPressed: onPress,
-              style: ElevatedButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                backgroundColor: AppColors.primary,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    price,
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(width: 5),
-                  Container(
-                    height: 30,
-                    child: Image.asset(AppImages.coin),
-                  ),
-                ],
+          ElevatedButton(
+            onPressed: onPress,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: isPurchased ? Colors.grey : AppColors.primary,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
               ),
             ),
+            child: isPurchased
+                ? const Text("Purchased", style: TextStyle(color: Colors.white, fontSize: 18))
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        '$price',
+                        style: const TextStyle(color: Colors.white, fontSize: 18),
+                      ),
+                      const SizedBox(width: 5),
+                      SizedBox(height: 30, child: Image.asset(AppImages.coin)),
+                    ],
+                  ),
           ),
         ],
       ),

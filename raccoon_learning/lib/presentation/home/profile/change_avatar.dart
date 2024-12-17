@@ -17,23 +17,10 @@ class _ChangeAvatarState extends State<ChangeAvatar> {
 
   @override
   Widget build(BuildContext context) {
-    final List<String> avatars = [
-      AppImages.raccoon_notifi,
-      AppImages.raccoon_grade_1,
-      AppImages.raccoon_notifi,
-      AppImages.raccoon_notifi,
-      AppImages.raccoon_notifi,
-      AppImages.raccoon_notifi,
-      AppImages.raccoon_notifi,
-      AppImages.raccoon_notifi,
-      AppImages.raccoon_notifi,
-      AppImages.raccoon_notifi,
-      AppImages.raccoon_notifi,
-      AppImages.raccoon_notifi,
-
-    ];
-
-    return Center(
+    return Consumer<UserNotifier>(
+      builder: (context, user, child) {
+        List<String> avatars = user.purchasedAvatars;
+        return Center(
       child: Stack(
         fit: StackFit.expand,
         children: [
@@ -42,7 +29,7 @@ class _ChangeAvatarState extends State<ChangeAvatar> {
               width: MediaQuery.of(context).size.width * 0.9,
               height: MediaQuery.of(context).size.height * 0.5, 
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: AppColors.lightBackground,
                 borderRadius: BorderRadius.circular(15),
                 boxShadow: [
                   BoxShadow(
@@ -104,8 +91,8 @@ class _ChangeAvatarState extends State<ChangeAvatar> {
               right: 20,
               child: ElevatedButton(
                 style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.all(AppColors.brown_light),
-                  foregroundColor: MaterialStateProperty.all(AppColors.black),
+                  backgroundColor: WidgetStateProperty.all(AppColors.brown_light),
+                  foregroundColor: WidgetStateProperty.all(AppColors.black),
                 ),
                 onPressed: () {
                   // confirm dialig
@@ -123,7 +110,9 @@ class _ChangeAvatarState extends State<ChangeAvatar> {
             ),
         ],
       ),
-    );
+    ); 
+      }
+      ,);
   }
 }
 
