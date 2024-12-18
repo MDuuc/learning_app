@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:raccoon_learning/presentation/user/model/achievement_modle.dart';
+import 'package:raccoon_learning/presentation/user/notify_provider/User_notifier.dart';
 
 class AchievementNotifier extends ChangeNotifier {
   List<AchievementModel> achievements = [];
@@ -12,25 +14,55 @@ class AchievementNotifier extends ChangeNotifier {
   Future<void> _loadAchievements() async {
     // Simulate a list of achievements (you can replace this with your own list)
     achievements = [
-      AchievementModel(id: '1', name: 'Achievement 1'),
-      AchievementModel(id: '2', name: 'Achievement 2'),
-      AchievementModel(id: '3', name: 'Achievement 3'),
+      AchievementModel(id: '1', title: 'Achievement 1', description: "The best score is ", score: 10, coin: 10),
+      AchievementModel(id: '2', title: 'Achievement 1', description: "The best score is ", score: 20, coin: 20),
+      AchievementModel(id: '3', title: 'Achievement 1', description: "The best score is ", score: 30, coin: 30),
+      AchievementModel(id: '4', title: 'Achievement 1', description: "The best score is ", score: 40, coin: 40),
+      AchievementModel(id: '5', title: 'Achievement 1', description: "The best score is ", score: 50, coin: 50),
+      AchievementModel(id: '6', title: 'Achievement 1', description: "The best score is ", score: 60, coin: 60),
+      AchievementModel(id: '7', title: 'Achievement 1', description: "The best score is ", score: 70, coin: 70),
+      AchievementModel(id: '8', title: 'Achievement 1', description: "The best score is ", score: 80, coin: 80),
+      AchievementModel(id: '9', title: 'Achievement 1', description: "The best score is ", score: 90, coin: 90),
+      AchievementModel(id: '10', title: 'Achievement 1', description: "The best score is ", score: 100, coin: 100),
+
+
     ];
 
     // Load the claim status for each achievement from SharedPreferences
     for (var achievement in achievements) {
       achievement.isClaimed = await AchievementModel.loadClaimStatus(achievement.id);
     }
-    notifyListeners(); // Notify listeners when achievements are loaded
+    _sortAchievements();
+
+    notifyListeners(); 
   }
 
   // Claim an achievement
-  Future<void> claimAchievement(String id) async {
+  Future<void> claimAchievement(String id, BuildContext context) async {
     final achievement = achievements.firstWhere((a) => a.id == id);
     if (!achievement.isClaimed) {
+      //update coin
+      final userNotifier = Provider.of<UserNotifier>(context, listen: false);
+      int updatedCoin = userNotifier.coin + achievement.coin;
+      userNotifier.saveCoin(updatedCoin);
+
       achievement.isClaimed = true;
       await achievement.saveClaimStatus();
+    _sortAchievements();
       notifyListeners(); // Notify listeners that the state has changed
     }
   }
+
+  void _sortAchievements() {
+  achievements.sort((a, b) {
+    if (a.isClaimed && !b.isClaimed) {
+      return 1; 
+    } else if (!a.isClaimed && b.isClaimed) {
+      return -1; 
+    }
+    return b.score.compareTo(a.score);
+  });
+  notifyListeners(); 
+}
+
 }

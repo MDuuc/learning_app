@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:raccoon_learning/constants/theme/app_colors.dart';
-import 'package:raccoon_learning/presentation/home/achievement/learning_archie_page.dart';
+import 'package:raccoon_learning/presentation/home/achievement/learning_achieve_page.dart';
 
 class TabControlerAchive extends StatefulWidget {
   const TabControlerAchive({super.key});
@@ -67,9 +67,9 @@ class _TabControlerAchiveState extends State<TabControlerAchive> with SingleTick
       body: TabBarView(
         controller: _tabController,
         children: [
-          LearningArchiePage(),
-          LearningArchiePage(),
-          LearningArchiePage(),
+          LearningAchievePage(),
+          LearningAchievePage(),
+          LearningAchievePage(),
 
         ],
       ),

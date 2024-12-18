@@ -5,16 +5,21 @@ import 'package:raccoon_learning/presentation/home/control_page.dart';
 import 'package:raccoon_learning/presentation/home/learning/draw_page.dart';
 import 'package:raccoon_learning/presentation/intro/intro_page.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/User_notifier.dart';
+import 'package:raccoon_learning/presentation/user/notify_provider/achievement_notifier.dart';
 import 'package:raccoon_learning/presentation/widgets/dialog/pause_dialog.dart';
 
 void main() {
   runApp(
-    ChangeNotifierProvider(
-      create: (context) => UserNotifier()..loadUserInfo(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => UserNotifier()..loadUserInfo()),
+        ChangeNotifierProvider(create: (context) => AchievementNotifier()),
+      ],
       child: const MyApp(),
     ),
   );
 }
+
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

@@ -1,13 +1,21 @@
+import 'dart:ui';
+
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AchievementModel {
   final String id;
-  final String name;
+  final String title;
+  final String description;
+  final int score;
+  final int coin;
   bool isClaimed;
 
   AchievementModel({
     required this.id,
-    required this.name,
+    required this.title,
+    required this.description,
+    required this.score,
+    required this.coin,
     this.isClaimed = false,
   });
 
