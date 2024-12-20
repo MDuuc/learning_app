@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:raccoon_learning/constants/assets/app_vectors.dart';
 import 'package:raccoon_learning/constants/theme/app_colors.dart';
+import 'package:raccoon_learning/data/firebase/authservice.dart';
 import 'package:raccoon_learning/presentation/home/control_page.dart';
 import 'package:raccoon_learning/presentation/intro/signup_page.dart';
 import 'package:raccoon_learning/presentation/widgets/appbar/app_bar.dart';
@@ -12,6 +13,7 @@ class SigninPage extends StatelessWidget {
 
   final TextEditingController _email = TextEditingController();
   final TextEditingController _password= TextEditingController();
+  final AuthService _authService = AuthService();
 
 
   @override
@@ -33,31 +35,22 @@ class SigninPage extends StatelessWidget {
               const SizedBox(height: 20,),
                BasicAppButton(
                 onPressed: () 
-                // async{
-                  // var result = await sl<SigninUseCase>().call(
-                  //   params: SigninUserReq(
-                  //     email:  _email.text.toString(), 
-                  //     password:  _password.text.toString()));
-                  //     result.fold(
-                  //       (ifLeft){
-                  //         var snackBar = SnackBar(content: Text(ifLeft));
-                  //         ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                  //       },
-                  //      (ifRight){
-                  //       Navigator.pushAndRemoveUntil(
-                  //         context, 
-                  //         MaterialPageRoute(builder: (BuildContext context) => const HomePage()), 
-                  //         (route)=> false);
-                  //      }
-                  //      );
-                // },
-                {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (BuildContext context) =>  const ControlPage()
-                    )
+                async{
+final user = await _authService.signInWithEmailPassword(
+                  _email.text.toString(),
+                  _password.text.toString(),
+                );
+                if (user != null) {
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (BuildContext context) => const ControlPage()),
+                    (route) => false,
                   );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Registration failed. Please try again!')),
+                  );
+                }
                 },
                 title: 'Sign In',
                ),

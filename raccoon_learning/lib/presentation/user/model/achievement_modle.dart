@@ -1,4 +1,3 @@
-import 'dart:ui';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -19,15 +18,14 @@ class AchievementModel {
     this.isClaimed = false,
   });
 
-  // Create a method to save the state of achievement into SharedPreferences
-  Future<void> saveClaimStatus() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(id, isClaimed);
-  }
+Future<void> saveClaimStatus() async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setBool('achievement_$id', isClaimed);
+}
 
-  // Load the claim status of achievement from SharedPreferences
-  static Future<bool> loadClaimStatus(String id) async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(id) ?? false;
-  }
+static Future<bool> loadClaimStatus(String id) async {
+  final prefs = await SharedPreferences.getInstance();
+  return prefs.getBool('achievement_$id') ?? false;
+}
+
 }

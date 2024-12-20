@@ -28,3 +28,37 @@ Widget my_alert_dialog (BuildContext context, String title, String description, 
     ],
   );
 }
+
+Future<dynamic> showFullImage(BuildContext context, ImageProvider  image) {
+  return showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext context) {
+      return Dialog(
+        backgroundColor: Colors.transparent,
+        child: Stack(
+          children: [
+            // Full-screen image
+            Center(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: Image(image: image),
+              ),
+            ),
+            // Close button
+            Positioned(
+              top: 0,
+              right: 0,
+              child: IconButton(
+                icon: Icon(Icons.close, color: Colors.white, size: 30),
+                onPressed: () {
+                  Navigator.of(context).pop(); // Close the dialog
+                },
+              ),
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}

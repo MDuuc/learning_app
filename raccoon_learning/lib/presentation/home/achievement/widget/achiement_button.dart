@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:raccoon_learning/constants/assets/app_images.dart';
 import 'package:raccoon_learning/constants/theme/app_colors.dart';
-import 'package:raccoon_learning/main.dart';
 import 'package:raccoon_learning/presentation/user/local_data/best_score_manger.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/achievement_notifier.dart';
 import 'package:raccoon_learning/presentation/user/model/achievement_modle.dart';
+import 'package:raccoon_learning/presentation/widgets/widget.dart';
 
 class AchievementButton extends StatefulWidget {
   final String id;
@@ -99,7 +99,7 @@ class _AchievementButtonState extends State<AchievementButton> {
             const SizedBox(width: 15),
             Expanded(
               child: Text(
-                '${widget.text} ${widget.score}',
+                '${widget.text}${widget.score}',
                 style: TextStyle(fontSize: 18, color: AppColors.black),
                 softWrap: true,
                 overflow: TextOverflow.visible,

@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:raccoon_learning/constants/theme/app_colors.dart';
-import 'package:raccoon_learning/main.dart';
-import 'package:raccoon_learning/presentation/home/achievement/widget/achiement_button.dart';
+import 'package:raccoon_learning/data/firebase/authservice.dart';
 import 'package:raccoon_learning/presentation/home/profile/change_avatar.dart';
 import 'package:raccoon_learning/presentation/home/profile/change_password_page.dart';
+import 'package:raccoon_learning/presentation/intro/signin_or_signin_page.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/User_notifier.dart';
 import 'package:raccoon_learning/presentation/widgets/appbar/app_bar.dart';
+import 'package:raccoon_learning/presentation/widgets/widget.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -17,6 +18,7 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
  ImageProvider ?currentAvatar; 
+   final AuthService _authService = AuthService();
 
  @override
   Widget build(BuildContext context) {
@@ -71,8 +73,22 @@ class _ProfilePageState extends State<ProfilePage> {
                     _settingTitle(context,"Privacy Policy", icon: Icons.arrow_forward_ios_rounded,() { }),
                     _settingTitle(context,"Terms and Conditions", icon: Icons.arrow_forward_ios_rounded,() { }),
                     _settingTitle(context,"Help & Support", icon: Icons.arrow_forward_ios_rounded,() { }),
-                    _settingTitle(context,"Logout",() { }, color: Colors.red),
-                    
+                    _settingTitle(context,"Logout",() async{ 
+                      try {
+                        await _authService.signOut();
+                        // Redirect to Login Page or any other page as desired
+                        Navigator.pushReplacement(
+                          context, 
+                          MaterialPageRoute(builder: (BuildContext context) => const SignupOrSigninPage()), 
+                        );
+                      } catch (e) {
+                        print("Error logging out: $e");
+                        // You can show a snack bar or alert for error handling
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Error logging out: $e')),
+                        );
+                      }
+                     }, color: Colors.red),
                   ],
                 ),
               ),

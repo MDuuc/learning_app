@@ -1,11 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:raccoon_learning/presentation/user/model/achievement_modle.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/achievement_notifier.dart';
 import 'package:raccoon_learning/presentation/home/achievement/widget/achiement_button.dart';
 
-class LearningAchievePage extends StatelessWidget {
+class LearningAchievePage extends StatefulWidget {
   const LearningAchievePage({super.key});
+
+  @override
+  State<LearningAchievePage> createState() => _LearningAchievePageState();
+}
+
+class _LearningAchievePageState extends State<LearningAchievePage> {
+    @override
+  void initState() {
+    super.initState();
+    // Provider.of<AchievementNotifier>(context, listen: false).loadAchievements();
+  }
 
   @override
   Widget build(BuildContext context) {

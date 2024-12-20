@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:raccoon_learning/constants/assets/app_vectors.dart';
 import 'package:raccoon_learning/constants/theme/app_colors.dart';
+import 'package:raccoon_learning/data/firebase/authservice.dart';
+import 'package:raccoon_learning/presentation/home/control_page.dart';
 import 'package:raccoon_learning/presentation/intro/signin_page.dart';
 import 'package:raccoon_learning/presentation/widgets/appbar/app_bar.dart';
 import 'package:raccoon_learning/presentation/widgets/button/basic_app_button.dart';
@@ -9,9 +11,10 @@ import 'package:raccoon_learning/presentation/widgets/button/basic_app_button.da
 class SignupPage extends StatelessWidget {
   SignupPage({super.key});
 
-  final TextEditingController _fullName = TextEditingController();
+  final TextEditingController _userName = TextEditingController();
   final TextEditingController _email = TextEditingController();
   final TextEditingController _password = TextEditingController();
+  final AuthService _authService = AuthService();
 
   @override
   Widget build(BuildContext context) {
@@ -26,32 +29,35 @@ class SignupPage extends StatelessWidget {
             children: [
               _registerText(),
               const SizedBox(height: 50,),
-              _fullNameField(context),
+              _userNameField(context),
                const SizedBox(height: 20,),
                _emailField(context),
               const  SizedBox(height: 20,),
               _passwordField(context),
                const SizedBox(height: 20,),
                BasicAppButton(
-                onPressed: () async{
-                  // var result = await sl<SignupUseCase>().call(
-                  //   params: CreateUserReq(
-                  //     fullName: _fullName.text.toString(), 
-                  //     email:  _email.text.toString(), 
-                  //     password:  _password.text.toString()));
-                  //     result.fold(
-                  //       (ifLeft){
-                  //         var snackBar = SnackBar(content: Text(ifLeft));
-                  //         ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                  //       },
-                  //      (ifRight){
-                  //       Navigator.pushAndRemoveUntil(
-                  //         context, 
-                  //         MaterialPageRoute(builder: (BuildContext context) => const HomePage()), 
-                  //         (route)=> false);
-                  //      }
-                  //      );
-                },
+               onPressed: () async {
+                final user = await _authService.registerWithEmailPassword(
+                  _email.text.toString(),
+                  _password.text.toString(),
+                  _userName.text.toString(),
+                );
+
+                if (user != null) {
+                  // Registration was successful, navigate to ControlPage
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (BuildContext context) => const ControlPage()),
+                    (route) => false,
+                  );
+                } else {
+                  // Registration failed, show a SnackBar
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Registration failed. Please try again!')),
+                  );
+                }
+              },
+
                 title: 'Create Account',
                ),
                               const SizedBox(height: 20,),
@@ -129,11 +135,11 @@ class SignupPage extends StatelessWidget {
     );
   }
 
-  Widget _fullNameField(BuildContext context) {
+  Widget _userNameField(BuildContext context) {
     return TextField(
-      controller: _fullName,
+      controller: _userName,
       decoration: const InputDecoration(
-        hintText: 'Full Name'
+        hintText: 'User Name'
       ).applyDefaults(
         Theme.of(context).inputDecorationTheme
       ),
@@ -154,6 +160,7 @@ class SignupPage extends StatelessWidget {
    Widget _passwordField(BuildContext context) {
     return TextField(
       controller: _password,
+      obscureText: true,
       decoration: const InputDecoration(
         hintText: 'Password'
       ).applyDefaults(

@@ -14,26 +14,22 @@ class AchievementNotifier extends ChangeNotifier {
   Future<void> _loadAchievements() async {
     // Simulate a list of achievements (you can replace this with your own list)
     achievements = [
-      AchievementModel(id: '1', title: 'Achievement 1', description: "The best score is ", score: 10, coin: 10),
-      AchievementModel(id: '2', title: 'Achievement 1', description: "The best score is ", score: 20, coin: 20),
-      AchievementModel(id: '3', title: 'Achievement 1', description: "The best score is ", score: 30, coin: 30),
-      AchievementModel(id: '4', title: 'Achievement 1', description: "The best score is ", score: 40, coin: 40),
-      AchievementModel(id: '5', title: 'Achievement 1', description: "The best score is ", score: 50, coin: 50),
-      AchievementModel(id: '6', title: 'Achievement 1', description: "The best score is ", score: 60, coin: 60),
-      AchievementModel(id: '7', title: 'Achievement 1', description: "The best score is ", score: 70, coin: 70),
-      AchievementModel(id: '8', title: 'Achievement 1', description: "The best score is ", score: 80, coin: 80),
-      AchievementModel(id: '9', title: 'Achievement 1', description: "The best score is ", score: 90, coin: 90),
-      AchievementModel(id: '10', title: 'Achievement 1', description: "The best score is ", score: 100, coin: 100),
-
-
+      AchievementModel(id: '1', title: 'Achievement ', description: "The best score is ", score: 10, coin: 10),
+      AchievementModel(id: '2', title: 'Achievement ', description: "The best score is ", score: 20, coin: 20),
+      AchievementModel(id: '3', title: 'Achievement ', description: "The best score is ", score: 30, coin: 30),
+      AchievementModel(id: '4', title: 'Achievement ', description: "The best score is ", score: 40, coin: 40),
+      AchievementModel(id: '5', title: 'Achievement ', description: "The best score is ", score: 50, coin: 50),
+      AchievementModel(id: '6', title: 'Achievement ', description: "The best score is ", score: 60, coin: 60),
+      AchievementModel(id: '7', title: 'Achievement ', description: "The best score is ", score: 70, coin: 70),
+      AchievementModel(id: '8', title: 'Achievement ', description: "The best score is ", score: 80, coin: 80),
+      AchievementModel(id: '9', title: 'Achievement ', description: "The best score is ", score: 90, coin: 90),
+      AchievementModel(id: '10', title: 'Achievement ', description: "The best score is ", score: 100, coin: 100),
     ];
-
     // Load the claim status for each achievement from SharedPreferences
     for (var achievement in achievements) {
       achievement.isClaimed = await AchievementModel.loadClaimStatus(achievement.id);
     }
-    _sortAchievements();
-
+    // _sortAchievements();
     notifyListeners(); 
   }
 
@@ -48,21 +44,13 @@ class AchievementNotifier extends ChangeNotifier {
 
       achievement.isClaimed = true;
       await achievement.saveClaimStatus();
-    _sortAchievements();
+    // _sortAchievements();
       notifyListeners(); // Notify listeners that the state has changed
     }
   }
 
-  void _sortAchievements() {
-  achievements.sort((a, b) {
-    if (a.isClaimed && !b.isClaimed) {
-      return 1; 
-    } else if (!a.isClaimed && b.isClaimed) {
-      return -1; 
-    }
-    return b.score.compareTo(a.score);
-  });
-  notifyListeners(); 
-}
-
+  // void _sortAchievements() {
+  // achievements.sort((a, b) => a.isClaimed ? 1 : (b.isClaimed ? -1 : 0));
+   
+  // }
 }
