@@ -4,16 +4,24 @@ import 'package:raccoon_learning/constants/assets/app_vectors.dart';
 import 'package:raccoon_learning/constants/theme/app_colors.dart';
 import 'package:raccoon_learning/data/firebase/authservice.dart';
 import 'package:raccoon_learning/presentation/home/control_page.dart';
+import 'package:raccoon_learning/presentation/intro/forget_password.dart';
 import 'package:raccoon_learning/presentation/intro/signup_page.dart';
 import 'package:raccoon_learning/presentation/widgets/appbar/app_bar.dart';
 import 'package:raccoon_learning/presentation/widgets/button/basic_app_button.dart';
 
-class SigninPage extends StatelessWidget {
-  SigninPage({super.key});
+class SigninPage extends StatefulWidget {
+  const SigninPage({super.key});
+
+  @override
+  State<SigninPage> createState() => _SigninPageState();
+}
+
+class _SigninPageState extends State<SigninPage> {
 
   final TextEditingController _email = TextEditingController();
   final TextEditingController _password= TextEditingController();
   final AuthService _authService = AuthService();
+  bool _signInFailed = false;
 
 
   @override
@@ -36,17 +44,23 @@ class SigninPage extends StatelessWidget {
                BasicAppButton(
                 onPressed: () 
                 async{
-final user = await _authService.signInWithEmailPassword(
+                  final user = await _authService.signInWithEmailPassword(
                   _email.text.toString(),
                   _password.text.toString(),
                 );
                 if (user != null) {
+                  setState(() {
+                      _signInFailed = false;
+                    });
                   Navigator.pushAndRemoveUntil(
                     context,
                     MaterialPageRoute(builder: (BuildContext context) => const ControlPage()),
                     (route) => false,
                   );
                 } else {
+                  setState(() {
+                      _signInFailed = true;
+                    });
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Registration failed. Please try again!')),
                   );
@@ -54,6 +68,8 @@ final user = await _authService.signInWithEmailPassword(
                 },
                 title: 'Sign In',
                ),
+               const SizedBox(height: 20,),
+                if (_signInFailed) _forgetPasswordHint(context),
                const SizedBox(height: 20,),
                // horizontal line
                const Row(
@@ -182,6 +198,24 @@ final user = await _authService.signInWithEmailPassword(
             )
             )
         ],
+      ),
+    );
+  }
+
+    Widget _forgetPasswordHint(BuildContext context) {
+    return TextButton(
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (BuildContext context) => ForgetPassword()),
+        );
+      },
+      child: Text(
+        "Forgot your password?",
+        style: TextStyle(
+          color: AppColors.blue,
+          fontSize: 16,
+        ),
       ),
     );
   }

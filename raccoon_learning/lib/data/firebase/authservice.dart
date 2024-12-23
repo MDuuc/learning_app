@@ -48,6 +48,16 @@ class AuthService {
     }
   }
 
+    Future<void> forgetPassword(String email) async {
+    try {
+      await _auth.sendPasswordResetEmail(email: email);
+      print("Password reset email sent to $email");
+    } catch (e) {
+      print("Error: $e");
+      // Optionally handle specific exceptions
+    }
+  }
+
   // Signout
   Future<void> signOut() async {
     await _auth.signOut();
