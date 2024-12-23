@@ -2,10 +2,10 @@
 
 ## Screenshots my project
 
-<table>
+<table style="border-collapse: collapse; border: none;">
   <tr>
     <td>
-      <img src="learning_cv/project_img_1.png" alt="Intro Page 1" width="300" style="border-radius: 8px; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); border-collapse: collapse; border: none;">
+      <img src="learning_cv/project_img_1.png" alt="Intro Page 1" width="300" style="border-radius: 8px; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);">
       <p align="center"><b>Image 1:</b> Introduction Page</p>
     </td>
     <td>
