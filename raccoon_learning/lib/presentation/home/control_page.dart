@@ -1,6 +1,7 @@
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:raccoon_learning/constants/theme/app_colors.dart';
+import 'package:raccoon_learning/data/firebase/authservice.dart';
 import 'package:raccoon_learning/presentation/home/home_page.dart';
 import 'package:raccoon_learning/presentation/home/notification_page.dart';
 import 'package:raccoon_learning/presentation/home/profile/profile_page.dart';
@@ -22,6 +23,12 @@ class _ControlPageState extends State<ControlPage> {
   const NotificationPage(),
   const ProfilePage(),
 ];
+
+ @override
+  void initState() {
+    super.initState();
+    AuthService().loadInfoOfUser(context);
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(

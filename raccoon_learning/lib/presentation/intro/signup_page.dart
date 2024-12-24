@@ -38,6 +38,7 @@ class SignupPage extends StatelessWidget {
                BasicAppButton(
                onPressed: () async {
                 final user = await _authService.registerWithEmailPassword(
+                  context,
                   _email.text.toString(),
                   _password.text.toString(),
                   _userName.text.toString(),
@@ -50,12 +51,7 @@ class SignupPage extends StatelessWidget {
                     MaterialPageRoute(builder: (BuildContext context) => const ControlPage()),
                     (route) => false,
                   );
-                } else {
-                  // Registration failed, show a SnackBar
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Registration failed. Please try again!')),
-                  );
-                }
+                } 
               },
 
                 title: 'Create Account',

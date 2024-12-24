@@ -21,8 +21,8 @@ class _HomePageState extends State<HomePage> {
     double screenHeight = MediaQuery.of(context).size.height;
     double screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
-      body: Consumer<UserNotifier>(builder: (context, avatar, child){
-        currentAvatar = AssetImage(avatar.avatarPath);
+      body: Consumer<UserNotifier>(builder: (context, user, child){
+        currentAvatar = AssetImage(user.avatarPath);
         return Column(
         children: [
           Container(
@@ -60,7 +60,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                     const SizedBox(width: 10),
-                   const Column(
+                    Column(
                       crossAxisAlignment:  CrossAxisAlignment.start,
                       children: [
                         Text(
@@ -72,7 +72,7 @@ class _HomePageState extends State<HomePage> {
                           ),
                         ),
                         Text(
-                          "Kious!",
+                          "${user.username}!",
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 20,

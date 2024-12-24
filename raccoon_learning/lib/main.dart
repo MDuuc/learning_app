@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:raccoon_learning/constants/theme/app_theme.dart';
+import 'package:raccoon_learning/data/firebase/authservice.dart';
 import 'package:raccoon_learning/firebase_options.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/User_notifier.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/achievement_notifier.dart';
@@ -15,7 +16,7 @@ void main()  async{
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (context) => UserNotifier()..loadUserInfo()),
+        ChangeNotifierProvider(create: (context) => UserNotifier()),
         ChangeNotifierProvider(create: (context) => AchievementNotifier()),
       ],
       child: const MyApp(),
