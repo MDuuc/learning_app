@@ -39,9 +39,9 @@ class SignupPage extends StatelessWidget {
                onPressed: () async {
                 final user = await _authService.registerWithEmailPassword(
                   context,
-                  _email.text.toString(),
-                  _password.text.toString(),
-                  _userName.text.toString(),
+                  _email.text.toString().trim(),
+                  _password.text.toString().trim(),
+                  _userName.text.toString().trim(),
                 );
 
                 if (user != null) {

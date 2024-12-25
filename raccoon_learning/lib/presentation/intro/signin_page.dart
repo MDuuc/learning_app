@@ -45,8 +45,8 @@ class _SigninPageState extends State<SigninPage> {
                 onPressed: () 
                 async{
                   final user = await _authService.signInWithEmailPassword(
-                  _email.text.toString(),
-                  _password.text.toString(),
+                  _email.text.toString().trim(),
+                  _password.text.toString().trim(),
                 );
                 if (user != null) {
                   setState(() {

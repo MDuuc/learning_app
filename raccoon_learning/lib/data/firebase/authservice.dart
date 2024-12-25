@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/User_notifier.dart';
+import 'package:raccoon_learning/presentation/widgets/widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {
@@ -27,24 +28,12 @@ Future<User?> registerWithEmailPassword(
 
 
     if (usernameSnapshot.docs.isNotEmpty) {
-      Fluttertoast.showToast(
-        msg: 'Username already exists!',
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.BOTTOM,
-        backgroundColor: Colors.red,
-        textColor: Colors.white,
-      );
+      flutter_toast('Username already exists!', Colors.red);
       return null;
     }
 
       if (emailSnapshot.docs.isNotEmpty) {
-      Fluttertoast.showToast(
-        msg: 'Email already exists!',
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.BOTTOM,
-        backgroundColor: Colors.red,
-        textColor: Colors.white,
-      );
+      flutter_toast('Email already exists!', Colors.red);
       return null;
     }
 
@@ -116,10 +105,6 @@ Future<void> loadInfoOfUser(BuildContext context) async {
       String? userName = userDoc['username'];
       String? avatar = userDoc['avatar'];
 
-      print(userName);
-      print(avatar);
-
-
       // Load into Notifier
       final userNotifier = Provider.of<UserNotifier>(context, listen: false);
       await userNotifier.loadUserInfo(userName!, avatar! );
@@ -134,15 +119,15 @@ Future<void> loadInfoOfUser(BuildContext context) async {
 }
 
 
-    Future<void> forgetPassword(String email) async {
-    try {
-      await _auth.sendPasswordResetEmail(email: email);
-      print("Password reset email sent to $email");
-    } catch (e) {
-      print("Error: $e");
-      // Optionally handle specific exceptions
-    }
+  Future<void> forgetPassword(String email) async {
+  try {
+    await _auth.sendPasswordResetEmail(email: email);
+    print("Password reset email sent to $email");
+  } catch (e) {
+    print("Error: $e");
+    // Optionally handle specific exceptions
   }
+}
 
 Future<void> updateAvatar(String image) async {
   try {
@@ -165,6 +150,58 @@ Future<void> updateAvatar(String image) async {
   }
 }
 
+// Change password
+Future<void> changePassword(String currentPassword, String newPassword, String confirmNewPassword) async {
+  try {
+    // Validate new password
+    if (newPassword != confirmNewPassword) {
+      flutter_toast('New password and confirmed password do not match.', Colors.red);
+      return;
+    }
+
+    if (currentPassword == newPassword) {
+      flutter_toast('New password cannot be the same as current password.', Colors.red);
+      return;
+    }
+
+    // Get user data
+    final prefs = await SharedPreferences.getInstance();
+    String? userId = prefs.getString('user_uid');
+    final userDoc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .get();
+
+    if (!userDoc.exists) {
+      throw Exception('User not found.');
+    }
+
+    final email = userDoc.data()?['email'] as String?;
+    if (email == null || email.isEmpty) {
+      throw Exception('Email not found for this user ID.');
+    }
+
+    // Reauthenticate and update password
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      throw Exception('No user currently signed in.');
+    }
+
+    AuthCredential credential = EmailAuthProvider.credential(
+      email: email,
+      password: currentPassword,
+    );
+
+    await user.reauthenticateWithCredential(credential);
+    await user.updatePassword(newPassword);
+    flutter_toast('Password changed successfully.', Colors.green);
+
+  } on FirebaseAuthException catch (e) {
+    flutter_toast('Error: ${e.message}', Colors.red);
+  } catch (e) {
+    flutter_toast('Error: ${e.toString()}', Colors.red);
+  }
+}
 
   // Signout
   Future<void> signOut() async {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:raccoon_learning/constants/theme/app_colors.dart';
 
 Widget my_alert_dialog (BuildContext context, String title, String description, VoidCallback onpress){
@@ -61,4 +62,14 @@ Future<dynamic> showFullImage(BuildContext context, ImageProvider  image) {
       );
     },
   );
+}
+
+Future<bool?> flutter_toast (String message, Color backgroundColor){
+  return Fluttertoast.showToast(
+        msg: message,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: backgroundColor,
+        textColor: Colors.white,
+      );
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:raccoon_learning/constants/theme/app_colors.dart';
+import 'package:raccoon_learning/data/firebase/authservice.dart';
 import 'package:raccoon_learning/presentation/widgets/appbar/app_bar.dart';
 import 'package:raccoon_learning/presentation/widgets/button/basic_app_button.dart';
 
@@ -30,24 +31,12 @@ class ChangePasswordPage extends StatelessWidget {
               _confirmPassword(context),
                const SizedBox(height: 20,),
                BasicAppButton(
-                onPressed: () async{
-                  // var result = await sl<SignupUseCase>().call(
-                  //   params: CreateUserReq(
-                  //     fullName: _currentPass.text.toString(), 
-                  //     email:  _newPass.text.toString(), 
-                  //     password:  _confirmPass.text.toString()));
-                  //     result.fold(
-                  //       (ifLeft){
-                  //         var snackBar = SnackBar(content: Text(ifLeft));
-                  //         ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                  //       },
-                  //      (ifRight){
-                  //       Navigator.pushAndRemoveUntil(
-                  //         context, 
-                  //         MaterialPageRoute(builder: (BuildContext context) => const HomePage()), 
-                  //         (route)=> false);
-                  //      }
-                  //      );
+                onPressed: (){
+                  AuthService().changePassword(
+                    _currentPass.text.trim(), 
+                    _newPass.text.trim(), 
+                    _confirmPass.text.trim());
+
                 },
                 title: 'Submit',
                ),
