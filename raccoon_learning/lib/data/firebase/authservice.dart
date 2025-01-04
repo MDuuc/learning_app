@@ -7,66 +7,66 @@ import 'package:raccoon_learning/presentation/user/notify_provider/User_notifier
 import 'package:raccoon_learning/presentation/widgets/widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class AuthService {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;  
+  class AuthService {
+    final FirebaseAuth _auth = FirebaseAuth.instance;
+    final FirebaseFirestore _firestore = FirebaseFirestore.instance;  
 
-  // SIgnup
-Future<User?> registerWithEmailPassword(
-   BuildContext context,  String email, String password, String username) async {
-  try {
-    // check user and email already exist or not
-  QuerySnapshot usernameSnapshot = await _firestore
+    // SIgnup
+  Future<User?> registerWithEmailPassword(
+    BuildContext context,  String email, String password, String username) async {
+    try {
+      // check user and email already exist or not
+    QuerySnapshot usernameSnapshot = await _firestore
+        .collection('users')
+        .where('username', isEqualTo: username)
+        .get();
+
+      QuerySnapshot emailSnapshot = await _firestore
       .collection('users')
-      .where('username', isEqualTo: username)
+      .where('email', isEqualTo: email)
       .get();
 
-    QuerySnapshot emailSnapshot = await _firestore
-    .collection('users')
-    .where('email', isEqualTo: email)
-    .get();
 
+      if (usernameSnapshot.docs.isNotEmpty) {
+        flutter_toast('Username already exists!', Colors.red);
+        return null;
+      }
 
-    if (usernameSnapshot.docs.isNotEmpty) {
-      flutter_toast('Username already exists!', Colors.red);
+        if (emailSnapshot.docs.isNotEmpty) {
+        flutter_toast('Email already exists!', Colors.red);
+        return null;
+      }
+
+      // Create Account
+      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      // User ID
+      User? user = userCredential.user;
+
+      // Save user ID to local
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('user_uid', user?.uid ?? '');
+
+      // Save user data to Firestore
+      if (user != null) {
+        await _firestore.collection('users').doc(user.uid).set({
+          'user_id': user.uid,
+          'username': username,
+          'email': email,
+          'avatar': 'assets/images/user.png',
+          'created_at': FieldValue.serverTimestamp(),
+        });
+      }
+
+      return user;
+    } on FirebaseAuthException catch (e) {
+      print('Error: $e');
       return null;
     }
-
-      if (emailSnapshot.docs.isNotEmpty) {
-      flutter_toast('Email already exists!', Colors.red);
-      return null;
-    }
-
-    // Create Account
-    UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
-      email: email,
-      password: password,
-    );
-
-    // User ID
-    User? user = userCredential.user;
-
-    // Save user ID to local
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('user_uid', user?.uid ?? '');
-
-    // Save user data to Firestore
-    if (user != null) {
-      await _firestore.collection('users').doc(user.uid).set({
-        'user_id': user.uid,
-        'username': username,
-        'email': email,
-        'avatar': 'assets/images/user.png',
-        'created_at': FieldValue.serverTimestamp(),
-      });
-    }
-
-    return user;
-  } on FirebaseAuthException catch (e) {
-    print('Error: $e');
-    return null;
   }
-}
 
 
   // Sign In
@@ -92,8 +92,9 @@ Future<void> loadInfoOfUser(BuildContext context) async {
     // Get user ID from SharedPreferences
     final prefs = await SharedPreferences.getInstance();
     String? userId = prefs.getString('user_uid');
+    updateStreak(userId!);
 
-    if (userId == null) {
+    if (userId.isEmpty) {
       throw Exception('User ID not found in SharedPreferences');
     }
 
@@ -104,10 +105,11 @@ Future<void> loadInfoOfUser(BuildContext context) async {
       // Extract user data
       String? userName = userDoc['username'];
       String? avatar = userDoc['avatar'];
+      int? streakCount = userDoc ['streak_count'];
 
       // Load into Notifier
       final userNotifier = Provider.of<UserNotifier>(context, listen: false);
-      await userNotifier.loadUserInfo(userName!, avatar! );
+      await userNotifier.loadUserInfo(userName!, avatar!, streakCount! );
     } else {
       throw Exception('User document not found in Firestore');
     }
@@ -207,5 +209,46 @@ Future<void> changePassword(String currentPassword, String newPassword, String c
   Future<void> signOut() async {
     await _auth.signOut();
   }
+
+  //Handle Streak login
+  Future<void> updateStreak(String userId) async {
+  try {
+    final userDoc = _firestore.collection('users').doc(userId);
+    final userSnapshot = await userDoc.get();
+
+    if (userSnapshot.exists) {
+      final data = userSnapshot.data();
+      final lastLoginTimestamp = data?['last_login'] as Timestamp?;
+      final streakCount = data?['streak_count'] as int? ?? 0;
+
+      final DateTime lastLoginDate =
+        lastLoginTimestamp?.toDate() ?? DateTime.now().subtract(Duration(days: 1));
+      final DateTime currentDate = DateTime.now();
+
+      // Check next day
+      if (currentDate.difference(lastLoginDate).inDays == 1) {
+        await userDoc.update({
+          'streak_count': streakCount + 1,
+          'last_login': FieldValue.serverTimestamp(),
+        });
+      } else if (currentDate.difference(lastLoginDate).inDays > 1) {
+        // interrupted login, reset streak
+        await userDoc.update({
+          'streak_count': 1,
+          'last_login': FieldValue.serverTimestamp(),
+        });
+      }
+    } else {
+      // if new user, generate streak
+      await userDoc.set({
+        'streak_count': 1,
+        'last_login': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+    }
+  } catch (e) {
+    print('Error updating streak: $e');
+  }
+}
+
 
 }

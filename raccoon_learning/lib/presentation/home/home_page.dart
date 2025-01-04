@@ -63,7 +63,7 @@ class _HomePageState extends State<HomePage> {
                     Column(
                       crossAxisAlignment:  CrossAxisAlignment.start,
                       children: [
-                        Text(
+                        const Text(
                           "Welcome,",
                           style: TextStyle(
                             color: Colors.white,
@@ -73,7 +73,7 @@ class _HomePageState extends State<HomePage> {
                         ),
                         Text(
                           "${user.username}!",
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: Colors.white,
                             fontSize: 20,
                             fontWeight: FontWeight.w800,
@@ -82,18 +82,18 @@ class _HomePageState extends State<HomePage> {
                       ],
                     ),
                     const Spacer(),
-                    Container(
+                    SizedBox(
                       height: 35,
                       child: Image.asset(
                         AppImages.fire,
                       ),
                     ),
                     const SizedBox(width: 10),
-                    const Padding(
-                      padding:  EdgeInsets.only(top: 8),
+                     Padding(
+                      padding:  const EdgeInsets.only(top: 8),
                       child: Text(
-                        "2",
-                        style: TextStyle(
+                       user.streakCount.toString(),
+                        style: const TextStyle(
                           color: AppColors.orange,
                           fontSize: 30,
                           fontWeight: FontWeight.bold,
@@ -196,7 +196,7 @@ class _HomePageState extends State<HomePage> {
           ),
           Text(
             tilte,
-            style: TextStyle(
+            style: const TextStyle(
               color: Colors.black,
               fontSize: 16,
               fontWeight: FontWeight.w600

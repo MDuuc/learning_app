@@ -5,9 +5,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class UserNotifier extends ChangeNotifier {
   String _avatarPath = AppImages.user;  // Avatar default
-  String _username = '';               
+  String _username = '';          
+  int _streakCount = 1;
   int _coin = 100000;   
-  List<String> _purchasedAvatars = [    // List Avatar default
+  final List<String> _purchasedAvatars = [    // List Avatar default
     AppImages.raccoon_notifi,
     AppImages.raccoon_grade_1,
     AppImages.raccoon_grade_2,
@@ -15,14 +16,16 @@ class UserNotifier extends ChangeNotifier {
   ];  
   String get avatarPath => _avatarPath;
   String get username => _username;
+  int get streakCount => _streakCount;
   int get coin => _coin;
   List<String> get purchasedAvatars => _purchasedAvatars;
 
   // Get user in4 From FireDatabase
-  Future<void> loadUserInfo(String userName, String avatar) async {
+  Future<void> loadUserInfo(String userName, String avatar, int streakCount) async {
     final prefs = await SharedPreferences.getInstance();
     _avatarPath = avatar;
     _username = userName;
+    _streakCount = streakCount;
     _coin = prefs.getInt('user_coin') ?? 100000;
 
     notifyListeners();
