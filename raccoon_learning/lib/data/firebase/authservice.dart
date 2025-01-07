@@ -1,9 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
+import 'package:raccoon_learning/data/firebase/gamePlay.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/User_notifier.dart';
+import 'package:raccoon_learning/presentation/user/notify_provider/gameplay_notifier.dart';
 import 'package:raccoon_learning/presentation/widgets/widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -59,6 +60,9 @@ import 'package:shared_preferences/shared_preferences.dart';
           'avatar': 'assets/images/user.png',
           'created_at': FieldValue.serverTimestamp(),
         });
+
+        // create default store
+        await Gameplay().uploadStoreItemsToFirebase(user.uid);
       }
 
       return user;
@@ -109,7 +113,10 @@ Future<void> loadInfoOfUser(BuildContext context) async {
 
       // Load into Notifier
       final userNotifier = Provider.of<UserNotifier>(context, listen: false);
+      final gameplayNotifer = Provider.of<GameplayNotifier>(context, listen: false);
+
       await userNotifier.loadUserInfo(userName!, avatar!, streakCount! );
+      await gameplayNotifer.fetchStoreItems(userId);
     } else {
       throw Exception('User document not found in Firestore');
     }
@@ -207,7 +214,10 @@ Future<void> changePassword(String currentPassword, String newPassword, String c
 
   // Signout
   Future<void> signOut() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
     await _auth.signOut();
+
   }
 
   //Handle Streak login

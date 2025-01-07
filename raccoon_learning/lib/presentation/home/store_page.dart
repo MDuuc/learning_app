@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:raccoon_learning/constants/assets/app_images.dart';
 import 'package:raccoon_learning/constants/theme/app_colors.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/User_notifier.dart';
+import 'package:raccoon_learning/presentation/user/notify_provider/gameplay_notifier.dart';
 import 'package:raccoon_learning/presentation/widgets/widget.dart';
 
 class StorePage extends StatefulWidget {
@@ -13,34 +14,23 @@ class StorePage extends StatefulWidget {
 }
 
 class _StorePageState extends State<StorePage> {
-final List<Map<String, dynamic>> storeItems = [
-    {"image": AppImages.raccoon_store_1, "price": 80},
-    {"image": AppImages.raccoon_store_2, "price": 120},
-    {"image": AppImages.raccoon_store_3, "price": 100},
-    {"image": AppImages.raccoon_store_4, "price": 70},
-    {"image": AppImages.raccoon_store_5, "price": 80},
-    {"image": AppImages.raccoon_store_6, "price": 120},
-    {"image": AppImages.raccoon_store_7, "price": 100},
-    {"image": AppImages.raccoon_store_8, "price": 70},
-    {"image": AppImages.raccoon_store_9, "price": 70},
-    {"image": AppImages.raccoon_store_10, "price": 70},
-];
-
-
   @override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
     double screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      body: Consumer<UserNotifier>(builder: (context, user, child) {
-        final sortedItems = [...storeItems];  
+      body: Consumer<GameplayNotifier>(builder: (context, gameplay, child) {
+        final sortedItems = gameplay.storeItems;  
+        final coin = gameplay.coin;
+        print(sortedItems);
         // to list item do not purchase yet, be listed on top
-      sortedItems.sort((a, b) {
-        bool aPurchased = user.purchasedAvatars.contains(a['image']);
-        bool bPurchased = user.purchasedAvatars.contains(b['image']);
-        return aPurchased ? 1 : (bPurchased ? -1 : 0);
-      });
+      // sortedItems.sort((a, b) {
+      //   bool aPurchased = user.purchasedAvatars.contains(a['image']);
+      //   bool bPurchased = user.purchasedAvatars.contains(b['image']);
+      //   return aPurchased ? 1 : (bPurchased ? -1 : 0);
+      // }
+      // );
         return Column(
           children: [
             Container(
@@ -78,7 +68,7 @@ final List<Map<String, dynamic>> storeItems = [
                             ),
                           ),
                           Text(
-                            user.coin.toString(),
+                            coin.toString(),
                             style: TextStyle(
                               color: AppColors.yellow_coin,
                               fontSize: 30,
@@ -112,18 +102,19 @@ final List<Map<String, dynamic>> storeItems = [
                 itemCount: sortedItems.length,
                 itemBuilder: (context, index) {
                   final item = sortedItems[index];
-                  bool isPurchased = user.purchasedAvatars.contains(item['image']);
+                  bool isPurchased = item.purchase;
                   return storeItem(
                     context,
-                    item["image"],
-                    item["price"],
+                    item.image,
+                    item.price,
                     isPurchased
                         ? null
                         : () async {
                             showDialog(context: context, builder: (BuildContext  context){
                               return my_alert_dialog(context, 'Purchase', 'Are you sure to purchase this', () async {
-                                                            if (user.coin >= item["price"]) {
-                                    await user.purchaseAvatar(item["image"], item["price"]);
+                                                            if (coin >= item.price) {
+                                    await gameplay.purchaseAvatar(item.image, item.price);
+                                    await gameplay.purchaseItem(item);
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(content: Text('Avatar purchased successfully!')),
                                     );

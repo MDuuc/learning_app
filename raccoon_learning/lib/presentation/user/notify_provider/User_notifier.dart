@@ -11,7 +11,7 @@ class UserNotifier extends ChangeNotifier {
   final List<String> _purchasedAvatars = [    // List Avatar default
     AppImages.raccoon_notifi,
     AppImages.raccoon_grade_1,
-    AppImages.raccoon_grade_2,
+  AppImages.raccoon_grade_2,
     AppImages.raccoon_grade_3,
   ];  
   String get avatarPath => _avatarPath;
@@ -28,21 +28,25 @@ class UserNotifier extends ChangeNotifier {
     _streakCount = streakCount;
     _coin = prefs.getInt('user_coin') ?? 100000;
 
+    // save to local
+    await prefs.setString('user_name', userName);  // save username
+    await prefs.setString('user_avatar', avatar);  // save avatar
+
     notifyListeners();
   }
 
   // Save avatar to SharedPreferences and to the Firbase
   Future<void> saveAvatar(String avatarPath) async {
-    // final prefs = await SharedPreferences.getInstance();
-    // await prefs.setString('user_avatar', avatarPath);  // save avatar
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('user_avatar', avatarPath);  // save avatar
     _avatarPath = avatarPath;  
     AuthService().updateAvatar(avatarPath);
     notifyListeners();
   }
 
     Future<void> saveUsername(String username) async {
-    // final prefs = await SharedPreferences.getInstance();
-    // await prefs.setString('username', username);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('user_name', username);
     _username = username;
     notifyListeners();
   }
