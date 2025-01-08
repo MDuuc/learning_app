@@ -1,15 +1,18 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
+import 'package:raccoon_learning/presentation/user/model/achievement_modle.dart';
 import 'package:raccoon_learning/presentation/user/model/store_modle.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class GameplayNotifier extends ChangeNotifier {
    int _coin = 100000;  
    List<StoreModle> _storeItems = [];
+   List<AchievementModel> _achivementLearnings = [];
    List<String> _purchasedAvatars = [];  
 
   int get coin => _coin;
   List<StoreModle> get storeItems => _storeItems;
+  List<AchievementModel> get achivementLearnings => _achivementLearnings;
   List<String> get purchasedAvatars => _purchasedAvatars;
 
 Future<void> fetchStoreItems(String userId) async {
@@ -23,20 +26,25 @@ Future<void> fetchStoreItems(String userId) async {
       // get list store items
       if (data.containsKey('store') && data['store'] is List) {
         List storeList = data['store'] as List;
-        List<StoreModle> storeItems = storeList
+        _storeItems= storeList
             .map((item) => StoreModle.fromMap(item)).toList();
-        _storeItems = storeItems;
         sortStoreItems();
-        notifyListeners();
       } 
+
+      // get list achievement learning
+      if (data.containsKey('achivement_learning') && data['achivement_learning'] is List) {
+        List achievementLearningList = data['achivement_learning'] as List;
+        _achivementLearnings = achievementLearningList
+            .map((item) => AchievementModel.fromMap(item)).toList();
+        sortAchievementLearningItems();
+      } 
+
       // get list avatar
     if (data.containsKey('avatarPurchased') && data['avatarPurchased'] is List) {
       List avatarList = data['avatarPurchased'] as List;
-      List<String> avatarItems = avatarList.map((item) => item.toString()).toList();
-      _purchasedAvatars = avatarItems;
-      sortStoreItems();
-      notifyListeners();
+      _purchasedAvatars = avatarList.map((item) => item.toString()).toList();
     }
+      notifyListeners();
     } 
   } catch (e) {
     print('Error fetching store items: $e');
@@ -76,6 +84,42 @@ Future<void> fetchStoreItems(String userId) async {
     print('Item not found in local storeItems list.');
   }
 }
+
+  Future<void> claimAchivementLearning(AchievementModel item) async {
+    final prefs = await SharedPreferences.getInstance();
+    String? userId = prefs.getString('user_uid');
+
+    // Find index of the item in the local achivementLearnings list
+    int itemIndex = _achivementLearnings.indexWhere((achivementItem) => achivementItem.score == item.score);
+    if (itemIndex != -1) {
+      // Update local item
+      _achivementLearnings[itemIndex] = AchievementModel(item.description, item.score, item.coin, true); 
+      sortAchievementLearningItems();
+      notifyListeners();
+
+      // Update Firebase
+      try {
+        DocumentReference userDoc = FirebaseFirestore.instance.collection('gameplay').doc(userId);
+
+        // Update achivement learning list in Firestore
+        await userDoc.update({
+          'achivement_learning': _achivementLearnings.map((achievementItem) => {
+            'description': achievementItem.description,
+            'score': achievementItem.score,
+            'coin': achievementItem.coin,
+            'isClaimed': achievementItem.isClaimed,
+          }).toList(),
+          'coin': _coin + item.coin,
+        });
+      } catch (e) {
+        print('Error updating Firebase: $e');
+      }
+      // handle local
+        _coin += item.coin; 
+    } else {
+      print('Item not found in local achivement learning list.');
+    }
+  }
 
 
 Future<bool> purchaseAvatar(String avatarPath, int price) async {
@@ -117,6 +161,11 @@ Future<bool> purchaseAvatar(String avatarPath, int price) async {
   void sortStoreItems() {
   _storeItems.sort((a, b) => a.purchase ? 1 : b.purchase ? -1 : 0);
   notifyListeners();
-}
+  }
+
+  void sortAchievementLearningItems() {
+  _achivementLearnings.sort((a, b) => a.isClaimed ? 1 : b.isClaimed ? -1 : 0);
+  notifyListeners();
+  }
 
 }

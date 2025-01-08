@@ -18,6 +18,20 @@ class Gameplay {
     {"image": AppImages.raccoon_store_10, "price": 70, "purchase" : false},
   ];
 
+  final List<Map<String, dynamic>> achivementLearning = [
+    {"description": "The best score is ", "score": 10, "coin": 10, "isClaimed" : false},
+    {"description": "The best score is ", "score": 20, "coin": 20, "isClaimed" : false},
+    {"description": "The best score is ", "score": 30, "coin": 30, "isClaimed" : false},
+    {"description": "The best score is ", "score": 40, "coin": 40, "isClaimed" : false},
+    {"description": "The best score is ", "score": 50, "coin": 50, "isClaimed" : false},
+    {"description": "The best score is ", "score": 60, "coin": 60, "isClaimed" : false},
+    {"description": "The best score is ", "score": 70, "coin": 70, "isClaimed" : false},
+    {"description": "The best score is ", "score": 80, "coin": 80, "isClaimed" : false},
+    {"description": "The best score is ", "score": 90, "coin": 90, "isClaimed" : false},
+    {"description": "The best score is ", "score": 100, "coin": 100, "isClaimed" : false},
+  ];
+
+
 // List Avatar default
   final List<String> _purchasedAvatars = [    
     AppImages.raccoon_notifi,
@@ -33,6 +47,12 @@ class Gameplay {
           'image': item['image'],
           'price': item['price'],
           'purchase': item['purchase']
+        }).toList(),
+        'achivement_learning': achivementLearning.map((item) => {
+          'description': item['description'],
+          'score': item['score'],
+          'coin': item['coin'],
+          'isClaimed': item['isClaimed']
         }).toList(),
         'avatarPurchased': _purchasedAvatars,
       });

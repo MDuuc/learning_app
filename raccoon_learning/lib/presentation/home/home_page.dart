@@ -71,7 +71,9 @@ class _HomePageState extends State<HomePage> {
                             fontWeight: FontWeight.w400,
                           ),
                         ),
-                        Text(
+                        user.username.isEmpty
+                        ? const Center(child: CircularProgressIndicator())
+                        :Text(
                           "${user.username}!",
                           style: const TextStyle(
                             color: Colors.white,
