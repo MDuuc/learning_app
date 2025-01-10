@@ -9,7 +9,6 @@ import 'package:raccoon_learning/presentation/home/learning/grade/grade2.dart';
 import 'package:raccoon_learning/presentation/home/learning/grade/grade3.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/gameplay_notifier.dart';
 import 'package:raccoon_learning/presentation/widgets/dialog/pause_dialog.dart';
-import 'package:raccoon_learning/presentation/widgets/draw/model_manage.dart';
 
 class DrawPage extends StatefulWidget {
   final String grade;
@@ -21,7 +20,7 @@ class DrawPage extends StatefulWidget {
 }
 
 class _DrawPageState extends State<DrawPage> {
-  final ModelManage _modelManager = ModelManage();
+  
   final String _language = 'en';
   late DigitalInkRecognizer _digitalInkRecognizer;
   final Ink _ink = Ink();
@@ -55,7 +54,6 @@ class _DrawPageState extends State<DrawPage> {
   }
 
   Future<void> _initializeModel() async {
-    await _modelManager.ensureModelDownloaded(_language, context);
     _digitalInkRecognizer = DigitalInkRecognizer(languageCode: _language);
     recognizeAndGenerateQuestion(widget.grade);
     startTimer();

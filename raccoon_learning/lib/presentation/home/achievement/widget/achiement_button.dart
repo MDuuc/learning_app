@@ -19,6 +19,7 @@ class AchievementButton extends StatefulWidget {
 }
 
 class _AchievementButtonState extends State<AchievementButton> {
+  late int bestScore;
   late bool isClaimed;
   late String description;
   late int score;
@@ -31,14 +32,15 @@ class _AchievementButtonState extends State<AchievementButton> {
     description = widget.item.description;
     score = widget.item.score;
     coin = widget.item.coin;
+    final userNotifier = Provider.of<GameplayNotifier>(context, listen: false);
+    bestScore = userNotifier.bestScore;
 
   }
 
 
   @override
   Widget build(BuildContext context) {
-    final userNotifier = Provider.of<GameplayNotifier>(context, listen: false);
-    int bestScore = userNotifier.bestScore;
+    
     double screenHeight = MediaQuery.of(context).size.height;
 
     bool isEligible = bestScore >= score;
