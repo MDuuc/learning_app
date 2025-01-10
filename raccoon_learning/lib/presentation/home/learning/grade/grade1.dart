@@ -32,25 +32,12 @@ class Grade1 {
         break;
 
       case 'comparation':  // comparing
+      operator = (random.nextBool() ? ">" : "<");
         a = random.nextInt(10) + 1; 
         b = random.nextInt(10) + 1;
-
-        // Chose random operation: ">", "<", "="
-        int operatorIndex = random.nextInt(3);
-        if (operatorIndex == 0) {
-          operator = ">";
-          correctCompare = (a > b ? ">" : "<"); // correct ">" if  a > b
-        } else if (operatorIndex == 1) {
-          operator = "<";
-          correctCompare = (a > b ? ">" : "<"); // correct "<" if a < b
-        } else {
-          operator = "=";
-          correctCompare = (a == b ? "=" : (a > b ? ">" : "<")); // check "=" before ">" or "<"
-        }
-
+        correctCompare = (a == b ? "=" : (a > b ? ">" : "<")); 
         correctAnswer = 0;
-        break;
-
+      break;
 
       case 'mix_operations':
         operator = random.nextBool() ? "+" : (random.nextBool() ? "-" : (random.nextBool() ? ">" : "<"));
