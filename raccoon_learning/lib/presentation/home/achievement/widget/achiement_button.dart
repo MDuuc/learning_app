@@ -1,9 +1,7 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:raccoon_learning/constants/assets/app_images.dart';
 import 'package:raccoon_learning/constants/theme/app_colors.dart';
-import 'package:raccoon_learning/presentation/user/local_data/best_score_manger.dart';
 import 'package:raccoon_learning/presentation/user/model/achievement_modle.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/gameplay_notifier.dart';
 import 'package:raccoon_learning/presentation/widgets/widget.dart';
@@ -21,7 +19,6 @@ class AchievementButton extends StatefulWidget {
 }
 
 class _AchievementButtonState extends State<AchievementButton> {
-  int? bestScore;
   late bool isClaimed;
   late String description;
   late int score;
@@ -35,20 +32,16 @@ class _AchievementButtonState extends State<AchievementButton> {
     score = widget.item.score;
     coin = widget.item.coin;
 
-    _initializeBestScore();
   }
 
-  // Get best score
-  Future<void> _initializeBestScore() async {
-    bestScore = await ScoreManager.getBestScore();
-    setState(() {});
-  }
 
   @override
   Widget build(BuildContext context) {
+    final userNotifier = Provider.of<GameplayNotifier>(context, listen: false);
+    int bestScore = userNotifier.bestScore;
     double screenHeight = MediaQuery.of(context).size.height;
 
-    bool isEligible = bestScore != null && bestScore! >= score;
+    bool isEligible = bestScore >= score;
 
     return Consumer<GameplayNotifier>(builder: (context, gameplay, child){
       return Container(

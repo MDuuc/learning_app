@@ -7,10 +7,9 @@ import 'package:raccoon_learning/constants/theme/app_colors.dart';
 import 'package:raccoon_learning/presentation/home/learning/grade/grade1.dart';
 import 'package:raccoon_learning/presentation/home/learning/grade/grade2.dart';
 import 'package:raccoon_learning/presentation/home/learning/grade/grade3.dart';
-import 'package:raccoon_learning/presentation/user/notify_provider/User_notifier.dart';
+import 'package:raccoon_learning/presentation/user/notify_provider/gameplay_notifier.dart';
 import 'package:raccoon_learning/presentation/widgets/dialog/pause_dialog.dart';
 import 'package:raccoon_learning/presentation/widgets/draw/model_manage.dart';
-import 'package:raccoon_learning/presentation/user/local_data/best_score_manger.dart';
 
 class DrawPage extends StatefulWidget {
   final String grade;
@@ -45,7 +44,6 @@ class _DrawPageState extends State<DrawPage> {
   String _currentQuestion = "";
   int _correctAnswer = 0;
   String _correctCompare="";
-
 // Initialize Grade1 with the operation passed from the widget
   // late final Grade1 _grade1;
 
@@ -61,7 +59,8 @@ class _DrawPageState extends State<DrawPage> {
     _digitalInkRecognizer = DigitalInkRecognizer(languageCode: _language);
     recognizeAndGenerateQuestion(widget.grade);
     startTimer();
-    bestScore = await ScoreManager.getBestScore();
+    final userNotifier = Provider.of<GameplayNotifier>(context, listen: false);
+    bestScore = userNotifier.bestScore;
   }
 
 
@@ -496,9 +495,8 @@ void _showGameOverDialog() {
 // update the current coin
 void _updateCoin() {
   double gainedCoin = _scorePoint / 10; 
-  final userNotifier = Provider.of<UserNotifier>(context, listen: false);
-  int updatedCoin = userNotifier.coin + gainedCoin.toInt();
-  userNotifier.saveCoin(updatedCoin);
+  final userNotifier = Provider.of<GameplayNotifier>(context, listen: false);
+  userNotifier.updateCoin(gainedCoin.toInt());
 }
 
 
@@ -590,10 +588,12 @@ void _restartGame(){
 
   // save best score
   void updateBestScore(int newScore) async {
+  final userNotifier = Provider.of<GameplayNotifier>(context, listen: false);
+
     if (newScore > bestScore) {
-      await ScoreManager.saveBestScore(newScore);
+      userNotifier.updateBestScore(newScore);
     }
-    bestScore = await ScoreManager.getBestScore();
+    bestScore = userNotifier.bestScore;
   }
 
   void recognizeAndGenerateQuestion (String grade){

@@ -4,6 +4,9 @@ import 'package:raccoon_learning/constants/assets/app_images.dart';
 class Gameplay {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  final int coin = 1000; //that should be 0 in the future
+  final int bestScore = 0;
+
   // Store items
   final List<Map<String, dynamic>> storeItems = [
     {"image": AppImages.raccoon_store_1, "price": 80, "purchase" : false},
@@ -40,9 +43,11 @@ class Gameplay {
     AppImages.raccoon_grade_3,
   ];  
 
-  Future<void> uploadStoreItemsToFirebase(String userId) async {     
+  Future<void> uploadDataToFirebase(String userId) async {     
       await _firestore.collection('gameplay').doc(userId).set({
         'user_id': userId,
+        'best_score': bestScore,
+        'coin': coin,
         'store': storeItems.map((item) => {
           'image': item['image'],
           'price': item['price'],

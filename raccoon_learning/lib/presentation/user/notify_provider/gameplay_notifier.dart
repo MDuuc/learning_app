@@ -5,17 +5,19 @@ import 'package:raccoon_learning/presentation/user/model/store_modle.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class GameplayNotifier extends ChangeNotifier {
-   int _coin = 100000;  
+  int _bestScore = 0;
+   int _coin = 0 ;  
    List<StoreModle> _storeItems = [];
    List<AchievementModel> _achivementLearnings = [];
    List<String> _purchasedAvatars = [];  
 
+  int get bestScore => _bestScore;
   int get coin => _coin;
   List<StoreModle> get storeItems => _storeItems;
   List<AchievementModel> get achivementLearnings => _achivementLearnings;
   List<String> get purchasedAvatars => _purchasedAvatars;
 
-Future<void> fetchStoreItems(String userId) async {
+Future<void> fetchDataFirebase(String userId) async {
   DocumentReference userDocRef = FirebaseFirestore.instance.collection('gameplay').doc(userId);
 
   try {
@@ -23,6 +25,16 @@ Future<void> fetchStoreItems(String userId) async {
 
     if (userDoc.exists) {
       Map<String, dynamic> data = userDoc.data() as Map<String, dynamic>;
+      // get bestScore
+       if (data.containsKey('best_score') && data['best_score'] is int) {
+        int bestScore = data['best_score'] as int;
+        _bestScore = bestScore;
+      }
+      // get coin
+       if (data.containsKey('coin') && data['coin'] is int) {
+        int coin = data['coin'] as int;
+        _coin = coin;
+      }
       // get list store items
       if (data.containsKey('store') && data['store'] is List) {
         List storeList = data['store'] as List;
@@ -155,6 +167,59 @@ Future<bool> purchaseAvatar(String avatarPath, int price) async {
     }
   }
   return false; 
+}
+
+Future<void> updateCoin(int coin) async {
+  // Validate coin
+  if (coin < 0) {
+    print("Invalid coin value: cannot be negative");
+    return;
+  }
+
+  final prefs = await SharedPreferences.getInstance();
+  String? userId = prefs.getString('user_uid');
+  try {
+    DocumentReference userDoc =
+        FirebaseFirestore.instance.collection('gameplay').doc(userId);
+
+    // Update Firestore
+    await userDoc.update({
+      'coin': _coin + coin,
+    });
+
+    // Handle local update
+    _coin += coin;
+    print(coin);
+    notifyListeners();
+  } catch (e) {
+    print('Error updating coin on Firebase: $e');
+  }
+}
+
+Future<void> updateBestScore(int point) async {
+  // Validate point
+  if (point < 0) {
+    print("Invalid point value: cannot be negative");
+    return;
+  }
+
+  final prefs = await SharedPreferences.getInstance();
+  String? userId = prefs.getString('user_uid');
+  try {
+    DocumentReference userDoc =
+        FirebaseFirestore.instance.collection('gameplay').doc(userId);
+
+    // Update Firestore
+    await userDoc.update({
+      'best_score': point,
+    });
+
+    // Handle local update
+    _bestScore == point;
+    notifyListeners();
+  } catch (e) {
+    print('Error updating best Score on Firebase: $e');
+  }
 }
 
 

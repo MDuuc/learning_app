@@ -62,7 +62,7 @@ import 'package:shared_preferences/shared_preferences.dart';
         });
 
         // create default store
-        await Gameplay().uploadStoreItemsToFirebase(user.uid);
+        await Gameplay().uploadDataToFirebase(user.uid);
       }
 
       return user;
@@ -116,7 +116,7 @@ Future<void> loadInfoOfUser(BuildContext context) async {
       final gameplayNotifer = Provider.of<GameplayNotifier>(context, listen: false);
 
       await userNotifier.loadUserInfo(userName!, avatar!, streakCount! );
-      await gameplayNotifer.fetchStoreItems(userId);
+      await gameplayNotifer.fetchDataFirebase(userId);
     } else {
       throw Exception('User document not found in Firestore');
     }
@@ -215,9 +215,8 @@ Future<void> changePassword(String currentPassword, String newPassword, String c
   // Signout
   Future<void> signOut() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
+    prefs.clear();
     await _auth.signOut();
-
   }
 
   //Handle Streak login
