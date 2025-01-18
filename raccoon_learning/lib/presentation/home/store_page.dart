@@ -101,8 +101,7 @@ class _StorePageState extends State<StorePage> {
                     isPurchased
                         ? null
                         : () async {
-                            showDialog(context: context, builder: (BuildContext  context){
-                              return my_alert_dialog(context, 'Purchase', 'Are you sure to purchase this', () async {
+                              my_alert_dialog(context, 'Purchase', 'Are you sure to purchase this', () async {
                                                             if (coin >= item.price) {
                                     await gameplay.purchaseAvatar(item.image, item.price);
                                     await gameplay.purchaseItem(item);
@@ -116,7 +115,6 @@ class _StorePageState extends State<StorePage> {
                                   }
                                 }
                               );
-                            });
                           },
                     isPurchased,
                   );

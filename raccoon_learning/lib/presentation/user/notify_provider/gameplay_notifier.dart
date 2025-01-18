@@ -5,7 +5,7 @@ import 'package:raccoon_learning/presentation/user/model/store_modle.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class GameplayNotifier extends ChangeNotifier {
-  int _bestScore = 0;
+   int _bestScore = 0;
    int _coin = 0 ;  
    List<StoreModle> _storeItems = [];
    List<AchievementModel> _achivementLearnings = [];

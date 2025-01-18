@@ -2,33 +2,38 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:raccoon_learning/constants/theme/app_colors.dart';
 
-Widget my_alert_dialog (BuildContext context, String title, String description, VoidCallback onpress){
-  return AlertDialog(
-    title:  Text(title),
-    content:  Text(description),
-    actions: [
-      TextButton(
-        onPressed: () => Navigator.pop(context),
-        child: const Text('Cancle', style: TextStyle(color: AppColors.black),),
-      ),
-      TextButton(
-        onPressed: () {
-          onpress();
-          Navigator.pop(context);
-        },
-        style: ButtonStyle(
-
-        ),
-        child: const Text(
-          'Confirm',
-          style: TextStyle(
-            color: AppColors.primary
+void my_alert_dialog(BuildContext context, String title, String description, VoidCallback onPress) {
+  showDialog(
+    context: context,
+    barrierDismissible: false, // Prevent dismissing the dialog by tapping outside
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text(title),
+        content: Text(description),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context), // Close dialog on cancel
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: Colors.black),
+            ),
           ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context); // Close the dialog after action
+              onPress(); 
+            },
+            child: const Text(
+              'Confirm',
+              style: TextStyle(color: Colors.blue),
+            ),
           ),
-      ),
-    ],
+        ],
+      );
+    },
   );
 }
+
 
 Future<dynamic> showFullImage(BuildContext context, ImageProvider  image) {
   return showDialog(
@@ -72,4 +77,49 @@ Future<bool?> flutter_toast (String message, Color backgroundColor){
         backgroundColor: backgroundColor,
         textColor: Colors.white,
       );
+}
+
+Widget buildDialogButton(
+  BuildContext context, {
+  required String text,
+  IconData? icon,
+  required VoidCallback onPressed,
+}) {
+  return ElevatedButton(
+    onPressed: onPressed,
+    style: ElevatedButton.styleFrom(
+      backgroundColor: AppColors.primary,
+      minimumSize: const Size(double.infinity, 50),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+      ),
+    ),
+    child: icon != null
+        ? Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Icon(icon, color: Colors.white),
+              const SizedBox(width: 10),
+              Text(
+                text,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                ),
+              ),
+            ],
+          )
+        : Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                text,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                ),
+              ),
+            ],
+          ),
+  );
 }

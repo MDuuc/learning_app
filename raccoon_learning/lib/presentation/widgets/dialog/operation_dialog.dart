@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:raccoon_learning/constants/theme/app_colors.dart';
 import 'package:raccoon_learning/presentation/home/learning/draw_page.dart';
+import 'package:raccoon_learning/presentation/widgets/widget.dart';
 
 class OperationDialog extends StatelessWidget {
   final String  grade;
@@ -56,7 +57,7 @@ class OperationDialog extends StatelessWidget {
                   const SizedBox(height: 20),
                   
                   // +
-                  _buildDialogButton(
+                  buildDialogButton(
                     context,
                     text: 'Addition',
                     icon: Icons.add,
@@ -73,7 +74,7 @@ class OperationDialog extends StatelessWidget {
                   const SizedBox(height: 10),
                   
                   // -
-                  _buildDialogButton(
+                  buildDialogButton(
                     context,
                     text: 'Subtraction',
                     icon: Icons.remove,
@@ -90,7 +91,7 @@ class OperationDialog extends StatelessWidget {
                   const SizedBox(height: 10),
                   if (grade =='grade_1')...[
                     // Compare ><
-                    _buildDialogButton(
+                    buildDialogButton(
                       context,
                       text: 'Comparation',
                       icon: Icons.compare_arrows,
@@ -107,7 +108,7 @@ class OperationDialog extends StatelessWidget {
                   ]
                   else if(grade == 'grade_2')...[
                   // x
-                  _buildDialogButton(
+                  buildDialogButton(
                     context,
                     text: 'Multiplication ',
                     icon: Icons.close,
@@ -123,7 +124,7 @@ class OperationDialog extends StatelessWidget {
                   const SizedBox(height: 10),
                   ] else if (grade=='grade_3' || grade=='grade_4' || grade=='grade_5') ...[
                     // x
-                  _buildDialogButton(
+                  buildDialogButton(
                     context,
                     text: 'Multiplication ',
                     icon: Icons.close,
@@ -138,7 +139,7 @@ class OperationDialog extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   // %
-                  _buildDialogButton(
+                  buildDialogButton(
                     context,
                     text: 'Dividision',
                     icon: Icons.percent_rounded,
@@ -154,7 +155,7 @@ class OperationDialog extends StatelessWidget {
                   const SizedBox(height: 10),
                   ],
                 // Mix
-                  _buildDialogButton(
+                  buildDialogButton(
                     context,
                     text: 'Mix Operations',
                     icon: Icons.calculate,
@@ -185,36 +186,5 @@ class OperationDialog extends StatelessWidget {
       ),
     );
   }
-
-  Widget _buildDialogButton(
-    BuildContext context, {
-    required String text,
-    required IconData icon,
-    required VoidCallback onPressed,
-  }) {
-    return ElevatedButton(
-      onPressed: onPressed,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.primary,
-        minimumSize: const Size(double.infinity, 50),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          Icon(icon, color: Colors.white),
-          const SizedBox(width: 10),
-          Text(
-            text,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
+

@@ -5,6 +5,7 @@ import 'package:raccoon_learning/constants/theme/app_colors.dart';
 import 'package:raccoon_learning/presentation/home/achievement/tab_controler_achive.dart';
 import 'package:raccoon_learning/presentation/home/learning/choose_grade_page.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/User_notifier.dart';
+import 'package:raccoon_learning/presentation/widgets/dialog/competive_dialog.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -145,7 +146,9 @@ class _HomePageState extends State<HomePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  _menuHome(context, AppImages.raccoon_playing, "Competitive", (){ }),
+                    _menuHome(context, AppImages.raccoon_playing, "Competitive", (){
+                      _showDialog(context);
+                     }),
 
                   _menuHome(context, AppImages.raccoon_learning, "Learning", (){Navigator.push(
                     context,
@@ -208,4 +211,13 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+
+  void _showDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    builder: (context) {
+      return const CompetiveDialog(); 
+    },
+  );
+}
 }

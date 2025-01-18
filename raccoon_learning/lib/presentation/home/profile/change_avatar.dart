@@ -97,14 +97,7 @@ class _ChangeAvatarState extends State<ChangeAvatar> {
                 ),
                 onPressed: () {
                   // confirm dialig
-                  showDialog(
-                    context: context,
-                    builder: (context) {
-                      //alert diaglog to check twice confirm
-                      return 
-                      my_alert_dialog(context, 'Confirm avatar', 'Do you want to choose this avatar?', (){Provider.of<UserNotifier>(context, listen: false).saveAvatar(avatars[selectedIndex]);});  //save image  )
-                    },
-                  );
+                  my_alert_dialog(context, 'Confirm avatar', 'Do you want to choose this avatar?', (){Provider.of<UserNotifier>(context, listen: false).saveAvatar(avatars[selectedIndex]);});  //save image  )
                 },
                 child: const Text("Confirm"),
               ),
