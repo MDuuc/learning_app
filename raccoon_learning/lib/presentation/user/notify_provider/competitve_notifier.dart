@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -6,22 +8,44 @@ class CompetitveNotifier extends ChangeNotifier {
  int _myScore = 0;
  int _opponentScore =0;
  String _playRoomID ="";
+ String _opponentID="";
 
  int get myScore => _myScore;
  int get rivalScore => _opponentScore;
  String get playRoomID => _playRoomID;
+ String get opponentID => _opponentID;
+
 
 final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-Future<void> addToWaitingRoom( String grade) async {
+Future<bool> addToWaitingRoom( String grade) async {
   final prefs = await SharedPreferences.getInstance();
   String? userId = prefs.getString('user_uid');
   DocumentReference waitingRoom = _firestore.collection('waiting_room').doc(userId);
+  StreamSubscription? _waitingRoomListener;
   
   await waitingRoom.set({
     'id': userId,
     'grade': grade,
+    'status': 'waiting',
     'timestamp': FieldValue.serverTimestamp(),
   });
+
+  final completer = Completer<bool>();
+
+  _waitingRoomListener = _firestore
+  .collection('waiting_room')
+  .doc(userId)
+  .snapshots()
+  .listen((snapshot) {
+    if (snapshot.exists) {
+      final data = snapshot.data() as Map<String, dynamic>;
+      if (data['status'] == 'matched') {
+        _waitingRoomListener?.cancel();
+        return completer.complete(true);
+      }
+    }
+  });
+    return completer.future;
 }
 
 Future<bool> createOrJoinGame( String grade) async {
@@ -39,6 +63,7 @@ Future<bool> createOrJoinGame( String grade) async {
   final QuerySnapshot matchingPlayers = await waitingRoom
       .where('grade', isEqualTo: grade)
       .where('id', isNotEqualTo: userId)
+      .where('status', isEqualTo: 'waiting')
       .orderBy('timestamp',)
       .get();
 
@@ -47,24 +72,31 @@ Future<bool> createOrJoinGame( String grade) async {
   if (matchingPlayers.docs.isNotEmpty) {
     // Match to opponent player
     final matchingPlayer = matchingPlayers.docs.first;
-    final otherUserId = matchingPlayer.id;
+    final _opponentID = matchingPlayer.id;
 
     // save zoom id
     _playRoomID = playRooms.id;
 
     await playRooms.set({
       'User1': {'userId': userId, 'score': 0},
-      'User2': {'userId': otherUserId, 'score': 0},
+      'User2': {'userId': _opponentID, 'score': 0},
       'grade': grade,
     });
-      // delete watiting room if match successfull
-    await waitingRoom.doc(otherUserId).delete();
-    await waitingRoom.doc(userId).delete();
+      // update watiting room if match successfull
+    await waitingRoom.doc(userId).update({
+      'status': 'matched',
+      'playRoomID': _playRoomID
+    });
+
+    await waitingRoom.doc(_opponentID).update({
+      'status': 'matched', 
+      'playRoomID': _playRoomID
+
+    });
     return true;
   } else {
     // If you haven't found an opponent, add a player to the waiting room
-    await addToWaitingRoom(grade);
-    return false;
+    return await addToWaitingRoom(grade);
   }
 }
 
@@ -86,8 +118,13 @@ Future<bool> createOrJoinGame( String grade) async {
 
 // delete room after finish
   Future <void> deletePlayRoom()async{
-    CollectionReference waitingRoom = _firestore.collection('play_rooms');
-    await waitingRoom.doc(_playRoomID).delete();
+    final prefs = await SharedPreferences.getInstance();
+    String? userId = prefs.getString('user_uid');
+    CollectionReference playRoom = _firestore.collection('play_rooms');
+    CollectionReference waitingRoom = _firestore.collection('waiting_room');
+    await playRoom.doc(_playRoomID).delete();
+    await waitingRoom.doc(_opponentID).delete();
+    await waitingRoom.doc(userId).delete();
   }
 
   // delete waiting user if cancle match
@@ -99,4 +136,3 @@ Future<bool> createOrJoinGame( String grade) async {
   }
 
 }
-
