@@ -52,6 +52,8 @@ class _DrawCompetitveState extends State<DrawCompetitve> {
 
   Future<void> _initializeModel() async {
     _digitalInkRecognizer = DigitalInkRecognizer(languageCode: _language);
+  final competitiveNotifier = Provider.of<CompetitveNotifier>(context, listen: false);
+  competitiveNotifier.listenToPointUpdates();
     recognizeAndGenerateQuestion(widget.grade);
     startTimer();
   }
@@ -66,6 +68,8 @@ class _DrawCompetitveState extends State<DrawCompetitve> {
   }
   
 void _updateQuestion(String userAnswer) {
+  final competitiveNotifier = Provider.of<CompetitveNotifier>(context, listen: false);
+
   setState(() {
     if (userAnswer.isNotEmpty) {
       _currentQuestion = _currentQuestion.replaceFirst("?", userAnswer);
@@ -91,7 +95,7 @@ void _updateQuestion(String userAnswer) {
         recognizeAndGenerateQuestion(widget.grade);
         _clearPad();
         startTimer();
-        _handleScore(true);
+        competitiveNotifier.updateScore();
 
       } else {
         recognizeAndGenerateQuestion(widget.grade);
@@ -103,7 +107,6 @@ void _updateQuestion(String userAnswer) {
       recognizeAndGenerateQuestion(widget.grade);
       _clearPad();
       startTimer();
-      print(e);
     }
   });
 }
@@ -151,7 +154,7 @@ void _updateQuestion(String userAnswer) {
                ),
                 const SizedBox(width: 10,),
                 Text(
-                  "1 / 10",
+                  "${competiveNotifer.myScore} / 10",
                    style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w600
@@ -164,8 +167,8 @@ void _updateQuestion(String userAnswer) {
                height: 80,
                ),
                 const Spacer(),
-                const Text(
-                  "2 / 10",
+                 Text(
+                  "${competiveNotifer.rivalScore} / 10",
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w600
@@ -365,14 +368,7 @@ void _updateQuestion(String userAnswer) {
 
 
 
-//handle Score
-  void _handleScore(bool isCorrect) {
-  setState(() {
-    if (isCorrect) {
-      _scorePoint +=10;
-    }
-  });
-}
+
 
 // gameOver dialog
 void _showGameOverDialog() {

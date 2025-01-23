@@ -9,22 +9,24 @@ class CompetitveNotifier extends ChangeNotifier {
  int _opponentScore =0;
  String _playRoomID ="";
  String _opponentID="";
+ String _userID="";
+
 
  int get myScore => _myScore;
  int get rivalScore => _opponentScore;
  String get playRoomID => _playRoomID;
  String get opponentID => _opponentID;
+ String get userID => _userID;
+
 
 
 final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 Future<bool> addToWaitingRoom( String grade) async {
-  final prefs = await SharedPreferences.getInstance();
-  String? userId = prefs.getString('user_uid');
-  DocumentReference waitingRoom = _firestore.collection('waiting_room').doc(userId);
+  DocumentReference waitingRoom = _firestore.collection('waiting_room').doc(_userID);
   StreamSubscription? _waitingRoomListener;
   
   await waitingRoom.set({
-    'id': userId,
+    'id': _userID,
     'grade': grade,
     'status': 'waiting',
     'timestamp': FieldValue.serverTimestamp(),
@@ -34,12 +36,13 @@ Future<bool> addToWaitingRoom( String grade) async {
 
   _waitingRoomListener = _firestore
   .collection('waiting_room')
-  .doc(userId)
+  .doc(_userID)
   .snapshots()
   .listen((snapshot) {
     if (snapshot.exists) {
       final data = snapshot.data() as Map<String, dynamic>;
       if (data['status'] == 'matched') {
+       _playRoomID = data['playRoomID'];
         _waitingRoomListener?.cancel();
         return completer.complete(true);
       }
@@ -51,6 +54,7 @@ Future<bool> addToWaitingRoom( String grade) async {
 Future<bool> createOrJoinGame( String grade) async {
   final prefs = await SharedPreferences.getInstance();
   String? userId = prefs.getString('user_uid');
+  _userID= (userId) as String;
   CollectionReference waitingRoom = _firestore.collection('waiting_room');
   DocumentReference playRooms = _firestore.collection('play_rooms').doc();
 
@@ -72,8 +76,8 @@ Future<bool> createOrJoinGame( String grade) async {
     _playRoomID = playRooms.id;
 
     await playRooms.set({
-      'User1': {'userId': userId, 'score': 0},
-      'User2': {'userId': _opponentID, 'score': 0},
+      '${userId}': {'score': 0},
+      '${_opponentID}': {'score': 0},
       'grade': grade,
     });
       // update watiting room if match successfull
@@ -98,15 +102,15 @@ Future<bool> createOrJoinGame( String grade) async {
 }
 
   // Listen to room updates for real-time score changes
-  void listenToRoomUpdates() {
+  void listenToPointUpdates() {
     if (_playRoomID.isNotEmpty) {
       _firestore.collection('play_rooms').doc(_playRoomID).snapshots().listen((snapshot) {
         if (snapshot.exists) {
           final data = snapshot.data() as Map<String, dynamic>;
 
           // Update the scores and notify listeners
-          _myScore = data['User1']['score'];
-          _opponentScore = data['User2']['score'];
+          _myScore = data[_userID]['score'];
+          _opponentScore = data[opponentID]['score'];
           notifyListeners();
         }
       });
@@ -115,21 +119,43 @@ Future<bool> createOrJoinGame( String grade) async {
 
 // delete room after finish
   Future <void> deletePlayRoom()async{
-    final prefs = await SharedPreferences.getInstance();
-    String? userId = prefs.getString('user_uid');
     CollectionReference playRoom = _firestore.collection('play_rooms');
     CollectionReference waitingRoom = _firestore.collection('waiting_room');
     await playRoom.doc(_playRoomID).delete();
     await waitingRoom.doc(_opponentID).delete();
-    await waitingRoom.doc(userId).delete();
+    await waitingRoom.doc(_userID).delete();
   }
 
   // delete waiting user if cancle match
   Future <void> deleteWaiting()async{
-      final prefs = await SharedPreferences.getInstance();
-      String? userId = prefs.getString('user_uid');
     CollectionReference waitingRoom = _firestore.collection('waiting_room');
-    await waitingRoom.doc(userId).delete();
+    await waitingRoom.doc(_userID).delete();
   }
+
+  // update point 
+void updateScore() async {
+  if (_playRoomID.isNotEmpty) {
+    DocumentReference playRoomDoc = _firestore.collection('play_rooms').doc(_playRoomID);
+
+    try {
+       _myScore+=1;
+      // Update the score for the user by incrementing it atomically
+      await playRoomDoc.update({
+        '$userID.score': _myScore,
+      });
+
+
+      // Notify listeners about the change
+      notifyListeners();
+    } catch (error) {
+      print('Error updating score: $error');
+    }
+  } else {
+    print('Error: _playRoomID is empty.');
+  }
+}
+
+
+
 
 }

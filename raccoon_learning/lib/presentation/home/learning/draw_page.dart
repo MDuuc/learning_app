@@ -115,7 +115,6 @@ void _updateQuestion(String userAnswer) {
       _clearPad();
       startTimer();
       _handleHeart(false);
-      print(e);
     }
   });
 }
