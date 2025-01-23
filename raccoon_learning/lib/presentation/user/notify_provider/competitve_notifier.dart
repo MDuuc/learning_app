@@ -18,24 +18,31 @@ Future<void> addToWaitingRoom( String grade) async {
   DocumentReference waitingRoom = _firestore.collection('waiting_room').doc(userId);
   
   await waitingRoom.set({
-    'status': 'waiting',
+    'id': userId,
     'grade': grade,
     'timestamp': FieldValue.serverTimestamp(),
   });
 }
 
-Future<void> createOrJoinGame( String grade) async {
+Future<bool> createOrJoinGame( String grade) async {
   final prefs = await SharedPreferences.getInstance();
   String? userId = prefs.getString('user_uid');
   CollectionReference waitingRoom = _firestore.collection('waiting_room');
   DocumentReference playRooms = _firestore.collection('play_rooms').doc();
 
+  final waitingDocs = await waitingRoom.get();
+  if (waitingDocs.docs.isEmpty) {
+    await addToWaitingRoom(grade);
+  }
+
   // Get the list of waiting players with the same grade
   final QuerySnapshot matchingPlayers = await waitingRoom
       .where('grade', isEqualTo: grade)
-      .where('status', isEqualTo: 'waiting')
-      .orderBy('timestamp', descending: false)
+      .where('id', isNotEqualTo: userId)
+      .orderBy('timestamp',)
       .get();
+
+      print(matchingPlayers.docs);
 
   if (matchingPlayers.docs.isNotEmpty) {
     // Match to opponent player
@@ -50,13 +57,14 @@ Future<void> createOrJoinGame( String grade) async {
       'User2': {'userId': otherUserId, 'score': 0},
       'grade': grade,
     });
-
-    // delete watiting room if match successfull
+      // delete watiting room if match successfull
     await waitingRoom.doc(otherUserId).delete();
     await waitingRoom.doc(userId).delete();
+    return true;
   } else {
     // If you haven't found an opponent, add a player to the waiting room
     await addToWaitingRoom(grade);
+    return false;
   }
 }
 

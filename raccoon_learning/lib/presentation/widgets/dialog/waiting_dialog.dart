@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:raccoon_learning/constants/theme/app_colors.dart';
+import 'package:raccoon_learning/presentation/home/competitive/draw_competitve.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/competitve_notifier.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
 
@@ -15,11 +16,37 @@ class WaitingDialog extends StatefulWidget {
 }
 
 class _WaitingDialogState extends State<WaitingDialog> {
+  bool isMatch = false;
+
   @override
   void initState() {
     super.initState();
+    _checkForMatch();
+  }
+
+  Future<void> _checkForMatch() async {
     final competiveNotifer = Provider.of<CompetitveNotifier>(context, listen: false);
-    competiveNotifer.addToWaitingRoom(widget.grade);
+    final result = await competiveNotifer.createOrJoinGame(widget.grade);
+    setState(() {
+      isMatch = result;
+    });
+
+    if (isMatch) {
+      _navigateToCompetitveScreen();
+    }
+  }
+
+  void _navigateToCompetitveScreen() {
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+        builder: (BuildContext context) => DrawCompetitve(
+          grade: widget.grade,
+          operation: 'mix_operations',
+        ),
+      ),
+      (Route<dynamic> route) => false,
+    );
   }
  @override
   Widget build(BuildContext context) {

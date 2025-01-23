@@ -1,12 +1,14 @@
 import 'dart:async';
 import 'package:flutter/material.dart' hide Ink;
 import 'package:google_mlkit_digital_ink_recognition/google_mlkit_digital_ink_recognition.dart';
+import 'package:provider/provider.dart';
 import 'package:raccoon_learning/constants/assets/app_images.dart';
 import 'package:raccoon_learning/constants/theme/app_colors.dart';
 import 'package:raccoon_learning/presentation/home/control_page.dart';
 import 'package:raccoon_learning/presentation/home/learning/grade/grade1.dart';
 import 'package:raccoon_learning/presentation/home/learning/grade/grade2.dart';
 import 'package:raccoon_learning/presentation/home/learning/grade/grade3.dart';
+import 'package:raccoon_learning/presentation/user/notify_provider/competitve_notifier.dart';
 import 'package:raccoon_learning/presentation/widgets/widget.dart';
 
 class DrawCompetitve extends StatefulWidget {
@@ -109,6 +111,7 @@ void _updateQuestion(String userAnswer) {
 
   @override
   Widget build(BuildContext context) {
+    final competiveNotifer = Provider.of<CompetitveNotifier>(context, listen: false);
     double screenHeight = MediaQuery.of(context).size.height;
     double screenWidth = MediaQuery.of(context).size.width;
 
@@ -121,6 +124,7 @@ void _updateQuestion(String userAnswer) {
           IconButton(
             onPressed: () async{
               my_alert_dialog(context, "Exit", "Are you sure to exit the match", (){
+                competiveNotifer.deletePlayRoom();
               Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => const ControlPage()),(route) => false,);}
                );
             },
