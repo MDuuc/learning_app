@@ -54,11 +54,6 @@ Future<bool> createOrJoinGame( String grade) async {
   CollectionReference waitingRoom = _firestore.collection('waiting_room');
   DocumentReference playRooms = _firestore.collection('play_rooms').doc();
 
-  final waitingDocs = await waitingRoom.get();
-  if (waitingDocs.docs.isEmpty) {
-    await addToWaitingRoom(grade);
-  }
-
   // Get the list of waiting players with the same grade
   final QuerySnapshot matchingPlayers = await waitingRoom
       .where('grade', isEqualTo: grade)
@@ -67,12 +62,11 @@ Future<bool> createOrJoinGame( String grade) async {
       .orderBy('timestamp',)
       .get();
 
-      print(matchingPlayers.docs);
 
   if (matchingPlayers.docs.isNotEmpty) {
     // Match to opponent player
     final matchingPlayer = matchingPlayers.docs.first;
-    final _opponentID = matchingPlayer.id;
+     _opponentID = matchingPlayer.id;
 
     // save zoom id
     _playRoomID = playRooms.id;
@@ -83,20 +77,23 @@ Future<bool> createOrJoinGame( String grade) async {
       'grade': grade,
     });
       // update watiting room if match successfull
-    await waitingRoom.doc(userId).update({
+    await waitingRoom.doc(userId).set({
+      'id': userId,
+      'grade': grade,
       'status': 'matched',
-      'playRoomID': _playRoomID
-    });
+      'playRoomID': _playRoomID,
+      'timestamp': FieldValue.serverTimestamp(),
 
+    });
+    
     await waitingRoom.doc(_opponentID).update({
       'status': 'matched', 
       'playRoomID': _playRoomID
-
     });
     return true;
   } else {
     // If you haven't found an opponent, add a player to the waiting room
-    return await addToWaitingRoom(grade);
+    return addToWaitingRoom(grade);
   }
 }
 
