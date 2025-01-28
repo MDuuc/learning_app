@@ -9,6 +9,9 @@ class AppImages{
   static const String fire = '${basePath}fire.png';
   static const String coin = '${basePath}coin.png';
   static const String vs = '${basePath}vs.png';
+  static const String youLose = '${basePath}youLose.png';
+  static const String youWin = '${basePath}youWin.png';
+
   static const String raccoon_playing = '${basePath}raccoon_playing.png';
   static const String raccoon_learning = '${basePath}raccoon_learning.png';
   static const String raccoon_achievement = '${basePath}raccoon_achievement.png';

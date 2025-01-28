@@ -9,6 +9,7 @@ import 'package:raccoon_learning/presentation/home/learning/grade/grade1.dart';
 import 'package:raccoon_learning/presentation/home/learning/grade/grade2.dart';
 import 'package:raccoon_learning/presentation/home/learning/grade/grade3.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/competitve_notifier.dart';
+import 'package:raccoon_learning/presentation/widgets/dialog/endGame_dialog.dart';
 import 'package:raccoon_learning/presentation/widgets/widget.dart';
 
 class DrawCompetitve extends StatefulWidget {
@@ -34,13 +35,12 @@ class _DrawCompetitveState extends State<DrawCompetitve> {
   static Timer? timer;
 
   // Score point
-  int _scorePoint = 0;
 
   //for question 
   String _currentQuestion = "";
   int _correctAnswer = 0;
   String _correctCompare="";
-// Initialize Grade1 with the operation passed from the widget
+  // Initialize Grade1 with the operation passed from the widget
   // late final Grade1 _grade1;
 
   
@@ -52,10 +52,15 @@ class _DrawCompetitveState extends State<DrawCompetitve> {
 
   Future<void> _initializeModel() async {
     _digitalInkRecognizer = DigitalInkRecognizer(languageCode: _language);
-  final competitiveNotifier = Provider.of<CompetitveNotifier>(context, listen: false);
-  competitiveNotifier.listenToPointUpdates();
+    final competitiveNotifier = Provider.of<CompetitveNotifier>(context, listen: false);
+    competitiveNotifier.listenToPointUpdates();
     recognizeAndGenerateQuestion(widget.grade);
     startTimer();
+    competitiveNotifier.statusEndMatch.listen((status) {
+      if (status == 'win' || status == 'lost') {
+        _showEndingDialog(context, status);
+      }
+  });
   }
 
 
@@ -90,12 +95,13 @@ void _updateQuestion(String userAnswer) {
        if (isNumber){
           parsedUserAnswer = int.parse(userAnswer);
        }
-      // Check answer correctness and remaining time
+      // Check answer correctness, remaining time , if score reach to 10 end-match
       if ( _correctAnswer ==  parsedUserAnswer || _correctCompare == userAnswer) {
         recognizeAndGenerateQuestion(widget.grade);
         _clearPad();
         startTimer();
         competitiveNotifier.updateScore();
+        checkScoreAndUpdateStatus();
 
       } else {
         recognizeAndGenerateQuestion(widget.grade);
@@ -118,7 +124,6 @@ void _updateQuestion(String userAnswer) {
     double screenHeight = MediaQuery.of(context).size.height;
     double screenWidth = MediaQuery.of(context).size.width;
 
-
     return Scaffold(
       backgroundColor: AppColors.lightBackground,
       appBar: AppBar(
@@ -127,7 +132,7 @@ void _updateQuestion(String userAnswer) {
           IconButton(
             onPressed: () async{
               my_alert_dialog(context, "Exit", "Are you sure to exit the match", (){
-                competiveNotifer.deletePlayRoom();
+                competiveNotifer.existPlayRoom();
               Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => const ControlPage()),(route) => false,);}
                );
             },
@@ -179,6 +184,7 @@ void _updateQuestion(String userAnswer) {
                 backgroundImage: AssetImage(AppImages.raccoon_grade_1),
                 radius: 30,
                ),
+               //handle endMatch status
               ],
             ),
           ),
@@ -344,7 +350,11 @@ void _updateQuestion(String userAnswer) {
         _recognizedText = '<';
         case '{':
         _recognizedText = '<';
+        case '(':
+        _recognizedText = '<';
         case '}':
+        _recognizedText = '>';
+        case ')':
         _recognizedText = '>';
       }
       print(_recognizedText);
@@ -364,65 +374,6 @@ void _updateQuestion(String userAnswer) {
       _recognizedText = '';
     });
   }
-
-
-
-
-
-
-// gameOver dialog
-void _showGameOverDialog() {
-  double screenHeight = MediaQuery.of(context).size.height;
-  double gainedCoin = _scorePoint / 10;  // Calculate the gained coin based on the score
-
-  showDialog(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: Text('Game Over'),
-      content: Container(
-        height: screenHeight / 7,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text('You ran out of hearts!', style: TextStyle(fontSize: 14),),
-            const SizedBox(height: 20,),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text('Your score: ', style: TextStyle(fontSize: 14)),
-                Text(_scorePoint.toString(), style: TextStyle(fontSize: 14)),
-              ],
-            ),
-            const SizedBox(height: 10,),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text("Gained Coin: ", style: TextStyle(fontSize: 14)),
-                Text(gainedCoin.toStringAsFixed(0), style: TextStyle(fontSize: 14)), 
-                Container(
-              height: 20,
-              child: Image.asset(
-                AppImages.coin,
-              ),
-          ),
-              ],
-            ),
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () {
-          },
-          child: Text('Restart', style: TextStyle(fontSize: 14, color: Colors.green)),
-        ),
-      ],
-    ),
-  );
-}
-
-
-
 
   //countime bar handle
  void startTimer({bool reset = true}) {
@@ -524,6 +475,24 @@ void _showGameOverDialog() {
     });
     }
   }
+
+  void checkScoreAndUpdateStatus(){
+  final competitiveNotifier = Provider.of<CompetitveNotifier>(context, listen: false);
+  if (competitiveNotifier.myScore==10 ){
+    competitiveNotifier.updateEndMatchStatus();
+    timer?.cancel();
+  }
+}
+
+    void _showEndingDialog(BuildContext context, String status) {
+    timer?.cancel();
+    showDialog(
+      context: context,
+      builder: (context) {
+        return EndgameDialog(endMatchStatus: status,); 
+      },
+    );
+}
 
 }
 

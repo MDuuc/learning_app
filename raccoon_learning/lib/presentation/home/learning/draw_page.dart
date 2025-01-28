@@ -100,9 +100,6 @@ void _updateQuestion(String userAnswer) {
         _handleScore(true);
 
       } else {
-        // Incorrect answer or no time left
-//         print(userAnswer.split(''));
-// print(_correctCompare.split(''));
         recognizeAndGenerateQuestion(widget.grade);
         _clearPad();
         startTimer();
@@ -388,7 +385,11 @@ void _updateQuestion(String userAnswer) {
         _recognizedText = '<';
         case '{':
         _recognizedText = '<';
+        case '(':
+        _recognizedText = '<';
         case '}':
+        _recognizedText = '>';
+        case ')':
         _recognizedText = '>';
       }
       print(_recognizedText);
