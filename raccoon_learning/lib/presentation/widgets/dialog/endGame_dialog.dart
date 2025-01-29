@@ -15,8 +15,8 @@ class EndgameDialog extends StatelessWidget {
       backgroundColor: Colors.transparent,
       body: GestureDetector(
         onTap: () => {
+          competiveNotifer.endPlayRoom(),
           Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => const ControlPage()),(route) => false),
-          competiveNotifer.endPlayRoom,
           },
         child: Stack(
           fit: StackFit.expand,
@@ -33,7 +33,7 @@ class EndgameDialog extends StatelessWidget {
                       AppImages.youWin,
                       fit: BoxFit.contain,
                     )
-                  else
+                   else if  (endMatchStatus == 'lose')
                       Image.asset(
                       AppImages.youLose,
                       fit: BoxFit.contain,

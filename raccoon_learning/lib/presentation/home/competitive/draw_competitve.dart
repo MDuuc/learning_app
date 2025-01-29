@@ -56,11 +56,6 @@ class _DrawCompetitveState extends State<DrawCompetitve> {
     competitiveNotifier.listenToPointUpdates();
     recognizeAndGenerateQuestion(widget.grade);
     startTimer();
-    competitiveNotifier.statusEndMatch.listen((status) {
-      if (status == 'win' || status == 'lost') {
-        _showEndingDialog(context, status);
-      }
-  });
   }
 
 
@@ -133,7 +128,7 @@ void _updateQuestion(String userAnswer) {
             onPressed: () async{
               my_alert_dialog(context, "Exit", "Are you sure to exit the match", (){
                 competiveNotifer.existPlayRoom();
-              Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => const ControlPage()),(route) => false,);}
+              }
                );
             },
             icon: Icon(Icons.exit_to_app,
@@ -145,6 +140,15 @@ void _updateQuestion(String userAnswer) {
       body: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          Consumer<CompetitveNotifier>(
+          builder: (context, notifier, child) {
+            if (notifier.statusEndMatchUser == 'win' || notifier.statusEndMatchUser == 'lose') {
+              Future.microtask(() => _showEndingDialog(context, notifier.statusEndMatchUser));
+            }
+            return const SizedBox(); 
+          },
+        ),
+
           //Countime
           buildTimer(),
 

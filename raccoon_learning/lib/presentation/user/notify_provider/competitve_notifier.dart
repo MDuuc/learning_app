@@ -62,6 +62,8 @@ Future<bool> addToWaitingRoom( String grade) async {
 }
 
 Future<bool> createOrJoinGame( String grade) async {
+  _statusEndMatchUser='';
+  _statusEndMatchOpponent='';
   final prefs = await SharedPreferences.getInstance();
   String? userId = prefs.getString('user_uid');
   _userID= (userId) as String;
@@ -124,11 +126,11 @@ Future<bool> createOrJoinGame( String grade) async {
 
           // Update the scores and notify listeners
           _myScore = data[_userID]['score'];
-          _opponentScore = data[opponentID]['score'];
+          _opponentScore = data[_opponentID]['score'];
 
           // Update status end-match of 2 player (win or lose)
-          _statusEndMatchUser = data[opponentID]['status'];
-          _statusEndMatchOpponent = data[opponentID]['status'];
+          _statusEndMatchUser = data[_userID]['status'];
+          _statusEndMatchOpponent = data[_opponentID]['status'];
           _statusEndMatch.add(_statusEndMatchUser);
 
           notifyListeners();
