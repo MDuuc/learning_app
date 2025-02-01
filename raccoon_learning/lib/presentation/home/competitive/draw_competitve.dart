@@ -142,8 +142,10 @@ void _updateQuestion(String userAnswer) {
         children: [
           Consumer<CompetitveNotifier>(
           builder: (context, notifier, child) {
-            if (notifier.statusEndMatchUser == 'win' || notifier.statusEndMatchUser == 'lose') {
-              Future.microtask(() => _showEndingDialog(context, notifier.statusEndMatchUser));
+            if (!notifier.hasShownDialog&&(notifier.statusEndMatchUser == 'win' || notifier.statusEndMatchUser == 'lose')) {
+              Future.microtask((){ 
+              notifier.hasShownDialog=true;
+              _showEndingDialog(context, notifier.statusEndMatchUser);});
             }
             return const SizedBox(); 
           },

@@ -12,8 +12,7 @@ class CompetitveNotifier extends ChangeNotifier {
  String _userID="";
  String _statusEndMatchOpponent = "";
  String _statusEndMatchUser= "";
-
- final _statusEndMatch = StreamController<String>.broadcast();
+ bool _hasShownDialog = false;
 
 
  int get myScore => _myScore;
@@ -23,12 +22,13 @@ class CompetitveNotifier extends ChangeNotifier {
  String get userID => _userID;
  String get statusEndMatchOpponent => _statusEndMatchOpponent;
  String get statusEndMatchUser => _statusEndMatchUser;
-
- Stream<String> get statusEndMatch => _statusEndMatch.stream;
-
+ bool get hasShownDialog => _hasShownDialog;
 
 
-
+  set hasShownDialog(bool value) {
+    _hasShownDialog = value;
+    notifyListeners(); 
+  }
 
 final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 Future<bool> addToWaitingRoom( String grade) async {
@@ -53,6 +53,7 @@ Future<bool> addToWaitingRoom( String grade) async {
       final data = snapshot.data() as Map<String, dynamic>;
       if (data['status'] == 'matched') {
        _playRoomID = data['play_room_id'];
+       _opponentID = data['matched_with'];
         waitingRoomListener?.cancel();
         return completer.complete(true);
       }
@@ -62,8 +63,14 @@ Future<bool> addToWaitingRoom( String grade) async {
 }
 
 Future<bool> createOrJoinGame( String grade) async {
-  _statusEndMatchUser='';
-  _statusEndMatchOpponent='';
+  _myScore = 0;
+  _opponentScore =0;
+  _playRoomID ="";
+  _opponentID="";
+  _userID="";
+  _statusEndMatchOpponent = "";
+  _statusEndMatchUser= "";
+  _hasShownDialog = false;
   final prefs = await SharedPreferences.getInstance();
   String? userId = prefs.getString('user_uid');
   _userID= (userId) as String;
@@ -119,24 +126,24 @@ Future<bool> createOrJoinGame( String grade) async {
 
   // Listen to room updates for real-time score changes
   void listenToPointUpdates() {
-    if (_playRoomID.isNotEmpty) {
-      _firestore.collection('play_rooms').doc(_playRoomID).snapshots().listen((snapshot) {
-        if (snapshot.exists) {
-          final data = snapshot.data() as Map<String, dynamic>;
+  if ( _playRoomID.isNotEmpty) {
+    _firestore.collection('play_rooms').doc(_playRoomID).snapshots().listen((snapshot) {
+      if (snapshot.exists) {
+        final data = snapshot.data() as Map<String, dynamic>?;
 
-          // Update the scores and notify listeners
-          _myScore = data[_userID]['score'];
-          _opponentScore = data[_opponentID]['score'];
+        if (data != null && data.containsKey(_userID) && data.containsKey(_opponentID)) {
+          _myScore = data[_userID]['score'] ?? 0;
+          _opponentScore = data[_opponentID]['score'] ?? 0;
 
-          // Update status end-match of 2 player (win or lose)
-          _statusEndMatchUser = data[_userID]['status'];
-          _statusEndMatchOpponent = data[_opponentID]['status'];
-          _statusEndMatch.add(_statusEndMatchUser);
+          _statusEndMatchUser = data[_userID]['status'] ?? 'unknown';
+          _statusEndMatchOpponent = data[_opponentID]['status'] ?? 'unknown';
 
           notifyListeners();
         }
-      });
-    }
+      }
+    });
+}
+
   }
 
 // delete room after finish
@@ -157,7 +164,6 @@ Future<bool> createOrJoinGame( String grade) async {
       // _statusEndMatchUser.close();
       notifyListeners();
     } catch (error) {
-      print('Error out room: $error');
     }
     await waitingRoom.doc(_opponentID).delete();
     await waitingRoom.doc(_userID).delete();
