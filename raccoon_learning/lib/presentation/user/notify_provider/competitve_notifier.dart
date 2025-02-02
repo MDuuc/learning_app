@@ -13,6 +13,7 @@ class CompetitveNotifier extends ChangeNotifier {
  String _statusEndMatchOpponent = "";
  String _statusEndMatchUser= "";
  bool _hasShownDialog = false;
+ String _avatarOpponent = "";
 
 
  int get myScore => _myScore;
@@ -23,6 +24,8 @@ class CompetitveNotifier extends ChangeNotifier {
  String get statusEndMatchOpponent => _statusEndMatchOpponent;
  String get statusEndMatchUser => _statusEndMatchUser;
  bool get hasShownDialog => _hasShownDialog;
+String get avatarOpponent => _avatarOpponent;
+
 
 
   set hasShownDialog(bool value) {
@@ -48,12 +51,14 @@ Future<bool> addToWaitingRoom( String grade) async {
   .collection('waiting_room')
   .doc(_userID)
   .snapshots()
-  .listen((snapshot) {
+  .listen((snapshot) async {
     if (snapshot.exists) {
       final data = snapshot.data() as Map<String, dynamic>;
-      if (data['status'] == 'matched') {
+      if (data['status'] == 'matched')  {
        _playRoomID = data['play_room_id'];
        _opponentID = data['matched_with'];
+        DocumentSnapshot opponentDoc = await _firestore.collection('users').doc(_opponentID).get();
+      _avatarOpponent = opponentDoc['avatar'];
         waitingRoomListener?.cancel();
         return completer.complete(true);
       }
@@ -89,6 +94,8 @@ Future<bool> createOrJoinGame( String grade) async {
       final matchingPlayer = matchingPlayers.docs.first;
       _opponentID = matchingPlayer.id;
       _playRoomID = playRoom.id;
+      DocumentSnapshot opponentDoc = await _firestore.collection('users').doc(opponentID).get();
+
 
       // Create a play room document
       transaction.set(playRoom, {
@@ -114,6 +121,9 @@ Future<bool> createOrJoinGame( String grade) async {
         'play_room_id': _playRoomID,
         'matched_with': userId,
       });
+
+      //get opponent avatar
+      _avatarOpponent = opponentDoc['avatar'];
 
       return true;
     } else {

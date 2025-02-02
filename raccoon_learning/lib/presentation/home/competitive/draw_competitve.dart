@@ -7,6 +7,7 @@ import 'package:raccoon_learning/constants/theme/app_colors.dart';
 import 'package:raccoon_learning/presentation/home/learning/grade/grade1.dart';
 import 'package:raccoon_learning/presentation/home/learning/grade/grade2.dart';
 import 'package:raccoon_learning/presentation/home/learning/grade/grade3.dart';
+import 'package:raccoon_learning/presentation/user/notify_provider/User_notifier.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/competitve_notifier.dart';
 import 'package:raccoon_learning/presentation/widgets/dialog/endGame_dialog.dart';
 import 'package:raccoon_learning/presentation/widgets/widget.dart';
@@ -115,6 +116,8 @@ void _updateQuestion(String userAnswer) {
   @override
   Widget build(BuildContext context) {
     final competiveNotifer = Provider.of<CompetitveNotifier>(context, listen: false);
+    final userNotifer = Provider.of<UserNotifier>(context, listen: false);
+
     double screenHeight = MediaQuery.of(context).size.height;
     double screenWidth = MediaQuery.of(context).size.width;
 
@@ -159,7 +162,7 @@ void _updateQuestion(String userAnswer) {
             child:  Row(
               children: [
                CircleAvatar(
-                backgroundImage: AssetImage(AppImages.raccoon_grade_1),
+                backgroundImage: AssetImage(userNotifer.avatarPath),
                 radius: 30,
                ),
                 const SizedBox(width: 10,),
@@ -186,7 +189,7 @@ void _updateQuestion(String userAnswer) {
                 ),
                 const SizedBox(width: 10,),
                CircleAvatar(
-                backgroundImage: AssetImage(AppImages.raccoon_grade_1),
+                backgroundImage: AssetImage(competiveNotifer.avatarOpponent),
                 radius: 30,
                ),
                //handle endMatch status
