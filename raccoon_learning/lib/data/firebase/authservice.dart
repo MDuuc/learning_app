@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:raccoon_learning/data/firebase/gamePlay.dart';
+import 'package:raccoon_learning/presentation/intro/signin_page.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/User_notifier.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/gameplay_notifier.dart';
 import 'package:raccoon_learning/presentation/widgets/widget.dart';
@@ -61,6 +62,12 @@ import 'package:shared_preferences/shared_preferences.dart';
           'created_at': FieldValue.serverTimestamp(),
         });
 
+      // Send Verified Email
+      await sendEmailVerification();
+
+      // Notification for user to check
+      flutter_toast('Verification email sent before login!', Colors.blue);
+
         // create default store
         await Gameplay().uploadDataToFirebase(user.uid);
       }
@@ -71,6 +78,22 @@ import 'package:shared_preferences/shared_preferences.dart';
       return null;
     }
   }
+
+  // Verify Email
+    Future<void> sendEmailVerification() async {
+    User? user = _auth.currentUser;
+    if (user != null && !user.emailVerified) {
+      await user.sendEmailVerification();
+      print("Email xác thực đã được gửi!");
+    }
+  }
+
+  Future<bool> isEmailVerified() async {
+  User? user = FirebaseAuth.instance.currentUser;
+  await user?.reload(); // Cập nhật trạng thái mới
+  return user?.emailVerified ?? false;
+}
+
 
 
   // Sign In
@@ -96,7 +119,7 @@ Future<void> loadInfoOfUser(BuildContext context) async {
     // Get user ID from SharedPreferences
     final prefs = await SharedPreferences.getInstance();
     String? userId = prefs.getString('user_uid');
-    updateStreak(userId!);
+    await updateStreak(userId!);
 
     if (userId.isEmpty) {
       throw Exception('User ID not found in SharedPreferences');

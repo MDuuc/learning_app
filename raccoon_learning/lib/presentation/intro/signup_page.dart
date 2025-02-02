@@ -43,14 +43,12 @@ class SignupPage extends StatelessWidget {
                   _password.text.toString().trim(),
                   _userName.text.toString().trim(),
                 );
-
-                if (user != null) {
-                  // Registration was successful, navigate to ControlPage
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(builder: (BuildContext context) => const ControlPage()),
-                    (route) => false,
-                  );
+                if (user != null  ) {
+                    // change to login page
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (BuildContext context) => const SigninPage()),
+                    );
                 } 
               },
 
@@ -199,3 +197,4 @@ class SignupPage extends StatelessWidget {
     );
   }
 }
+
