@@ -83,4 +83,37 @@
       <p align="center"><b>Image 16:</b> Avatar is changed in Home</p>
     </td>
   </tr>
+    </tr>
+    <tr>
+    <td>
+      <img src="learning_screenShot/project_img_17.png" alt="Intro Page 3" width="300" style="border-radius: 8px; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);">
+      <p align="center"><b>Image 17:</b> Choose mode in competitive</p>
+    </td>
+    <td>
+      <img src="learning_screenShot/project_img_18.png" alt="Intro Page 4" width="300" style="border-radius: 8px; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);margin-left: 15px">
+      <p align="center"><b>Image 18:</b> Waiting other player</p>
+    </td>
+  </tr>
+    </tr>
+    <tr>
+    <td>
+      <img src="learning_screenShot/project_img_19.png" alt="Intro Page 3" width="300" style="border-radius: 8px; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);">
+      <p align="center"><b>Image 19:</b> Gamplay Interface Competitive</p>
+    </td>
+    <td>
+      <img src="learning_screenShot/project_img_20.png" alt="Intro Page 4" width="300" style="border-radius: 8px; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);margin-left: 15px">
+      <p align="center"><b>Image 20:</b> Win interface</p>
+    </td>
+  </tr>
+    </tr>
+    <tr>
+    <td>
+      <img src="learning_screenShot/project_img_21.png" alt="Intro Page 3" width="300" style="border-radius: 8px; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);">
+      <p align="center"><b>Image 21:</b>  Lose interface</p>
+    </td>
+    <!-- <td>
+      <img src="learning_screenShot/project_img_16.png" alt="Intro Page 4" width="300" style="border-radius: 8px; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);margin-left: 15px">
+      <p align="center"><b>Image 16:</b> Avatar is changed in Home</p>
+    </td> -->
+  </tr>
 </table>

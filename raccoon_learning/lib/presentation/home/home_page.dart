@@ -6,7 +6,6 @@ import 'package:raccoon_learning/presentation/home/achievement/tab_controler_ach
 import 'package:raccoon_learning/presentation/home/learning/choose_grade_page.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/User_notifier.dart';
 import 'package:raccoon_learning/presentation/widgets/dialog/competive_dialog.dart';
-import 'package:raccoon_learning/presentation/widgets/dialog/endGame_dialog.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});

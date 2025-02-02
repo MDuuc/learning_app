@@ -3,7 +3,6 @@ import 'package:flutter_svg/svg.dart';
 import 'package:raccoon_learning/constants/assets/app_vectors.dart';
 import 'package:raccoon_learning/constants/theme/app_colors.dart';
 import 'package:raccoon_learning/data/firebase/authservice.dart';
-import 'package:raccoon_learning/presentation/home/control_page.dart';
 import 'package:raccoon_learning/presentation/intro/signin_page.dart';
 import 'package:raccoon_learning/presentation/widgets/appbar/app_bar.dart';
 import 'package:raccoon_learning/presentation/widgets/button/basic_app_button.dart';
