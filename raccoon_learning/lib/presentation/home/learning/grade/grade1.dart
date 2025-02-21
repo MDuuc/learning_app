@@ -31,7 +31,7 @@ class Grade1 {
         correctCompare='';
         break;
 
-      case 'comparation':  // comparing
+      case 'comparison':  // comparing
       operator = (random.nextBool() ? ">" : "<");
         a = random.nextInt(10) + 1; 
         b = random.nextInt(10) + 1;

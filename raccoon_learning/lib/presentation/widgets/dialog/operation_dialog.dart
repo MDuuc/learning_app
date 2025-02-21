@@ -1,15 +1,25 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:raccoon_learning/presentation/home/learning/draw_page.dart';
+import 'package:raccoon_learning/presentation/home/learning/onePlayer/draw_page.dart';
+import 'package:raccoon_learning/presentation/home/learning/twoPlayer/draw_page_two_players.dart';
 import 'package:raccoon_learning/presentation/widgets/widget.dart';
 
-class OperationDialog extends StatelessWidget {
-  final String  grade;
-  OperationDialog({
+class OperationDialog extends StatefulWidget {
+  final String grade;
+
+  const OperationDialog({
     Key? key,
     required this.grade,
   }) : super(key: key);
+
+  @override
+  State<OperationDialog> createState() => _OperationDialogState();
+}
+
+class _OperationDialogState extends State<OperationDialog> {
+  bool chooseOperation = false;
+  String operation = '';
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +35,7 @@ class OperationDialog extends StatelessWidget {
               color: Colors.black.withOpacity(0.5),
             ),
           ),
-          
+
           // Centered Dialog
           Center(
             child: Container(
@@ -42,133 +52,192 @@ class OperationDialog extends StatelessWidget {
                   ),
                 ],
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Operation',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey[800],
-                    ),
+              child: !chooseOperation
+                  ? Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Operation',
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey[800],
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+
+                        // Addition
+                        buildDialogButton(
+                          context,
+                          text: 'Addition',
+                          icon: Icons.add,
+                          onPressed: () {
+                            operation = 'addition';
+                            setState(() {
+                              chooseOperation = true;
+                            });
+                          },
+                        ),
+                        const SizedBox(height: 10),
+
+                        // Subtraction
+                        buildDialogButton(
+                          context,
+                          text: 'Subtraction',
+                          icon: Icons.remove,
+                          onPressed: () {
+                            operation = 'subtraction';
+                            setState(() {
+                              chooseOperation = true;
+                            });
+                          },
+                        ),
+                        const SizedBox(height: 10),
+
+                        if (widget.grade == 'grade_1') ...[
+                          // Comparison
+                          buildDialogButton(
+                            context,
+                            text: 'Comparison',
+                            icon: Icons.compare_arrows,
+                            onPressed: () {
+                              operation = 'comparison';
+                            setState(() {
+                              chooseOperation = true;
+                            });
+                            },
+                          ),
+                          const SizedBox(height: 10),
+                        ] else if (widget.grade == 'grade_2' ||
+                            widget.grade == 'grade_3' ||
+                            widget.grade == 'grade_4' ||
+                            widget.grade == 'grade_5') ...[
+                          // Multiplication
+                          buildDialogButton(
+                            context,
+                            text: 'Multiplication',
+                            icon: Icons.close,
+                            onPressed: () {
+                              operation = 'multiplication';
+                            setState(() {
+                              chooseOperation = true;
+                            });
+                            },
+                          ),
+                          const SizedBox(height: 10),
+                        ],
+                        if (widget.grade == 'grade_3' ||
+                            widget.grade == 'grade_4' ||
+                            widget.grade == 'grade_5') ...[
+                          // Division
+                          buildDialogButton(
+                            context,
+                            text: 'Division',
+                            icon: Icons.percent_rounded,
+                            onPressed: () {
+                              operation = 'division';
+                              setState(() {
+                                chooseOperation = true;
+                              });
+                            },
+                          ),
+                          const SizedBox(height: 10),
+                        ],
+
+                        // Mix Operations
+                        buildDialogButton(
+                          context,
+                          text: 'Mix Operations',
+                          icon: Icons.calculate,
+                          onPressed: () {
+                            operation = 'mix_operations';
+                              setState(() {
+                                chooseOperation = true;
+                              });
+                          },
+                        ),
+                      ],
+                    )
+                  : Column(
+                    mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Expanded(
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: IconButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      chooseOperation = false;
+                                    });
+                                  },
+                                  icon: Container(
+                                    height: 50,
+                                    width: 50,
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withOpacity(0.03),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                      Icons.arrow_back_ios_new,
+                                      size: 15,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                            Text(
+                              'Mode',
+                              style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey[800],
+                              ),
+                            ),
+                            Expanded(child: SizedBox()),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        // 1 Player
+                        buildDialogButton(
+                          context,
+                          text: '1 Player',
+                          onPressed: () {
+                             Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (BuildContext context) => DrawPage(
+                                  grade: widget.grade,
+                                  operation: operation,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 10),
+
+                        // 2 Player
+                        buildDialogButton(
+                          context,
+                          text: '2 Player',
+                          onPressed: () {
+                             Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (BuildContext context) => DrawPageTwoPlayers(
+                                  grade: widget.grade,
+                                  operation: operation,
+                                ),
+                              ),
+                            );
+                          },
+                        ),                    
+                      ]
                   ),
-                  const SizedBox(height: 20),
-                  
-                  // +
-                  buildDialogButton(
-                    context,
-                    text: 'Addition',
-                    icon: Icons.add,
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (BuildContext context) =>  DrawPage(grade: grade, operation: 'addition',)
-                          )
-                        );
-                    },
-                  ),
-                  
-                  const SizedBox(height: 10),
-                  
-                  // -
-                  buildDialogButton(
-                    context,
-                    text: 'Subtraction',
-                    icon: Icons.remove,
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (BuildContext context) =>  DrawPage(grade: grade, operation: 'subtraction',)
-                          )
-                        );
-                    },
-                  ),
-                  
-                  const SizedBox(height: 10),
-                  if (grade =='grade_1')...[
-                    // Compare ><
-                    buildDialogButton(
-                      context,
-                      text: 'Comparation',
-                      icon: Icons.compare_arrows,
-                      onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (BuildContext context) =>  DrawPage(grade: grade, operation: 'comparation',)
-                          )
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 10),
-                  ]
-                  else if(grade == 'grade_2')...[
-                  // x
-                  buildDialogButton(
-                    context,
-                    text: 'Multiplication ',
-                    icon: Icons.close,
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (BuildContext context) =>  DrawPage(grade: grade, operation: 'multiplication',)
-                          )
-                        );
-                    },
-                  ),
-                  const SizedBox(height: 10),
-                  ] else if (grade=='grade_3' || grade=='grade_4' || grade=='grade_5') ...[
-                    // x
-                  buildDialogButton(
-                    context,
-                    text: 'Multiplication ',
-                    icon: Icons.close,
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (BuildContext context) =>  DrawPage(grade: grade, operation: 'multiplication',)
-                          )
-                        );
-                    },
-                  ),
-                  const SizedBox(height: 10),
-                  // %
-                  buildDialogButton(
-                    context,
-                    text: 'Dividision',
-                    icon: Icons.percent_rounded,
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (BuildContext context) =>  DrawPage(grade: grade, operation: 'division',)
-                          )
-                        );
-                    },
-                  ),
-                  const SizedBox(height: 10),
-                  ],
-                // Mix
-                  buildDialogButton(
-                    context,
-                    text: 'Mix Operations',
-                    icon: Icons.calculate,
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (BuildContext context) =>  DrawPage(grade: grade, operation: 'mix_operations',)
-                          )
-                        );                      
-                    },
-                  ),
-                ],
-              ),
             ),
           ),
 
@@ -186,4 +255,3 @@ class OperationDialog extends StatelessWidget {
     );
   }
 }
-

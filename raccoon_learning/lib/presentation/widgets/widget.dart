@@ -83,7 +83,7 @@ Widget buildDialogButton(
   BuildContext context, {
   required String text,
   IconData? icon,
-  required VoidCallback onPressed,
+  VoidCallback? onPressed,
 }) {
   return ElevatedButton(
     onPressed: onPressed,
