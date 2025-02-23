@@ -1,18 +1,17 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:async';
 import 'package:flutter/material.dart' hide Ink;
 import 'package:google_mlkit_digital_ink_recognition/google_mlkit_digital_ink_recognition.dart';
 import 'package:provider/provider.dart';
-import 'package:raccoon_learning/constants/assets/app_images.dart';
 import 'package:raccoon_learning/constants/theme/app_colors.dart';
-import 'package:raccoon_learning/presentation/home/learning/grade/grade1.dart';
-import 'package:raccoon_learning/presentation/home/learning/grade/grade2.dart';
-import 'package:raccoon_learning/presentation/home/learning/grade/grade3.dart';
-import 'package:raccoon_learning/presentation/user/notify_provider/gameplay_notifier.dart';
+import 'package:raccoon_learning/presentation/user/notify_provider/two_players_notifier.dart';
+import 'package:raccoon_learning/presentation/widgets/widget.dart';
 
 class PlayerOnePage extends StatefulWidget {
-  final String grade;
-  final String operation;
-   PlayerOnePage({super.key, required this.grade, required this.operation});
+
+  PlayerOnePage({
+    Key? key,
+  }) : super(key: key);
 
   @override
   State<PlayerOnePage> createState() => _PlayerOnePageState();
@@ -25,31 +24,14 @@ class _PlayerOnePageState extends State<PlayerOnePage> {
   final Ink _ink = Ink();
   List<StrokePoint> _points = [];
   String _recognizedText = '';
-
-
-  // Score point
-  int _scorePoint = 0;
-  int bestScore=0;
-
-  //for question 
-  String _currentQuestion = "";
-  int _correctAnswer = 0;
-  String _correctCompare="";
-// Initialize Grade1 with the operation passed from the widget
-  // late final Grade1 _grade1;
-
-  
     @override
   void initState() {
     super.initState();
-    _initializeModel();
+  _initializeModel();
   }
 
   Future<void> _initializeModel() async {
     _digitalInkRecognizer = DigitalInkRecognizer(languageCode: _language);
-    recognizeAndGenerateQuestion(widget.grade);
-    final userNotifier = Provider.of<GameplayNotifier>(context, listen: false);
-    bestScore = userNotifier.bestScore;
   }
 
 
@@ -60,17 +42,12 @@ class _PlayerOnePageState extends State<PlayerOnePage> {
     super.dispose();
   }
   
-void _updateQuestion(String userAnswer) {
-  setState(() {
-    if (userAnswer.isNotEmpty) {
-      _currentQuestion = _currentQuestion.replaceFirst("?", userAnswer);
-    }
-  });
-  Future.delayed(const Duration(milliseconds: 500), () {
+void _checkCorrect(String userAnswer) {
+  final player = Provider.of<TwoPlayersNotifier>(context, listen: false);
     try {
       // Handle empty answer
       if (userAnswer.isEmpty) {
-        recognizeAndGenerateQuestion(widget.grade);
+        flutter_toast("Empty Answer", Colors.red);
         _clearPad();
         return;
       }
@@ -81,22 +58,18 @@ void _updateQuestion(String userAnswer) {
           parsedUserAnswer = int.parse(userAnswer);
        }
       // Check answer correctness and remaining time
-      if ( _correctAnswer ==  parsedUserAnswer || _correctCompare == userAnswer) {
-        recognizeAndGenerateQuestion(widget.grade);
+      if ( player.correctAnswer ==  parsedUserAnswer || player.correctCompare == userAnswer) {
         _clearPad();
-        _handleScore(true);
-
+        player.updatePoint(isPlayerOne: true);
+        player.nextQuestion();
       } else {
-        recognizeAndGenerateQuestion(widget.grade);
         _clearPad();
 
       }
     } catch (e) {
       // Catch any unexpected errors
-      recognizeAndGenerateQuestion(widget.grade);
       _clearPad();
     }
-  });
 }
 
 
@@ -104,8 +77,7 @@ void _updateQuestion(String userAnswer) {
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
     double screenWidth = MediaQuery.of(context).size.width;
-
-
+     final player = Provider.of<TwoPlayersNotifier>(context, listen: false);
     return Scaffold(
       backgroundColor: AppColors.lightBackground,
       body: Column(
@@ -117,7 +89,7 @@ void _updateQuestion(String userAnswer) {
         child: Row(
           children: [
             Text(
-              "Best Score:",
+              "You ",
               style: TextStyle(
                 fontSize: screenWidth * 0.05, 
                 fontWeight: FontWeight.w600,
@@ -125,7 +97,7 @@ void _updateQuestion(String userAnswer) {
             ),
             const SizedBox(width: 10),
             Text(
-              bestScore.toString(),
+              player.pointPlayerOne.toString(),
               style:  TextStyle(
                 fontSize: screenWidth * 0.05, 
                 fontWeight: FontWeight.w600,
@@ -133,15 +105,15 @@ void _updateQuestion(String userAnswer) {
             ),
             const Spacer(),
             Text(
-              "Score :",
+              player.pointPlayerTwo.toString(),
               style:  TextStyle(
                 fontSize: screenWidth * 0.05, 
                 fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(width: 10),
-            Text(
-              _scorePoint.toString(),
+              Text(
+              " Opponent",
               style:  TextStyle(
                 fontSize: screenWidth * 0.05, 
                 fontWeight: FontWeight.w600,
@@ -164,7 +136,7 @@ void _updateQuestion(String userAnswer) {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      caculation(_currentQuestion, context),
+                      caculation(player.currentQuestion, context),
                     ],
                   ),
               ),
@@ -197,9 +169,8 @@ void _updateQuestion(String userAnswer) {
                         },
                         onPanUpdate: (DragUpdateDetails details) {
                           setState(() {
-    final RenderBox object = context.findRenderObject() as RenderBox;
-    final  localPosition = object.globalToLocal(details.globalPosition);
-
+                          final RenderBox object = context.findRenderObject() as RenderBox;
+                          final  localPosition = object.globalToLocal(details.globalPosition);
                             if (localPosition != null) {
                               _points = List.from(_points)
                                 ..add(StrokePoint(
@@ -257,7 +228,7 @@ void _updateQuestion(String userAnswer) {
                                   color: Colors.white, size: 35),
                               onPressed: () {
                                 if (_recognizedText != 'No match found') {
-                                  _updateQuestion(_recognizedText);
+                                  _checkCorrect(_recognizedText);
                                 }
                                 setState(() {});
                               },
@@ -321,157 +292,8 @@ void _updateQuestion(String userAnswer) {
     });
   }
 
-
-
-//handle Score
-  void _handleScore(bool isCorrect) {
-  setState(() {
-    if (isCorrect) {
-      _scorePoint +=10;
-    }
-  });
 }
-
-void _showGameOverDialog() {
-  double screenHeight = MediaQuery.of(context).size.height;
-  double gainedCoin = _scorePoint / 10;  // Calculate the gained coin based on the score
-
-  showDialog(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: Text('Game Over'),
-      content: Container(
-        height: screenHeight / 7,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text('You ran out of hearts!', style: TextStyle(fontSize: 14),),
-            const SizedBox(height: 20,),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text('Your score: ', style: TextStyle(fontSize: 14)),
-                Text(_scorePoint.toString(), style: TextStyle(fontSize: 14)),
-              ],
-            ),
-            const SizedBox(height: 10,),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text("Gained Coin: ", style: TextStyle(fontSize: 14)),
-                Text(gainedCoin.toStringAsFixed(0), style: TextStyle(fontSize: 14)), 
-                Container(
-              height: 20,
-              child: Image.asset(
-                AppImages.coin,
-              ),
-          ),
-              ],
-            ),
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () {
-            // Reset game state
-            _restartGame();
-          },
-          child: Text('Restart', style: TextStyle(fontSize: 14, color: Colors.green)),
-        ),
-      ],
-    ),
-  );
-}
-
-// update the current coin
-void _updateCoin() {
-  double gainedCoin = _scorePoint / 10; 
-  final userNotifier = Provider.of<GameplayNotifier>(context, listen: false);
-  userNotifier.updateCoin(gainedCoin.toInt());
-}
-
-
-
-void _restartGame(){
-  setState(() {
-      _updateCoin();
-      updateBestScore(_scorePoint);
-      _scorePoint=0;
-      recognizeAndGenerateQuestion(widget.grade);
-      _clearPad();
-    });
-    Navigator.pop(context);
-  }
-
-  void _restartGameForPauseDialog(){
-  setState(() {
-      _updateCoin();
-      updateBestScore(_scorePoint);
-      _scorePoint=0;
-      recognizeAndGenerateQuestion(widget.grade);
-      _clearPad();
-    });
-  }
-
-
-
-
-
-
-  // save best score
-  void updateBestScore(int newScore) async {
-  final userNotifier = Provider.of<GameplayNotifier>(context, listen: false);
-
-    if (newScore > bestScore) {
-      userNotifier.updateBestScore(newScore);
-    }
-    bestScore = userNotifier.bestScore;
-  }
-
-  void recognizeAndGenerateQuestion (String grade){
-    switch(grade){
-      case 'grade_1':
-       late final Grade1 _grade1;
-       _grade1 = Grade1(widget.operation);
-      setState(() {
-      _currentQuestion = _grade1.generateRandomQuestion(
-        onAnswerGenerated: (answer) {
-          _correctAnswer = answer;
-        },
-        onAnswerCompare: (answer){
-          _correctCompare = answer;
-        }
-      );
-    });
-
-    case 'grade_2':
-       late final Grade2 _grade2;
-       _grade2 = Grade2(widget.operation);
-      setState(() {
-      _currentQuestion = _grade2.generateRandomQuestion(
-        onAnswerGenerated: (answer) {
-          _correctAnswer = answer;
-        },
-      );
-    });
-
-        case 'grade_3':
-       late final Grade3 _grade3;
-       _grade3 = Grade3(widget.operation);
-      setState(() {
-      _currentQuestion = _grade3.generateRandomQuestion(
-        onAnswerGenerated: (answer) {
-          _correctAnswer = answer;
-        },
-      );
-    });
-    }
-  }
-
-}
-
-
+ 
 
 // Painter 
 class Signature extends CustomPainter {

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:raccoon_learning/constants/theme/app_colors.dart';
 import 'package:raccoon_learning/presentation/home/learning/twoPlayer/player_one_page.dart';
 import 'package:raccoon_learning/presentation/home/learning/twoPlayer/player_two_page.dart';
+import 'package:raccoon_learning/presentation/user/notify_provider/two_players_notifier.dart';
 import 'package:raccoon_learning/presentation/widgets/dialog/pause_dialog.dart';
 
 class DrawPageTwoPlayers extends StatefulWidget {
@@ -13,75 +15,54 @@ class DrawPageTwoPlayers extends StatefulWidget {
   State<DrawPageTwoPlayers> createState() => _DrawPageTwoPlayersState();
 }
 
-class _DrawPageTwoPlayersState extends State<DrawPageTwoPlayers> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.lightBackground,
-      body:  Column(
-      children: [
-          Expanded(
-            child: RotatedBox(
-              quarterTurns: 2,
-              child: Navigator(
-                onGenerateRoute: (settings) {
-                  return MaterialPageRoute(
-                    builder: (_) => PlayerOnePage(grade: widget.grade, operation: widget.operation),
-                  );
-                },
-              ),
-            ),
-          ),
 
-          Row(
+class _DrawPageTwoPlayersState extends State<DrawPageTwoPlayers> {
+@override
+void initState() {
+  super.initState();
+  Provider.of<TwoPlayersNotifier>(context, listen: false).generateQuestions(widget.grade, widget.operation);
+}
+
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    backgroundColor: AppColors.lightBackground,
+    body: Consumer<TwoPlayersNotifier>(
+      builder: (context, notifier, child) {
+        return Column(
           children: [
             Expanded(
-              child: Divider(
-                thickness: 8, 
-                color: AppColors.primary, 
+              child: RotatedBox(
+                quarterTurns: 2,
+                child: PlayerTwoPage(
+                ),
               ),
             ),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 2), 
-              child: IconButton(
-                onPressed: () async {
-                  final result = await showPauseDialog(context);
-
-                  // Handle the result from the dialog
-                  switch (result) {
-                    case 'resume':
-                      // startTimer(reset: false);
-                      break;
-                    case 'restart':
-                      // _restartGameForPauseDialog();
-                      break;
-                    case 'exit':
-                      // _updateCoin();
-                      // updateBestScore(_scorePoint);
+            Row(
+              children: [
+                Expanded(child: Divider(thickness: 8, color: AppColors.primary)),
+                IconButton(
+                  onPressed: () async {
+                    final result = await showPauseDialog(context);
+                    if (result == 'restart') {
+                      notifier.generateQuestions(widget.grade, widget.operation);
+                    } else if (result == 'exit') {
                       Navigator.pop(context);
-                      break;
-                  }
-                },
-                icon: const Icon(Icons.pause, color: Colors.green, size: 50,),
-              ),
+                    }
+                  },
+                  icon: const Icon(Icons.pause, color: Colors.green, size: 50),
+                ),
+                Expanded(child: Divider(thickness: 8, color: AppColors.primary)),
+              ],
             ),
             Expanded(
-              child: Divider(
-                thickness: 8,
-                color: AppColors.primary,
+              child: PlayerOnePage(
               ),
             ),
           ],
-        ),
-          Expanded(
-          child: Navigator(
-              onGenerateRoute: (settings){
-                return MaterialPageRoute(builder: (_) => PlayerOnePage(grade: widget.grade, operation: widget.operation));
-              },
-            ),
-          )
-      ],
+        );
+      },
     ),
-    );
-  }
+  );
+}
 }
