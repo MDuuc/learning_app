@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:raccoon_learning/constants/theme/app_colors.dart';
 
 class PauseDialog extends StatelessWidget {
   const PauseDialog({Key? key}) : super(key: key);
@@ -15,7 +16,7 @@ class PauseDialog extends StatelessWidget {
           BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
             child: Container(
-              color: Colors.black.withOpacity(0.5),
+              color: Colors.black.withOpacity(0.1),
             ),
           ),
           
@@ -94,7 +95,8 @@ class PauseDialog extends StatelessWidget {
             top: 40,
             right: 20,
             child: IconButton(
-              icon: const Icon(Icons.close, color: Colors.white),
+              iconSize: 30,
+              icon: const Icon(Icons.close, color: AppColors.darkGrey),
               onPressed: () => Navigator.of(context).pop('resume'),
             ),
           ),

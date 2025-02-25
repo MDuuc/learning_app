@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:flutter/material.dart' hide Ink;
+import 'package:google_mlkit_digital_ink_recognition/google_mlkit_digital_ink_recognition.dart' as mlkit;
+import 'package:google_mlkit_digital_ink_recognition/google_mlkit_digital_ink_recognition.dart';
 import 'package:raccoon_learning/constants/theme/app_colors.dart';
 
 void my_alert_dialog(BuildContext context, String title, String description, VoidCallback onPress) {
@@ -123,3 +126,132 @@ Widget buildDialogButton(
           ),
   );
 }
+
+// Recognize Text and Check 
+  Future<String> recogniseNumber(BuildContext context, mlkit.Ink ink) async {
+      DigitalInkRecognizer digitalInkRecognizer = DigitalInkRecognizer(languageCode: 'en');
+      final candidates = await digitalInkRecognizer.recognize(ink);
+      String recognizedText = candidates.isNotEmpty ? candidates[0].text : '';
+    try {
+      // recognized wrong number
+      switch(recognizedText){
+        case 'g':
+          recognizedText = '9';
+          break;
+        case 'o':
+          recognizedText = '0';
+          break;
+        case 'z':
+          recognizedText = '2';
+          break;
+        case 'c':
+        case '{':
+        case '(':
+          recognizedText = '<';
+          break;
+        case '}':
+        case ')':
+          recognizedText = '>';
+          break;
+      }
+      return recognizedText;
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString())),
+      );
+    }
+      return recognizedText;
+  }
+
+// Split Screen Painter
+class SplitScreenSignature extends CustomPainter {
+  final mlkit.Ink ink;
+
+  SplitScreenSignature({required this.ink});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Paint paint = Paint()
+      ..color = Colors.blue
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = 4.0;
+
+    for (final stroke in ink.strokes) {
+      for (int i = 0; i < stroke.points.length - 1; i++) {
+        final p1 = stroke.points[i];
+        final p2 = stroke.points[i + 1];
+        canvas.drawLine(
+          Offset(p1.x.toDouble(), p1.y.toDouble() - 100),  
+          Offset(p2.x.toDouble(), p2.y.toDouble() - 100),
+          paint,
+        );
+      }
+    }
+  }
+  @override
+  bool shouldRepaint(SplitScreenSignature oldDelegate) => true;
+}
+// Split Screen Caculation
+Widget splitScreenCaculation(String text, BuildContext context) {
+  double screenWidth = MediaQuery.of(context).size.width;
+  return Text(
+    text,
+    textAlign: TextAlign.center,
+    style: TextStyle(
+      fontSize: screenWidth * 0.06, 
+      fontWeight: FontWeight.w600,
+    ),
+  );
+}
+
+//full Screen Painter
+class FullScreenSignature extends CustomPainter {
+  final mlkit.Ink ink;
+
+  FullScreenSignature({required this.ink});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Paint paint = Paint()
+      ..color = Colors.blue
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = 4.0;
+
+    for (final stroke in ink.strokes) {
+      for (int i = 0; i < stroke.points.length - 1; i++) {
+        final p1 = stroke.points[i];
+        final p2 = stroke.points[i + 1];
+        canvas.drawLine(
+          Offset(p1.x.toDouble(), p1.y.toDouble()),
+          Offset(p2.x.toDouble(), p2.y.toDouble()),
+          paint,
+        );
+      }
+    }
+  }
+  @override
+  bool shouldRepaint(FullScreenSignature oldDelegate) => true;
+}
+//full screen calculation
+Widget fullScreenCaculation (String text){
+  return Text(
+      text,
+    style: TextStyle(
+      fontSize: 40,
+      fontWeight: FontWeight.w600
+    ),
+  );
+}
+
+// Color for time - bar
+  Color getProgressColor(int seconds, int maxSeconds) {
+    double progress = seconds / maxSeconds;
+
+    if (progress > 0.5) {
+      return Colors.green; // Color for more than 50%
+    } else if (progress > 0.3) {
+      return Colors.orange; // Color for between 30% and 50%
+    } else {
+      return Colors.red; // Color for less than 30%
+    }
+  }

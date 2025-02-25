@@ -11,6 +11,9 @@ class AppImages{
   static const String vs = '${basePath}vs.png';
   static const String youLose = '${basePath}youLose.png';
   static const String youWin = '${basePath}youWin.png';
+  static const String are_you_ready = '${basePath}are_you_ready.png';
+  static const String draw = '${basePath}draw.png';
+
 
   static const String raccoon_playing = '${basePath}raccoon_playing.png';
   static const String raccoon_learning = '${basePath}raccoon_learning.png';

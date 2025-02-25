@@ -6,7 +6,7 @@ import 'package:raccoon_learning/presentation/home/learning/grade/grade3.dart';
 class TwoPlayersNotifier extends ChangeNotifier{
   int _pointPlayerOne = 0;
   int _pointPlayerTwo = 0;
-    List<String> _questions = [];
+  List<String> _questions = [];
   List<int> _answers = [];
   List<String> _compares = [];
   int _currentIndex = 0;
@@ -17,12 +17,34 @@ class TwoPlayersNotifier extends ChangeNotifier{
   int get correctAnswer => _answers.isNotEmpty ? _answers[_currentIndex] : 0;
   String get correctCompare => _compares.isNotEmpty ? _compares[_currentIndex] : "";
 
+  Function? clearPadFirstPlayer;
+  Function? clearPadSecondPlayer;
+
+  set pointPlayerOne(int value) {
+    _pointPlayerOne = value;
+  }
+
+  set pointPlayerTwo(int value) {
+    _pointPlayerTwo = value;
+  }
+
+  void registerClearPadFirst(Function callback) {
+    clearPadFirstPlayer = callback;
+  }
+    void registerClearPadSecond(Function callback) {
+    clearPadSecondPlayer = callback;
+  }
+    void clearPad() {
+    clearPadFirstPlayer?.call();
+    clearPadSecondPlayer?.call();
+  }
+
     void generateQuestions(String grade, String operation) {
     _questions.clear();
     _answers.clear();
     _compares.clear();
 
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 30; i++) {
       switch (grade) {
         case 'grade_1':
           var grade1 = Grade1(operation);

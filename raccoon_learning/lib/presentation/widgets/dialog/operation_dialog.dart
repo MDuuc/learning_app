@@ -2,7 +2,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:raccoon_learning/presentation/home/learning/onePlayer/draw_page.dart';
-import 'package:raccoon_learning/presentation/home/learning/twoPlayer/draw_page_two_players.dart';
+import 'package:raccoon_learning/presentation/home/learning/twoPlayer/split_screen_page.dart';
 import 'package:raccoon_learning/presentation/widgets/widget.dart';
 
 class OperationDialog extends StatefulWidget {
@@ -228,7 +228,7 @@ class _OperationDialogState extends State<OperationDialog> {
                              Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (BuildContext context) => DrawPageTwoPlayers(
+                                builder: (BuildContext context) => SplitScreenPage(
                                   grade: widget.grade,
                                   operation: operation,
                                 ),

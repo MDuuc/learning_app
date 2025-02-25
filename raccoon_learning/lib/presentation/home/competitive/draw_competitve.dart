@@ -223,7 +223,7 @@ void _updateQuestion(String userAnswer) {
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                         caculation(_currentQuestion),
+                         fullScreenCaculation(_currentQuestion),
 
                         //  caculation(_recognizedText),
 
@@ -278,14 +278,18 @@ void _updateQuestion(String userAnswer) {
                                 }
                               });
                             },
-                            onPanEnd: (DragEndDetails details) {
+                            onPanEnd: (DragEndDetails details) async{
                               setState(() {
                                 _points.clear();
                               });
-                              _recogniseText();
+                            //this be imported from widget.dart
+                            String text= await recogniseNumber(context, _ink);
+                            setState(() {
+                            _recognizedText = text; // Update state correctly
+                          });
                             },
                             child: CustomPaint(
-                              painter: Signature(ink: _ink),
+                              painter: FullScreenSignature(ink: _ink),
                               size: Size.infinite,
                             ),
                           ),
@@ -309,7 +313,21 @@ void _updateQuestion(String userAnswer) {
                                 tooltip: 'Clear Drawing',
                               ),
                             ),
-
+                          Container(
+                            padding: EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: Colors.transparent,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              'Recognize: ${_recognizedText}',
+                              style: TextStyle(
+                                  fontSize: screenWidth * 0.05, 
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.primary
+                              ),
+                            )
+                          ),
                           Container(
                             padding: EdgeInsets.all(10),
                             decoration: BoxDecoration(
@@ -340,39 +358,6 @@ void _updateQuestion(String userAnswer) {
     ),
   );
 }
-
-  // Recognize text from strokes
-  Future<void> _recogniseText() async {
-    try {
-      final candidates = await _digitalInkRecognizer.recognize(_ink);
-      _recognizedText = candidates.isNotEmpty ? candidates[0].text : '';
-      // recognized wrong number
-      switch(_recognizedText){
-        case 'g':
-          _recognizedText = '9';
-        case 'o':
-        _recognizedText = '0';
-        case 'z':
-        _recognizedText = '2';
-        case 'c':
-        _recognizedText = '<';
-        case '{':
-        _recognizedText = '<';
-        case '(':
-        _recognizedText = '<';
-        case '}':
-        _recognizedText = '>';
-        case ')':
-        _recognizedText = '>';
-      }
-      print(_recognizedText);
-      setState(() {});
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
-      );
-    }
-  }
 
   //clearPad
   void _clearPad() {
@@ -504,43 +489,3 @@ void _updateQuestion(String userAnswer) {
 
 }
 
-
-
-// Painter 
-class Signature extends CustomPainter {
-  final Ink ink;
-
-  Signature({required this.ink});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final Paint paint = Paint()
-      ..color = Colors.blue
-      ..strokeCap = StrokeCap.round
-      ..strokeWidth = 4.0;
-
-    for (final stroke in ink.strokes) {
-      for (int i = 0; i < stroke.points.length - 1; i++) {
-        final p1 = stroke.points[i];
-        final p2 = stroke.points[i + 1];
-        canvas.drawLine(
-          Offset(p1.x.toDouble(), p1.y.toDouble()),
-          Offset(p2.x.toDouble(), p2.y.toDouble()),
-          paint,
-        );
-      }
-    }
-  }
-  @override
-  bool shouldRepaint(Signature oldDelegate) => true;
-}
-
-Widget caculation (String text){
-  return Text(
-      text,
-    style: TextStyle(
-      fontSize: 40,
-      fontWeight: FontWeight.w600
-    ),
-  );
-}
