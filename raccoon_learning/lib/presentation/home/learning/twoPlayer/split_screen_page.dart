@@ -107,7 +107,7 @@ Widget build(BuildContext context) {
                 Expanded(
                   child: RotatedBox(
                     quarterTurns: 2,
-                    child: FirstPlayerPage(
+                    child: SecondPlayerPage(
                     ),
                   ),
                 ),
@@ -154,7 +154,7 @@ Widget build(BuildContext context) {
                 ),
                   
                 Expanded(
-                  child: SecondPlayerPage(
+                  child: FirstPlayerPage(
                   ),
                 ),
               ],
