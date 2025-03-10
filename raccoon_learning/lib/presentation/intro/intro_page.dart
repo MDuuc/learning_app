@@ -3,10 +3,24 @@ import 'package:raccoon_learning/constants/assets/app_images.dart';
 import 'package:raccoon_learning/constants/theme/app_colors.dart';
 import 'package:raccoon_learning/presentation/intro/signup_or_signin_page.dart';
 import 'package:raccoon_learning/presentation/widgets/button/basic_app_button.dart';
+import 'package:raccoon_learning/presentation/widgets/draw/model_manage.dart';
 
-class IntroPage extends StatelessWidget {
+class IntroPage extends StatefulWidget {
   const IntroPage({super.key});
 
+  @override
+  State<IntroPage> createState() => _IntroPageState();
+}
+
+class _IntroPageState extends State<IntroPage> {
+    //dowload model
+  final ModelManage _modelManager = ModelManage();
+  final String _language = 'en';
+     @override
+  void initState() {
+    super.initState();
+     _modelManager.ensureModelDownloaded(_language, context);
+  }
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;

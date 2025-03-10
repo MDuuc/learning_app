@@ -7,6 +7,7 @@ import 'package:raccoon_learning/constants/theme/app_colors.dart';
 import 'package:raccoon_learning/presentation/home/learning/grade/grade1.dart';
 import 'package:raccoon_learning/presentation/home/learning/grade/grade2.dart';
 import 'package:raccoon_learning/presentation/home/learning/grade/grade3.dart';
+import 'package:raccoon_learning/presentation/service/service.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/gameplay_notifier.dart';
 import 'package:raccoon_learning/presentation/widgets/dialog/pause_dialog.dart';
 import 'package:raccoon_learning/presentation/widgets/widget.dart';
@@ -21,7 +22,7 @@ class DrawPage extends StatefulWidget {
 }
 
 class _DrawPageState extends State<DrawPage> {
-  
+  late SpeechService _speechService;
   final String _language = 'en';
   late DigitalInkRecognizer _digitalInkRecognizer;
   final Ink _ink = Ink();
@@ -47,6 +48,8 @@ class _DrawPageState extends State<DrawPage> {
 // Initialize Grade1 with the operation passed from the widget
   // late final Grade1 _grade1;
 
+  bool _isDrawing = false;
+  String _speechText='';
   
     @override
   void initState() {
@@ -60,11 +63,13 @@ class _DrawPageState extends State<DrawPage> {
     startTimer();
     final userNotifier = Provider.of<GameplayNotifier>(context, listen: false);
     bestScore = userNotifier.bestScore;
+    _speechService = SpeechService();
   }
 
 
   @override
   void dispose() {
+    _speechService.dispose();
     // Close the recognizer to free resources
     _digitalInkRecognizer.close();
     timer?.cancel();
@@ -116,8 +121,6 @@ void _updateQuestion(String userAnswer) {
     }
   });
 }
-
-
   @override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
@@ -263,128 +266,248 @@ void _updateQuestion(String userAnswer) {
 
                   // Drawing area with GestureDetector
                   Container(
-  height: screenHeight / 2,
-  decoration: BoxDecoration(
-    color: Colors.white,
-    border: Border.all(color: AppColors.primary, width: 8),
-    borderRadius: BorderRadius.circular(16),
-    boxShadow: [
-      BoxShadow(
-        color: Colors.black.withOpacity(0.3),
-        offset: const Offset(4, 4),
-        blurRadius: 10,
-      ),
-    ],
-  ),
-  child: Column(
-    mainAxisAlignment: MainAxisAlignment.spaceBetween, 
-    children: [
-      Expanded(
-        child: GestureDetector(
-          onPanStart: (DragStartDetails details) {
-            setState(() {
-              _ink.strokes.add(Stroke());
-            });
-          },
-          onPanUpdate: (DragUpdateDetails details) {
-            setState(() {
-              final RenderObject? object = context.findRenderObject();
-              final localPosition = (object as RenderBox?)?.globalToLocal(details.localPosition);
+                    height: screenHeight / 2,
+                    width: screenWidth,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border.all(color: AppColors.primary, width: 8),
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.3),
+                          offset: const Offset(4, 4),
+                          blurRadius: 10,
+                        ),
+                      ],
+                    ),
+                child: _isDrawing
+                // Speech UI
+                 ? Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Padding(
+                          padding: const EdgeInsets.all(10.0),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                padding: EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: Colors.blue,
+                                  shape: BoxShape.circle
+                                ),
+                                child: IconButton(
+                                  icon: Icon(Icons.keyboard, color: Colors.white, size: 35),
+                                  onPressed: (){
+                                    setState(() {
+                                      _isDrawing = !_isDrawing;
+                                    });
+                                  },
+                                  tooltip: 'Speech',
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: ValueListenableBuilder<String>(
+                          valueListenable: _speechService.textNotifier,
+                          builder: (context, text, child) {
+                            _speechText=text;
+                            return Text(text, style: const TextStyle(fontSize: 20.0), textAlign: TextAlign.center);
+                          },
+                        ),
+                      ),
+                      GestureDetector(
+                        onTapDown: (_) => _speechService.startListening((text) {
+                          setState(() {}); 
+                        }),
+                        onTapUp: (_) => _speechService.stopListening(),
+                        child: ValueListenableBuilder<bool>(
+                          valueListenable: _speechService.isListeningNotifier,
+                          builder: (context, isListening, child) {
+                            return Padding(
+                              padding: const EdgeInsets.all(10),
+                              child: Column(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(16.0),
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: isListening ? Colors.red : Colors.blue,
+                                    ),
+                                    child: Icon(
+                                      isListening ? Icons.pause : Icons.mic,
+                                      size: 60.0,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                    Padding(
+                                      padding: EdgeInsets.only(right: 20),
+                                      child: Align(
+                                        alignment: Alignment.bottomRight,
+                                        child: Container(
+                                          padding: EdgeInsets.all(10),
+                                          decoration: BoxDecoration(
+                                            color: Colors.green,
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                          child: IconButton(
+                                            icon: const Icon(Icons.verified, color: Colors.white, size: 35),
+                                            onPressed: (){
+                                              if (_speechText != 'No match found') {
+                                              _updateQuestion(_speechText);
+                                            }
+                                            setState(() {});
+                                            },
+                                            tooltip: 'Confirm Anwser',
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  )
+                  //Draw UI
+                 :Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween, 
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(10.0),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: Colors.blue,
+                              shape: BoxShape.circle
+                            ),
+                            child: IconButton(
+                              icon: Icon(Icons.mic , color: Colors.white, size: 35),
+                              onPressed: (){
+                                setState(() {
+                                  _isDrawing = !_isDrawing;
+                                });
+                              },
+                              tooltip: 'Draw',
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: GestureDetector(
+                        onPanStart: (DragStartDetails details) {
+                          setState(() {
+                            _ink.strokes.add(Stroke());
+                          });
+                        },
+                        onPanUpdate: (DragUpdateDetails details) {
+                          setState(() {
+                            final RenderObject? object = context.findRenderObject();
+                            final localPosition = (object as RenderBox?)?.globalToLocal(details.localPosition);
 
-              if (localPosition != null) {
-                _points = List.from(_points)
-                  ..add(StrokePoint(
-                    x: localPosition.dx,
-                    y: localPosition.dy,
-                    t: DateTime.now().millisecondsSinceEpoch,
-                  ));
-              }
+                            if (localPosition != null) {
+                              _points = List.from(_points)
+                                ..add(StrokePoint(
+                                  x: localPosition.dx,
+                                  y: localPosition.dy,
+                                  t: DateTime.now().millisecondsSinceEpoch,
+                                ));
+                            }
 
-              if (_ink.strokes.isNotEmpty) {
-                _ink.strokes.last.points = _points.toList();
-              }
-            });
-          },
-          onPanEnd: (DragEndDetails details) async{
-            setState(() {
-              _points.clear();
-            });
-            //this be imported from widget.dart
-            String text= await recogniseNumber(context, _ink);
-            setState(() {
-            _recognizedText = text; // Update state correctly
-          });
-          },
-          child: CustomPaint(
-            painter: FullScreenSignature(ink: _ink),
-            size: Size.infinite,
-          ),
-        ),
-      ),
+                            if (_ink.strokes.isNotEmpty) {
+                              _ink.strokes.last.points = _points.toList();
+                            }
+                          });
+                        },
+                        onPanEnd: (DragEndDetails details) async{
+                          setState(() {
+                            _points.clear();
+                          });
+                          //this be imported from widget.dart
+                          String text= await recogniseNumber(context, _ink);
+                          setState(() {
+                          _recognizedText = text; // Update state correctly
+                        });
+                        },
+                        child: CustomPaint(
+                          painter: FullScreenSignature(ink: _ink),
+                          size: Size.infinite,
+                        ),
+                      ),
+                    ),
 
-    // Button
-    Padding(
-      padding: const EdgeInsets.all(10),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly, 
-        children: [
-          Container(
-            padding: EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: Colors.red,
-              borderRadius: BorderRadius.circular(12),
+                  // Button
+                  Padding(
+                    padding: const EdgeInsets.all(10),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly, 
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: IconButton(
+                            icon: const Icon(Icons.delete_outline, color: Colors.white, size: 35),
+                            onPressed: _clearPad,
+                            tooltip: 'Clear Drawing',
+                          ),
+                        ),
+                        //recognize Interface
+                        Container(
+                          padding: EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.transparent,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            'Recognize: ${_recognizedText}',
+                            style: TextStyle(
+                                fontSize: screenWidth * 0.05, 
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.primary
+                            ),
+                          )
+                        ),
+                      Container(
+                        padding: EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.green,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: IconButton(
+                          icon: const Icon(Icons.verified, color: Colors.white, size: 35),
+                          onPressed: (){
+                            if (_recognizedText != 'No match found') {
+                            _updateQuestion(_recognizedText);
+                          }
+                          setState(() {});
+                          },
+                          tooltip: 'Confirm Anwser',
+                        ),
+                      ),
+                    ],
+                  ),
+                  ),],
+                ),
+                )
+              ],
             ),
-            child: IconButton(
-              icon: const Icon(Icons.delete_outline, color: Colors.white, size: 35),
-              onPressed: _clearPad,
-              tooltip: 'Clear Drawing',
-            ),
-          ),
-          //recognize Interface
-          Container(
-            padding: EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: Colors.transparent,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              'Recognize: ${_recognizedText}',
-              style: TextStyle(
-                  fontSize: screenWidth * 0.05, 
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.primary
-              ),
-            )
-          ),
-        Container(
-          padding: EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: Colors.green,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: IconButton(
-            icon: const Icon(Icons.verified, color: Colors.white, size: 35),
-            onPressed: (){
-              if (_recognizedText != 'No match found') {
-              _updateQuestion(_recognizedText);
-            }
-            setState(() {});
-            },
-            tooltip: 'Confirm Anwser',
           ),
         ),
       ],
     ),
-  ),],
-),
-)
-],
-),
-),
-),
-],
-),
-);
+  );
 }
 
   //clearPad
@@ -493,6 +616,7 @@ void _restartGame(){
       _scorePoint=0;
       recognizeAndGenerateQuestion(widget.grade);
       _clearPad();
+      _speechService.defaultText();
       startTimer();
     });
     Navigator.pop(context);
@@ -506,6 +630,7 @@ void _restartGame(){
       _scorePoint=0;
       recognizeAndGenerateQuestion(widget.grade);
       _clearPad();
+      _speechService.defaultText();
       startTimer();
     });
   }
