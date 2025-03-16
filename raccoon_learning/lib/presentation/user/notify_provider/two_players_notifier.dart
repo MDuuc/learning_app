@@ -39,7 +39,7 @@ class TwoPlayersNotifier extends ChangeNotifier{
     clearPadSecondPlayer?.call();
   }
 
-    void generateQuestions(String grade, String operation) {
+    void generateQuestions(BuildContext context, String grade, String operation) {
     _questions.clear();
     _answers.clear();
     _compares.clear();
@@ -63,8 +63,9 @@ class TwoPlayersNotifier extends ChangeNotifier{
         case 'grade_3':
           var grade3 = Grade3(operation);
           _questions.add(grade3.generateRandomQuestion(
+            context: context,
             onAnswerGenerated: (answer) => _answers.add(answer),
-          ));
+          ) as String);
           _compares.add("");
           break;
       }

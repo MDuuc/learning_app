@@ -47,6 +47,8 @@ dependencies:
   animated_text_kit: ^4.2.2
   pinput: ^5.0.1
   speech_to_text: ^7.0.0
+  csv: ^6.0.0
+  path_provider: ^2.1.5
   # firebase_auth_web: ^5.13.5
 
 dev_dependencies:
@@ -76,7 +78,7 @@ flutter:
     - assets/fonts/
     - assets/images/
     - assets/vectors/
-
+    - assets/data/
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
 

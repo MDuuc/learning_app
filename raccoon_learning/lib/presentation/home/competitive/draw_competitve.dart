@@ -461,10 +461,11 @@ void _updateQuestion(String userAnswer) {
        _grade3 = Grade3(widget.operation);
       setState(() {
       _currentQuestion = _grade3.generateRandomQuestion(
+        context: context,
         onAnswerGenerated: (answer) {
           _correctAnswer = answer;
         },
-      );
+      ) as String;
     });
     }
   }

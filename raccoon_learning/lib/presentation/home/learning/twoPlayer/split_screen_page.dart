@@ -33,7 +33,7 @@ class _SplitScreenPageState extends State<SplitScreenPage> {
 @override
 void initState() {
   super.initState();
-  Provider.of<TwoPlayersNotifier>(context, listen: false).generateQuestions(widget.grade, widget.operation);
+  Provider.of<TwoPlayersNotifier>(context, listen: false).generateQuestions(context, widget.grade, widget.operation);
 }
 @override
   void dispose(){
@@ -88,7 +88,7 @@ void initState() {
      final notifier = Provider.of<TwoPlayersNotifier>(context, listen: false);
       notifier.pointPlayerOne = 0;
       notifier.pointPlayerTwo = 0;
-      notifier.generateQuestions(widget.grade, widget.operation);
+      notifier.generateQuestions(context, widget.grade, widget.operation);
       notifier.clearPad();
       startTimer();  
     }

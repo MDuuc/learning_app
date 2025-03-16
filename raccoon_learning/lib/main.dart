@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:raccoon_learning/constants/theme/app_theme.dart';
 import 'package:raccoon_learning/firebase_options.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/User_notifier.dart';
+import 'package:raccoon_learning/presentation/user/notify_provider/analysis_data_notifier.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/competitve_notifier.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/gameplay_notifier.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/two_players_notifier.dart';
@@ -21,6 +22,8 @@ void main()  async{
         ChangeNotifierProvider(create: (context) => GameplayNotifier()),
         ChangeNotifierProvider(create: (context) => CompetitveNotifier()),
         ChangeNotifierProvider(create: (context) => TwoPlayersNotifier()),
+        ChangeNotifierProvider(create: (_) => AnalysisDataNotifier()..loadAnalysisData()),
+
 
       ],
       child: const MyApp(),

@@ -4,10 +4,12 @@ import 'package:google_mlkit_digital_ink_recognition/google_mlkit_digital_ink_re
 import 'package:provider/provider.dart';
 import 'package:raccoon_learning/constants/assets/app_images.dart';
 import 'package:raccoon_learning/constants/theme/app_colors.dart';
+import 'package:raccoon_learning/presentation/home/analysis_data/analysis.dart';
 import 'package:raccoon_learning/presentation/home/learning/grade/grade1.dart';
 import 'package:raccoon_learning/presentation/home/learning/grade/grade2.dart';
 import 'package:raccoon_learning/presentation/home/learning/grade/grade3.dart';
-import 'package:raccoon_learning/presentation/service/service.dart';
+import 'package:raccoon_learning/presentation/service/speech_recognise.dart';
+import 'package:raccoon_learning/presentation/user/notify_provider/analysis_data_notifier.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/gameplay_notifier.dart';
 import 'package:raccoon_learning/presentation/widgets/dialog/pause_dialog.dart';
 import 'package:raccoon_learning/presentation/widgets/widget.dart';
@@ -618,6 +620,7 @@ void _restartGame(){
       _clearPad();
       _speechService.defaultText();
       startTimer();
+
     });
     Navigator.pop(context);
   }
@@ -632,6 +635,7 @@ void _restartGame(){
       _clearPad();
       _speechService.defaultText();
       startTimer();
+
     });
   }
 
@@ -724,10 +728,11 @@ void _restartGame(){
        _grade3 = Grade3(widget.operation);
       setState(() {
       _currentQuestion = _grade3.generateRandomQuestion(
+        context: context,
         onAnswerGenerated: (answer) {
           _correctAnswer = answer;
         },
-      );
+      ) as String;
     });
     }
   }
