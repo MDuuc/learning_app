@@ -8,6 +8,7 @@ import 'package:raccoon_learning/presentation/home/analysis_data/analysis.dart';
 import 'package:raccoon_learning/presentation/home/learning/grade/grade1.dart';
 import 'package:raccoon_learning/presentation/home/learning/grade/grade2.dart';
 import 'package:raccoon_learning/presentation/home/learning/grade/grade3.dart';
+import 'package:raccoon_learning/presentation/home/learning/grade/math_question.dart';
 import 'package:raccoon_learning/presentation/service/speech_recognise.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/analysis_data_notifier.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/gameplay_notifier.dart';
@@ -45,6 +46,7 @@ class _DrawPageState extends State<DrawPage> {
 
   //for question 
   String _currentQuestion = "";
+  String _currentOperator = "";
   int _correctAnswer = 0;
   String _correctCompare="";
 // Initialize Grade1 with the operation passed from the widget
@@ -101,13 +103,15 @@ void _updateQuestion(String userAnswer) {
           parsedUserAnswer = int.parse(userAnswer);
        }
       // Check answer correctness and remaining time
-      if ( _correctAnswer ==  parsedUserAnswer || _correctCompare == userAnswer) {
+      if ( _correctAnswer ==  parsedUserAnswer || _correctCompare == userAnswer){
+        appendToMathDataCsv( operator:_currentOperator,correct:  1,time:  seconds, grade:  widget.grade );
         recognizeAndGenerateQuestion(widget.grade);
         _clearPad();
         startTimer();
         _handleScore(true);
 
       } else {
+        appendToMathDataCsv( operator:_currentOperator,correct:  0,time:  seconds, grade:  widget.grade );
         recognizeAndGenerateQuestion(widget.grade);
         _clearPad();
         startTimer();
@@ -702,37 +706,31 @@ void _restartGame(){
        late final Grade1 _grade1;
        _grade1 = Grade1(widget.operation);
       setState(() {
-      _currentQuestion = _grade1.generateRandomQuestion(
-        onAnswerGenerated: (answer) {
-          _correctAnswer = answer;
-        },
-        onAnswerCompare: (answer){
-          _correctCompare = answer;
-        }
-      );
+      MathQuestion mathQuestion = _grade1.generateRandomQuestion(context: context);
+      _currentQuestion = mathQuestion.question;
+      _currentOperator = mathQuestion.operator;
+      _correctAnswer = mathQuestion.correctAnswer;
+      _correctCompare= mathQuestion.correctCompare.toString();
     });
 
     case 'grade_2':
        late final Grade2 _grade2;
        _grade2 = Grade2(widget.operation);
       setState(() {
-      _currentQuestion = _grade2.generateRandomQuestion(
-        onAnswerGenerated: (answer) {
-          _correctAnswer = answer;
-        },
-      );
+      MathQuestion mathQuestion = _grade2.generateRandomQuestion(context: context);
+      _currentQuestion = mathQuestion.question;
+      _currentOperator = mathQuestion.operator;
+      _correctAnswer = mathQuestion.correctAnswer;
     });
 
         case 'grade_3':
        late final Grade3 _grade3;
        _grade3 = Grade3(widget.operation);
       setState(() {
-      _currentQuestion = _grade3.generateRandomQuestion(
-        context: context,
-        onAnswerGenerated: (answer) {
-          _correctAnswer = answer;
-        },
-      ) as String;
+      MathQuestion mathQuestion = _grade3.generateRandomQuestion(context: context);
+      _currentQuestion = mathQuestion.question;
+      _currentOperator = mathQuestion.operator;
+      _correctAnswer = mathQuestion.correctAnswer;
     });
     }
   }

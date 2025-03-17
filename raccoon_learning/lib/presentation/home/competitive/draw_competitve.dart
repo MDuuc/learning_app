@@ -7,6 +7,7 @@ import 'package:raccoon_learning/constants/theme/app_colors.dart';
 import 'package:raccoon_learning/presentation/home/learning/grade/grade1.dart';
 import 'package:raccoon_learning/presentation/home/learning/grade/grade2.dart';
 import 'package:raccoon_learning/presentation/home/learning/grade/grade3.dart';
+import 'package:raccoon_learning/presentation/home/learning/grade/math_question.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/User_notifier.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/competitve_notifier.dart';
 import 'package:raccoon_learning/presentation/widgets/dialog/endGame_dialog.dart';
@@ -435,37 +436,31 @@ void _updateQuestion(String userAnswer) {
        late final Grade1 _grade1;
        _grade1 = Grade1(widget.operation);
       setState(() {
-      _currentQuestion = _grade1.generateRandomQuestion(
-        onAnswerGenerated: (answer) {
-          _correctAnswer = answer;
-        },
-        onAnswerCompare: (answer){
-          _correctCompare = answer;
-        }
-      );
+      MathQuestion mathQuestion = _grade1.generateRandomQuestion(context: context);
+      _currentQuestion = mathQuestion.question;
+      // _currentOperator = mathQuestion.operator;
+      _correctAnswer = mathQuestion.correctAnswer;
+      _correctCompare= mathQuestion.correctCompare.toString();
     });
 
     case 'grade_2':
        late final Grade2 _grade2;
        _grade2 = Grade2(widget.operation);
       setState(() {
-      _currentQuestion = _grade2.generateRandomQuestion(
-        onAnswerGenerated: (answer) {
-          _correctAnswer = answer;
-        },
-      );
+      MathQuestion mathQuestion = _grade2.generateRandomQuestion(context: context);
+      _currentQuestion = mathQuestion.question;
+      // _currentOperator = mathQuestion.operator;
+      _correctAnswer = mathQuestion.correctAnswer;
     });
 
         case 'grade_3':
        late final Grade3 _grade3;
        _grade3 = Grade3(widget.operation);
       setState(() {
-      _currentQuestion = _grade3.generateRandomQuestion(
-        context: context,
-        onAnswerGenerated: (answer) {
-          _correctAnswer = answer;
-        },
-      ) as String;
+      MathQuestion mathQuestion = _grade3.generateRandomQuestion(context: context);
+      _currentQuestion = mathQuestion.question;
+      // _currentOperator = mathQuestion.operator;
+      _correctAnswer = mathQuestion.correctAnswer;
     });
     }
   }

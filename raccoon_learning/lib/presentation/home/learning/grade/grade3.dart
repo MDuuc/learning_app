@@ -1,9 +1,8 @@
-import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:raccoon_learning/presentation/home/learning/grade/math_question.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/analysis_data_notifier.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class Grade3 {
   final String operation;
@@ -11,20 +10,17 @@ class Grade3 {
   Grade3(this.operation);
 
   // Generates a random math question based on the specified operation
-  String generateRandomQuestion({
+  MathQuestion generateRandomQuestion({
     required BuildContext context,
-    required Function(int) onAnswerGenerated,
   }) {
     final random = Random();
     int a, b, correctAnswer;
     String operator = '';
 
-  final analysisDataNotifier = Provider.of<AnalysisDataNotifier>(context, listen: false);
-  Map<String, double> weights = analysisDataNotifier.weights;
+    final analysisDataNotifier = Provider.of<AnalysisDataNotifier>(context, listen: false);
+    Map<String, double> weights = analysisDataNotifier.weights['grade_3'] ?? {};
     print('📊 Weight: $weights');
-    // Map<String, double> weights = await loadWeights();
     if (weights.isEmpty) {
-      print('📊 Weight: $weights');
       print("⚠ Weights empty, using default equal weights");
       weights = {"+": 1.0, "-": 1.0, "×": 1.0, "÷": 1.0};
     }
@@ -60,16 +56,17 @@ class Grade3 {
         break;
 
       case 'mix_operations':
-        List<String> operators = ["+", "-", "x", "/"];
+        List<String> operators = ["+", "-", "×", "÷"];
         List<double> cumulativeWeights = [];
         double sum = 0;
 
         // Calculate cumulative weights for weighted random selection
         for (String op in operators) {
-            double weight = weights[op] ?? 1.0; 
-             sum += weight; 
+          double weight = weights[op] ?? 1.0;
+          sum += weight;
           cumulativeWeights.add(sum);
         }
+
         // Select an operator based on weighted random value
         double rand = random.nextDouble() * sum;
         for (int i = 0; i < cumulativeWeights.length; i++) {
@@ -91,27 +88,31 @@ class Grade3 {
             b = random.nextInt(a + 1);
             correctAnswer = a - b;
             break;
-          case "x":
+          case "×":
             a = random.nextInt(13) + 1;
             b = random.nextInt((100 ~/ a)) + 1;
             correctAnswer = a * b;
             break;
-          case "/":
+          case "÷":
             b = random.nextInt(12) + 1;
             correctAnswer = random.nextInt(9) + 1;
             a = b * correctAnswer;
             break;
           default:
-            return 'Error: No valid operator selected';
+            throw Exception('Error: No valid operator selected');
         }
         break;
 
       default:
-        return 'Error: Invalid operation';
+        throw Exception('Error: Invalid operation');
     }
 
-    onAnswerGenerated(correctAnswer);
+    String question = "$a $operator $b = ?";
     print("Generated question with operator: $operator"); // Debug log
-    return "$a $operator $b = ?";
+    return MathQuestion(
+      question: question,
+      operator: operator,
+      correctAnswer: correctAnswer,
+    );
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:raccoon_learning/presentation/home/learning/grade/grade1.dart';
 import 'package:raccoon_learning/presentation/home/learning/grade/grade2.dart';
 import 'package:raccoon_learning/presentation/home/learning/grade/grade3.dart';
+import 'package:raccoon_learning/presentation/home/learning/grade/math_question.dart';
 
 class TwoPlayersNotifier extends ChangeNotifier{
   int _pointPlayerOne = 0;
@@ -45,27 +46,27 @@ class TwoPlayersNotifier extends ChangeNotifier{
     _compares.clear();
 
     for (int i = 0; i < 30; i++) {
-      switch (grade) {
-        case 'grade_1':
+      switch (grade) {        
+          case 'grade_1':
           var grade1 = Grade1(operation);
-          _questions.add(grade1.generateRandomQuestion(
-            onAnswerGenerated: (answer) => _answers.add(answer),
-            onAnswerCompare: (compare) => _compares.add(compare),
-          ));
+          MathQuestion mathQuestion = grade1.generateRandomQuestion(context: context);
+          _questions.add(mathQuestion.question); 
+          _answers.add(mathQuestion.correctAnswer); 
+           _compares.add(mathQuestion.correctCompare.toString());
           break;
-        case 'grade_2':
+          case 'grade_2':
           var grade2 = Grade2(operation);
-          _questions.add(grade2.generateRandomQuestion(
-            onAnswerGenerated: (answer) => _answers.add(answer),
-          ));
-          _compares.add(""); // Nếu không có compare, để rỗng
+          MathQuestion mathQuestion = grade2.generateRandomQuestion(context: context);
+          _questions.add(mathQuestion.question); 
+          _answers.add(mathQuestion.correctAnswer); 
+          _compares.add("");
           break;
+
         case 'grade_3':
           var grade3 = Grade3(operation);
-          _questions.add(grade3.generateRandomQuestion(
-            context: context,
-            onAnswerGenerated: (answer) => _answers.add(answer),
-          ) as String);
+          MathQuestion mathQuestion = grade3.generateRandomQuestion(context: context);
+          _questions.add(mathQuestion.question); 
+          _answers.add(mathQuestion.correctAnswer); 
           _compares.add("");
           break;
       }

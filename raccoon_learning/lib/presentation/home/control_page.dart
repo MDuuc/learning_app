@@ -7,6 +7,7 @@ import 'package:raccoon_learning/presentation/home/notification_page.dart';
 import 'package:raccoon_learning/presentation/home/profile/profile_page.dart';
 import 'package:raccoon_learning/presentation/home/store_page.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/analysis_data_notifier.dart';
+import 'package:raccoon_learning/presentation/widgets/draw/model_manage.dart';
 
 class ControlPage extends StatefulWidget {
   const ControlPage({super.key});
@@ -27,10 +28,19 @@ class _ControlPageState extends State<ControlPage> {
   const ProfilePage(),
 ];
 
+    //dowload model
+  final ModelManage _modelManager = ModelManage();
+  final String _language = 'en';
+
  @override
   void initState() {
     super.initState();
     AuthService().loadInfoOfUser(context);
+     _modelManager.ensureModelDownloaded(_language, context);
+  }
+  @override
+  void dispose() {
+    super.dispose();
   }
   @override
   Widget build(BuildContext context) {

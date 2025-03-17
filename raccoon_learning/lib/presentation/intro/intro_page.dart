@@ -13,14 +13,6 @@ class IntroPage extends StatefulWidget {
 }
 
 class _IntroPageState extends State<IntroPage> {
-    //dowload model
-  final ModelManage _modelManager = ModelManage();
-  final String _language = 'en';
-     @override
-  void initState() {
-    super.initState();
-     _modelManager.ensureModelDownloaded(_language, context);
-  }
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
