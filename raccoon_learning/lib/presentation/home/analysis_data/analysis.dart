@@ -10,17 +10,18 @@ Future<File> getLocalFile() async {
   
 }
 
-Future<void> copyCsvIfNotExists() async {
-  File localFile = await getLocalFile();
+//this using for test file csv
+// Future<void> copyCsvIfNotExists() async {
+//   File localFile = await getLocalFile();
   
-  if (!await localFile.exists()) {
-    String csvData = await rootBundle.loadString('assets/data/math_data.csv');
-    await localFile.writeAsString(csvData);
-    print('CSV file has been copied to the application folder.');
-  } else {
-    print('CSV file already exists, using existing data.');
-  }
-}
+//   if (!await localFile.exists()) {
+//     String csvData = await rootBundle.loadString('assets/data/math_data.csv');
+//     await localFile.writeAsString(csvData);
+//     print('CSV file has been copied to the application folder.');
+//   } else {
+//     print('CSV file already exists, using existing data.');
+//   }
+// }
 
 Future<String> analyzeMathData() async {
   try {
@@ -28,8 +29,8 @@ Future<String> analyzeMathData() async {
     
     // If local file doesn't exist, create it with headers
     if (!await localFile.exists()) {
-      // await localFile.writeAsString("operator,correct,time,grade\n");
-      await copyCsvIfNotExists();
+      await localFile.writeAsString("operator,correct,time,grade\n");
+      // await copyCsvIfNotExists();
     }
     
     // Read the local file

@@ -22,10 +22,6 @@ class NotificationPage extends StatelessWidget {
             notif(context),
             notif(context),
             notif(context),
-
-
-
-        
           ],
         ),
       ),

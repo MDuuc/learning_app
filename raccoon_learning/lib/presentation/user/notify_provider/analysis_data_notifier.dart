@@ -52,6 +52,7 @@ class AnalysisDataNotifier extends ChangeNotifier {
           _stats[grade]![operator] = {
             "accuracy": values["accuracy"]?.toDouble() ?? 0.0,
             "avgTime": values["avgTime"]?.toDouble() ?? 0.0,
+            "quantity": values["quantity"]?.toDouble() ?? 0.0,
           };
         });
       });

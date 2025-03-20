@@ -2,6 +2,7 @@ import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:raccoon_learning/constants/theme/app_colors.dart';
 import 'package:raccoon_learning/data/firebase/authservice.dart';
+import 'package:raccoon_learning/presentation/home/chart_page.dart';
 import 'package:raccoon_learning/presentation/home/home_page.dart';
 import 'package:raccoon_learning/presentation/home/notification_page.dart';
 import 'package:raccoon_learning/presentation/home/profile/profile_page.dart';
@@ -23,6 +24,7 @@ class _ControlPageState extends State<ControlPage> {
 
   final List<Widget> _page = [  
   const HomePage(),
+  const ChartPage(),
   const StorePage(),
   const NotificationPage(),
   const ProfilePage(),
@@ -49,6 +51,7 @@ class _ControlPageState extends State<ControlPage> {
       bottomNavigationBar: CurvedNavigationBar(items: <Widget>
       [
       const Icon(Icons.dashboard, size: 30, color: Colors.white,),
+      const Icon(Icons.bar_chart_rounded, size: 30, color: Colors.white,),
       const Icon(Icons.store, size: 30, color: Colors.white,),
       const Icon(Icons.notifications, size: 30, color: Colors.white,),
       const Icon(Icons.person, size: 30, color: Colors.white,)
