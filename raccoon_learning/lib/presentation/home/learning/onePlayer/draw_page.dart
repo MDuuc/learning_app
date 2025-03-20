@@ -10,7 +10,6 @@ import 'package:raccoon_learning/presentation/home/learning/grade/grade2.dart';
 import 'package:raccoon_learning/presentation/home/learning/grade/grade3.dart';
 import 'package:raccoon_learning/presentation/home/learning/grade/math_question.dart';
 import 'package:raccoon_learning/presentation/service/speech_recognise.dart';
-import 'package:raccoon_learning/presentation/user/notify_provider/analysis_data_notifier.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/gameplay_notifier.dart';
 import 'package:raccoon_learning/presentation/widgets/dialog/pause_dialog.dart';
 import 'package:raccoon_learning/presentation/widgets/widget.dart';

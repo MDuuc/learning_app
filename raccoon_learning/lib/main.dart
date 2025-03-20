@@ -15,6 +15,8 @@ void main()  async{
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  final analysisDataNotifier = AnalysisDataNotifier();
+  await analysisDataNotifier.loadAnalysisData();
   runApp(
     MultiProvider(
       providers: [
@@ -22,9 +24,7 @@ void main()  async{
         ChangeNotifierProvider(create: (context) => GameplayNotifier()),
         ChangeNotifierProvider(create: (context) => CompetitveNotifier()),
         ChangeNotifierProvider(create: (context) => TwoPlayersNotifier()),
-        ChangeNotifierProvider(create: (_) => AnalysisDataNotifier()..loadAnalysisData()),
-
-
+        ChangeNotifierProvider.value(value: analysisDataNotifier),
       ],
       child: const MyApp(),
     ),

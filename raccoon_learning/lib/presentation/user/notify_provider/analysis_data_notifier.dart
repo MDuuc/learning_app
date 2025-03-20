@@ -4,20 +4,20 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
 class AnalysisDataNotifier extends ChangeNotifier {
-  final Map<String, Map<String, Map<String, double>>> _stats = {}; // grade -> operator -> {accuracy, time}
+  final Map<String, Map<String, Map<String, double>>> _stats = {}; // grade -> operator -> {accuracy, avgTime, quantity}
   Map<String, Map<String, double>> _weights = {}; // grade -> operator -> weight
 
   Map<String, Map<String, Map<String, double>>> get stats => _stats;
   Map<String, Map<String, double>> get weights => _weights;
 
-
   /// Update stats and recalculate weights
-  void updateStat(String grade, String operator, double accuracy, double time) {
+  void updateStat(String grade, String operator, double accuracy, double avgTime, double quantity) {
     _stats.putIfAbsent(grade, () => {});
     _stats[grade]!.putIfAbsent(operator, () => {});
 
     _stats[grade]![operator]!['accuracy'] = accuracy;
-    _stats[grade]![operator]!['time'] = time;
+    _stats[grade]![operator]!['avgTime'] = avgTime;
+    _stats[grade]![operator]!['quantity'] = quantity;
 
     calculateWeights(grade);
     notifyListeners();
@@ -51,7 +51,7 @@ class AnalysisDataNotifier extends ChangeNotifier {
         (operators as Map<String, dynamic>).forEach((operator, values) {
           _stats[grade]![operator] = {
             "accuracy": values["accuracy"]?.toDouble() ?? 0.0,
-            "time": values["time"]?.toDouble() ?? 0.0,
+            "avgTime": values["avgTime"]?.toDouble() ?? 0.0,
           };
         });
       });
@@ -87,29 +87,29 @@ class AnalysisDataNotifier extends ChangeNotifier {
         .cast<double>()
         .toList();
 
-    List<double> timeList = _stats[grade]!.values
-        .map((e) => e["time"])
+    List<double> avgTimeList = _stats[grade]!.values
+        .map((e) => e["avgTime"])
         .where((value) => value != null)
         .cast<double>()
         .toList();
 
-    if (accuracyList.isEmpty || timeList.isEmpty) {
+    if (accuracyList.isEmpty || avgTimeList.isEmpty) {
       print("⚠ Incomplete stats for grade $grade, cannot calculate weights");
       return;
     }
 
     double maxAccuracy = accuracyList.reduce((a, b) => a > b ? a : b);
-    double maxTime = timeList.reduce((a, b) => a > b ? a : b);
+    double maxTime = avgTimeList.reduce((a, b) => a > b ? a : b);
 
     _weights[grade] = {};
     for (var entry in _stats[grade]!.entries) {
       String op = entry.key;
       double? accuracy = entry.value["accuracy"];
-      double? time = entry.value["time"];
+      double? avgTime = entry.value["avgTime"];
 
-      if (accuracy == null || time == null) continue;
+      if (accuracy == null || avgTime == null) continue;
 
-      _weights[grade]![op] = double.parse(((maxAccuracy - accuracy) + ((time / maxTime) * 10) + 10).toStringAsFixed(2));
+      _weights[grade]![op] = double.parse(((maxAccuracy - accuracy) + ((avgTime / maxTime) * 10) + 10).toStringAsFixed(2));
     }
   }
 

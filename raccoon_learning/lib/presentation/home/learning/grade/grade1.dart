@@ -18,13 +18,13 @@ class Grade1 {
     String operator = '';
     String correctCompare = '';
 
-    // Lấy weights từ AnalysisDataNotifier
+    // Take weights from AnalysisDataNotifier
     final analysisDataNotifier = Provider.of<AnalysisDataNotifier>(context, listen: false);
     Map<String, double> weights = analysisDataNotifier.weights['grade_1'] ?? {};
     print('📊 Weight for Grade 1: $weights');
     if (weights.isEmpty) {
       print("⚠ Weights empty, using default equal weights");
-      weights = {"+": 1.0, "-": 1.0, ">": 1.0}; // Chỉ hỗ trợ +, -, và so sánh
+      weights = {"+": 1.0, "-": 1.0, ">": 1.0}; 
     }
 
     switch (operation) {
@@ -45,7 +45,7 @@ class Grade1 {
         break;
 
       case 'comparison':
-        operator = random.nextBool() ? ">" : "<";
+        operator = ">";
         a = random.nextInt(10) + 1; // a = 1 -> 10
         b = random.nextInt(10) + 1; // b = 1 -> 10
         correctCompare = (a == b ? "=" : (a > b ? ">" : "<"));
@@ -57,14 +57,12 @@ class Grade1 {
         List<double> cumulativeWeights = [];
         double sum = 0;
 
-        // Tính cumulative weights cho lựa chọn ngẫu nhiên có trọng số
         for (String op in operators) {
           double weight = weights[op] ?? 1.0;
           sum += weight;
           cumulativeWeights.add(sum);
         }
 
-        // Chọn operator dựa trên trọng số
         double rand = random.nextDouble() * sum;
         for (int i = 0; i < cumulativeWeights.length; i++) {
           if (rand >= (i == 0 ? 0 : cumulativeWeights[i - 1]) && rand < cumulativeWeights[i]) {
@@ -73,7 +71,6 @@ class Grade1 {
           }
         }
 
-        // Tạo câu hỏi dựa trên operator được chọn
         switch (operator) {
           case "+":
             a = random.nextInt(6) + 1;
