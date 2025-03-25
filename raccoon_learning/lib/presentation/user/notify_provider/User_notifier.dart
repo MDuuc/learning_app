@@ -5,28 +5,33 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class UserNotifier extends ChangeNotifier {
   String _avatarPath = AppImages.user;  // Avatar default
-  String _username = '';          
+  String _username = '';     
+  String _role = '';          
   int _streakCount = 1;
 
   String get avatarPath => _avatarPath;
   String get username => _username;
+  String get role => _role;
   int get streakCount => _streakCount;
 
   // Get user in4 From FireDatabase
-  Future<void> loadUserInfo(String userName, String avatar, int streakCount) async {
+  Future<void> loadUserInfo(String userName, String avatar, int streakCount, String role) async {
     final prefs = await SharedPreferences.getInstance();
     _avatarPath = avatar;
     _username = userName;
     _streakCount = streakCount;
+    _role = role;
+
 
     // save to local
     await prefs.setString('user_name', userName);  // save username
     await prefs.setString('user_avatar', avatar);  // save avatar
+    await prefs.setString('user_role', role);  // save avatar
 
     notifyListeners();
   }
 
-  // Save avatar to SharedPreferences and to the Firbase
+  // Save avatar to SharedPreferences and to the Firebase
   Future<void> saveAvatar(String avatarPath) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('user_avatar', avatarPath);  // save avatar

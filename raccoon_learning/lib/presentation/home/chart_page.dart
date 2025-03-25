@@ -20,11 +20,11 @@ class _ChartPageState extends State<ChartPage> {
   "Grade 3": "grade_3",
 };
 
-// Hàm để tạo danh sách DataModel từ stats của grade đã chọn
+// create list of DataModel from stats of grade choosen
   List<DataModel> _getDataList(Map<String, Map<String, Map<String, double>>> stats) {
   String dataGrade = _gradeMapping[_selectedGrade] ?? _selectedGrade; 
     if (!stats.containsKey(dataGrade) || stats[dataGrade]!.isEmpty) {
-      return []; // Trả về rỗng nếu không có dữ liệu
+      return []; //return empty
     }
 
     return stats[dataGrade]!.entries.map((entry) {
@@ -37,7 +37,7 @@ class _ChartPageState extends State<ChartPage> {
   }
 
   double getMaxTimes(List<DataModel> dataList) {
-    if (dataList.isEmpty) return 100.0; // Giá trị mặc định nếu không có dữ liệu
+    if (dataList.isEmpty) return 100.0; 
     return dataList
         .map((data) => double.parse(data.times!))
         .reduce((a, b) => a > b ? a : b);

@@ -57,6 +57,7 @@ import 'package:shared_preferences/shared_preferences.dart';
           'user_id': user.uid,
           'username': username,
           'email': email,
+          'role': 'user',
           'avatar': 'assets/images/user.png',
           'created_at': FieldValue.serverTimestamp(),
         });
@@ -128,16 +129,19 @@ Future<void> loadInfoOfUser(BuildContext context) async {
     final userDoc = await FirebaseFirestore.instance.collection('users').doc(userId).get();
 
     if (userDoc.exists) {
+      print("User Document: ${userDoc.data()}"); // print all data
+
       // Extract user data
       String? userName = userDoc['username'];
       String? avatar = userDoc['avatar'];
       int? streakCount = userDoc ['streak_count'];
+      String? role = userDoc['role'];
 
       // Load into Notifier
       final userNotifier = Provider.of<UserNotifier>(context, listen: false);
       final gameplayNotifer = Provider.of<GameplayNotifier>(context, listen: false);
 
-      await userNotifier.loadUserInfo(userName!, avatar!, streakCount! );
+      await userNotifier.loadUserInfo(userName!, avatar!, streakCount!, role!);
       await gameplayNotifer.fetchDataFirebase(userId);
     } else {
       throw Exception('User document not found in Firestore');

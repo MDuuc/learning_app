@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:provider/provider.dart';
 import 'package:raccoon_learning/constants/assets/app_vectors.dart';
 import 'package:raccoon_learning/constants/theme/app_colors.dart';
 import 'package:raccoon_learning/data/firebase/authservice.dart';
+import 'package:raccoon_learning/presentation/admin/page/admin_page.dart';
 import 'package:raccoon_learning/presentation/home/control_page.dart';
 import 'package:raccoon_learning/presentation/intro/forget_password.dart';
 import 'package:raccoon_learning/presentation/intro/signup_page.dart';
+import 'package:raccoon_learning/presentation/user/notify_provider/User_notifier.dart';
 import 'package:raccoon_learning/presentation/widgets/appbar/app_bar.dart';
 import 'package:raccoon_learning/presentation/widgets/button/basic_app_button.dart';
 
@@ -17,15 +20,57 @@ class SigninPage extends StatefulWidget {
 }
 
 class _SigninPageState extends State<SigninPage> {
-
   final TextEditingController _email = TextEditingController();
-  final TextEditingController _password= TextEditingController();
+  final TextEditingController _password = TextEditingController();
   final AuthService _authService = AuthService();
   bool _signInFailed = false;
+  bool _passwordVisible = false;
 
+  Future<void> _handleSignIn(BuildContext context) async {
+    final userNotifier = Provider.of<UserNotifier>(context, listen: false);
+
+    try {
+      final user = await _authService.signInWithEmailPassword(
+        _email.text.trim(),
+        _password.text.trim(),
+      );
+
+      if (user != null) {
+        setState(() {
+          _signInFailed = false;
+          print("Role: "+ userNotifier.role );
+        });
+
+        if (userNotifier.role == 'admin') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const AdminPage()),
+          );
+        } else {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const ControlPage()),
+          );
+        }
+      } else {
+        _showErrorMessage();
+      }
+    } catch (e) {
+      _showErrorMessage();
+    }
+  }
+
+  void _showErrorMessage() {
+    setState(() {
+      _signInFailed = true;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Sign-in failed. Please try again!')),
+    );
+  }
 
   @override
-   Widget build(BuildContext context) {
+  Widget build(BuildContext context) {
     return Scaffold(
       bottomNavigationBar: _signinText(context),
       appBar: const BasicAppBar(),
@@ -36,111 +81,32 @@ class _SigninPageState extends State<SigninPage> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               _registerText(),
-              const SizedBox(height: 50,),
-               _emailField(context),
-              const SizedBox(height: 20,),
+              const SizedBox(height: 50),
+              _emailField(context),
+              const SizedBox(height: 20),
               _passwordField(context),
-              const SizedBox(height: 20,),
-               BasicAppButton(
-                onPressed: () 
-                async{
-                  final user = await _authService.signInWithEmailPassword(
-                  _email.text.toString().trim(),
-                  _password.text.toString().trim(),
-                );
-                if (user != null) {
-                  setState(() {
-                      _signInFailed = false;
-                    });
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(builder: (BuildContext context) => const ControlPage()),
-                    (route) => false,
-                  );
-                } else {
-                  setState(() {
-                      _signInFailed = true;
-                    });
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Registration failed. Please try again!')),
-                  );
-                }
-                },
+              const SizedBox(height: 20),
+              BasicAppButton(
+                onPressed: () => _handleSignIn(context),
                 title: 'Sign In',
-               ),
-               const SizedBox(height: 20,),
-                if (_signInFailed) _forgetPasswordHint(context),
-               const SizedBox(height: 20,),
-               // horizontal line
-               const Row(
-                children: [
-                  Expanded(
-                    child: Divider(
-                      thickness: 1, 
-                      color: Colors.grey, 
-                    ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 10), 
-                    child: Text(
-                      "Or",
-                      style: TextStyle(
-                        color: Colors.grey,
-                        fontSize: 16, 
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: Divider(
-                      thickness: 1,
-                      color: Colors.grey,
-                    ),
-                  ),
-                ],
               ),
-          const SizedBox(height: 60), 
-        // Social icons
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Google Icon
-            GestureDetector(
-              onTap: () {
-                // Handle Google sign-in
-              },
-              child: SvgPicture.asset(
-                AppVectors.google,
-                height: 50,
-                width: 50,
-              ),
-            ),
-            const SizedBox(width: 40),
-            // Apple Icon
-            GestureDetector(
-              onTap: () {
-                // Handle Apple sign-in
-              },
-              child: SvgPicture.asset(
-                AppVectors.apple, 
-                height: 50,
-                width: 50,
-              ),
-            ),
-          ],
-        ),
+              const SizedBox(height: 20),
+              if (_signInFailed) _forgetPasswordHint(context),
+              const SizedBox(height: 20),
+              _dividerWithText(),
+              const SizedBox(height: 60),
+              _socialLoginButtons(),
             ],
           ),
         ),
       ),
     );
   }
-  Widget _registerText(){
+
+  Widget _registerText() {
     return const Text(
       'Sign In',
-      style: TextStyle(
-        fontWeight: FontWeight.bold,
-        fontSize: 25,
-      ),
+      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25),
       textAlign: TextAlign.center,
     );
   }
@@ -148,27 +114,32 @@ class _SigninPageState extends State<SigninPage> {
   Widget _emailField(BuildContext context) {
     return TextField(
       controller: _email,
+      keyboardType: TextInputType.emailAddress,
       decoration: const InputDecoration(
-        hintText: 'Enter Email'
-      ).applyDefaults(
-        Theme.of(context).inputDecorationTheme
-      ),
+        hintText: 'Enter Email',
+      ).applyDefaults(Theme.of(context).inputDecorationTheme),
     );
   }
 
-   Widget _passwordField(BuildContext context) {
+  Widget _passwordField(BuildContext context) {
     return TextField(
       controller: _password,
-      obscureText: true,
-      decoration: const InputDecoration(
-        hintText: 'Password'
-      ).applyDefaults(
-        Theme.of(context).inputDecorationTheme
-      ),
+      obscureText: !_passwordVisible,
+      decoration: InputDecoration(
+        hintText: 'Password',
+        suffixIcon: IconButton(
+          icon: Icon(_passwordVisible ? Icons.visibility : Icons.visibility_off),
+          onPressed: () {
+            setState(() {
+              _passwordVisible = !_passwordVisible;
+            });
+          },
+        ),
+      ).applyDefaults(Theme.of(context).inputDecorationTheme),
     );
-   }
+  }
 
-     Widget _signinText(BuildContext context){
+  Widget _signinText(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 30.0),
       child: Row(
@@ -176,47 +147,82 @@ class _SigninPageState extends State<SigninPage> {
         children: [
           const Text(
             'Not A Member?',
-            style: TextStyle(
-              fontWeight: FontWeight.w500,
-              fontSize: 14
-            ),
+            style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
           ),
           TextButton(
-            onPressed: (){
+            onPressed: () {
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(
-                  builder: (BuildContext context) => SignupPage()
-                  )
-                );
-            }, 
+                MaterialPageRoute(builder: (context) => SignupPage()),
+              );
+            },
             child: const Text(
               'Register Now',
-              style: TextStyle(
-                color: AppColors.blue,
-              ),
-            )
-            )
+              style: TextStyle(color: AppColors.blue),
+            ),
+          ),
         ],
       ),
     );
   }
 
-    Widget _forgetPasswordHint(BuildContext context) {
+  Widget _forgetPasswordHint(BuildContext context) {
     return TextButton(
       onPressed: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (BuildContext context) => ForgetPassword()),
+          MaterialPageRoute(builder: (context) => ForgetPassword()),
         );
       },
-      child: Text(
+      child: const Text(
         "Forgot your password?",
-        style: TextStyle(
-          color: AppColors.blue,
-          fontSize: 16,
-        ),
+        style: TextStyle(color: AppColors.blue, fontSize: 16),
       ),
+    );
+  }
+
+  Widget _dividerWithText() {
+    return const Row(
+      children: [
+        Expanded(child: Divider(thickness: 1, color: Colors.grey)),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 10),
+          child: Text(
+            "Or",
+            style: TextStyle(color: Colors.grey, fontSize: 16),
+          ),
+        ),
+        Expanded(child: Divider(thickness: 1, color: Colors.grey)),
+      ],
+    );
+  }
+
+  Widget _socialLoginButtons() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        GestureDetector(
+          onTap: () {
+            // Handle Google sign-in
+          },
+          child: SvgPicture.asset(
+            AppVectors.google,
+            height: 50,
+            width: 50,
+          ),
+        ),
+        const SizedBox(width: 40),
+        GestureDetector(
+          onTap: () {
+            // Handle Apple sign-in
+          },
+          child: SvgPicture.asset(
+            AppVectors.apple,
+            height: 50,
+            width: 50,
+          ),
+        ),
+      ],
     );
   }
 }
