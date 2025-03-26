@@ -1,5 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:raccoon_learning/constants/assets/app_images.dart';
 
 // Dashboard Page
 class DashboardPage extends StatelessWidget {
@@ -184,7 +185,7 @@ Widget _buildHeader(BuildContext context) {
         ),
         const SizedBox(width: 10),
         const CircleAvatar(
-          backgroundImage: NetworkImage('https://via.placeholder.com/150'),
+          backgroundImage: AssetImage(AppImages.user),
           radius: 15,
         ),
         const SizedBox(width: 5),

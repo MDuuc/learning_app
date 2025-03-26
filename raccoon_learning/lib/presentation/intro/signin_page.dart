@@ -11,6 +11,7 @@ import 'package:raccoon_learning/presentation/intro/signup_page.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/User_notifier.dart';
 import 'package:raccoon_learning/presentation/widgets/appbar/app_bar.dart';
 import 'package:raccoon_learning/presentation/widgets/button/basic_app_button.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; // Import Firestore
 
 class SigninPage extends StatefulWidget {
   const SigninPage({super.key});
@@ -26,21 +27,27 @@ class _SigninPageState extends State<SigninPage> {
   bool _signInFailed = false;
   bool _passwordVisible = false;
 
+  // Handle sign-in process
   Future<void> _handleSignIn(BuildContext context) async {
     final userNotifier = Provider.of<UserNotifier>(context, listen: false);
 
     try {
+      // Sign in with email and password
       final user = await _authService.signInWithEmailPassword(
         _email.text.trim(),
         _password.text.trim(),
       );
 
       if (user != null) {
+        // Fetch user role from Firestore before navigating
+        await userNotifier.fetchUserRole(user.uid);
+
         setState(() {
           _signInFailed = false;
-          print("Role: "+ userNotifier.role );
+          print("Role: ${userNotifier.role}");
         });
 
+        // Navigate based on user role
         if (userNotifier.role == 'admin') {
           Navigator.pushReplacement(
             context,
@@ -57,9 +64,11 @@ class _SigninPageState extends State<SigninPage> {
       }
     } catch (e) {
       _showErrorMessage();
+      print("Sign-in error: $e");
     }
   }
 
+  // Show error message when sign-in fails
   void _showErrorMessage() {
     setState(() {
       _signInFailed = true;
@@ -103,6 +112,7 @@ class _SigninPageState extends State<SigninPage> {
     );
   }
 
+  // Widget for the "Sign In" title
   Widget _registerText() {
     return const Text(
       'Sign In',
@@ -111,6 +121,7 @@ class _SigninPageState extends State<SigninPage> {
     );
   }
 
+  // Widget for the email input field
   Widget _emailField(BuildContext context) {
     return TextField(
       controller: _email,
@@ -121,6 +132,7 @@ class _SigninPageState extends State<SigninPage> {
     );
   }
 
+  // Widget for the password input field with visibility toggle
   Widget _passwordField(BuildContext context) {
     return TextField(
       controller: _password,
@@ -139,6 +151,7 @@ class _SigninPageState extends State<SigninPage> {
     );
   }
 
+  // Widget for the "Not a member? Register now" text
   Widget _signinText(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 30.0),
@@ -166,6 +179,7 @@ class _SigninPageState extends State<SigninPage> {
     );
   }
 
+  // Widget for the "Forgot your password?" link
   Widget _forgetPasswordHint(BuildContext context) {
     return TextButton(
       onPressed: () {
@@ -181,6 +195,7 @@ class _SigninPageState extends State<SigninPage> {
     );
   }
 
+  // Widget for the "Or" divider
   Widget _dividerWithText() {
     return const Row(
       children: [
@@ -197,13 +212,14 @@ class _SigninPageState extends State<SigninPage> {
     );
   }
 
+  // Widget for social login buttons (Google and Apple)
   Widget _socialLoginButtons() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         GestureDetector(
           onTap: () {
-            // Handle Google sign-in
+            // Handle Google sign-in (to be implemented)
           },
           child: SvgPicture.asset(
             AppVectors.google,
@@ -214,7 +230,7 @@ class _SigninPageState extends State<SigninPage> {
         const SizedBox(width: 40),
         GestureDetector(
           onTap: () {
-            // Handle Apple sign-in
+            // Handle Apple sign-in (to be implemented)
           },
           child: SvgPicture.asset(
             AppVectors.apple,

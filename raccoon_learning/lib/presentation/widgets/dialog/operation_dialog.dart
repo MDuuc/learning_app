@@ -66,6 +66,20 @@ class _OperationDialogState extends State<OperationDialog> {
                         ),
                         const SizedBox(height: 20),
 
+                        // Word Problem
+                        buildDialogButton(
+                          context,
+                          text: 'Word Problem',
+                          icon: Icons.app_registration_rounded,
+                          onPressed: () {
+                            operation = 'word_problem';
+                            setState(() {
+                              chooseOperation = true;
+                            });
+                          },
+                        ),
+                        const SizedBox(height: 10),
+
                         // Addition
                         buildDialogButton(
                           context,
@@ -79,6 +93,7 @@ class _OperationDialogState extends State<OperationDialog> {
                           },
                         ),
                         const SizedBox(height: 10),
+
 
                         // Subtraction
                         buildDialogButton(

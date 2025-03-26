@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:raccoon_learning/constants/assets/app_images.dart';
 
-class StorePage extends StatefulWidget {
-  const StorePage({super.key});
+class StoreAdminPage extends StatefulWidget {
+  const StoreAdminPage({super.key});
 
   @override
-  _StorePageState createState() => _StorePageState();
+  _StoreAdminPageState createState() => _StoreAdminPageState();
 }
 
-class _StorePageState extends State<StorePage> {
+class _StoreAdminPageState extends State<StoreAdminPage> {
   final TextEditingController _priceController = TextEditingController();
 
   @override
@@ -140,7 +141,7 @@ class _StorePageState extends State<StorePage> {
           ),
           const SizedBox(width: 10),
           const CircleAvatar(
-            backgroundImage: NetworkImage('https://via.placeholder.com/150'),
+            backgroundImage: AssetImage(AppImages.user),
             radius: 15,
           ),
           const SizedBox(width: 5),

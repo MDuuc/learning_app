@@ -1,64 +1,137 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:raccoon_learning/presentation/home/learning/grade/math_question.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/analysis_data_notifier.dart';
 
 class Grade2 {
   final String operation;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   Grade2(this.operation);
 
   // Generates a random math question based on the specified operation
-  MathQuestion generateRandomQuestion({
+  Future<MathQuestion> generateRandomQuestion({
     required BuildContext context,
-  }) {
+  }) async {
     final random = Random();
-    int a, b, correctAnswer;
-    String operator = '';
+    int a = 0; // Default initialization for first number
+    int b = 0; // Default initialization for second number
+    int correctAnswer = 0; // Default initialization for the answer
+    String operator = ''; // Default operator
+    String correctCompare = ''; // Default comparison result (used in Grade1, kept for consistency)
+    String question = ''; // Default question string
 
-    // Lấy weights từ AnalysisDataNotifier
+    // Fetch weights from AnalysisDataNotifier for operation selection
     final analysisDataNotifier = Provider.of<AnalysisDataNotifier>(context, listen: false);
     Map<String, double> weights = analysisDataNotifier.weights['grade_2'] ?? {};
     print('📊 Weight for Grade 2: $weights');
     if (weights.isEmpty) {
       print("⚠ Weights empty, using default equal weights");
-      weights = {"+": 1.0, "-": 1.0, "×": 1.0}; 
+      weights = {"+": 1.0, "-": 1.0, "x": 1.0}; // Default weights for +, -, x
     }
 
     switch (operation) {
       case 'addition':
-        a = random.nextInt(51) + 1; // a = 1 -> 51
-        b = random.nextInt(101 - a); // b sao cho a + b <= 100
+        a = random.nextInt(51) + 1; // Generate a: 1 to 51
+        b = random.nextInt(101 - a); // Generate b so that a + b <= 100
         operator = "+";
         correctAnswer = a + b;
+        question = "$a $operator $b = ?";
         break;
 
       case 'subtraction':
-        a = random.nextInt(101); // a = 0 -> 100
-        b = random.nextInt(a + 1); // b sao cho a - b >= 0
+        a = random.nextInt(101); // Generate a: 0 to 100
+        b = random.nextInt(a + 1); // Generate b so that a - b >= 0
         operator = "-";
         correctAnswer = a - b;
+        question = "$a $operator $b = ?";
         break;
 
       case 'multiplication':
-        a = random.nextInt(10); // a = 0 -> 9
-        b = random.nextInt(10); // b = 0 -> 9
-        operator = "×";
+        a = random.nextInt(10); // Generate a: 0 to 9
+        b = random.nextInt(10); // Generate b: 0 to 9
+        operator = "x";
         correctAnswer = a * b;
+        question = "$a $operator $b = ?";
+        break;
+
+      case 'word_problem':
+        // Fetch a random word problem from Firestore for Grade 2
+        final snapshot = await _firestore
+            .collection('questions')
+            .doc('grade2') // Use grade2 document
+            .collection('items')
+            .get();
+
+        if (snapshot.docs.isEmpty) {
+          throw Exception('No word problems found in Firestore for Grade 2');
+        }
+
+        // Select a random question from the fetched documents
+        final randomDoc = snapshot.docs[random.nextInt(snapshot.docs.length)];
+        final data = randomDoc.data();
+        String templateQuestion = data['question'] ?? '';
+        String templateAnswer = data['answer'] ?? '';
+
+        // Map to store variable values 
+        Map<String, int> variables = {};
+        List<String> variableNames = ['A', 'B', 'C', 'D'];
+
+        // Replace variables in the question based on the operation in templateAnswer
+        for (int i = 0; i < variableNames.length; i++) {
+          String varName = variableNames[i];
+          final pattern = RegExp(r'\b' + varName + r'\b'); // Match standalone variables only
+          if (templateQuestion.contains(varName)) {
+            if (templateAnswer.contains('-') && i == 0) {
+              // Subtraction: First variable (A) should be large (50-100)
+              variables[varName] = random.nextInt(51) + 50; // Range: 50 to 100
+            } else if (templateAnswer.contains('-') && i == 1) {
+              // Subtraction: Second variable (B) should be less than A
+              int maxB = variables[variableNames[0]]! - 1;
+              variables[varName] = random.nextInt(maxB) + 1; // Range: 1 to A-1
+            } else if (templateAnswer.contains('x')) {
+              // Multiplication: Keep numbers small (0-9) to avoid large results
+              variables[varName] = random.nextInt(10); // Range: 0 to 9
+            } else if (templateAnswer.contains('+') && i == 0) {
+              // Addition: First variable (A) from 1-51
+              variables[varName] = random.nextInt(51) + 1; // Range: 1 to 51
+            } else if (templateAnswer.contains('+') && i == 1) {
+              // Addition: Second variable (B) so that A + B <= 100
+              int maxB = 100 - variables[variableNames[0]]!;
+              variables[varName] = random.nextInt(maxB + 1); // Range: 0 to 100-A
+            } else {
+              // Default case: Random number from 1-100
+              variables[varName] = random.nextInt(100) + 1;
+            }
+            templateQuestion = templateQuestion.replaceAll(
+              pattern,
+              variables[varName]!.toString(),
+            );
+          }
+        }
+
+        // Calculate the correct answer based on the templateAnswer
+        correctAnswer = _evaluateExpression(templateAnswer, variables);
+        operator = ''; // No specific operator for word problems
+        correctCompare = '';
+        question = templateQuestion;
         break;
 
       case 'mix_operations':
-        List<String> operators = ["+", "-", "×"];
+        List<String> operators = ["+", "-", "x"];
         List<double> cumulativeWeights = [];
         double sum = 0;
 
+        // Calculate cumulative weights for operator selection
         for (String op in operators) {
           double weight = weights[op] ?? 1.0;
           sum += weight;
           cumulativeWeights.add(sum);
         }
 
+        // Randomly select an operator based on weights
         double rand = random.nextDouble() * sum;
         for (int i = 0; i < cumulativeWeights.length; i++) {
           if (rand >= (i == 0 ? 0 : cumulativeWeights[i - 1]) && rand < cumulativeWeights[i]) {
@@ -78,7 +151,7 @@ class Grade2 {
             b = random.nextInt(a + 1);
             correctAnswer = a - b;
             break;
-          case "×":
+          case "x":
             a = random.nextInt(10);
             b = random.nextInt(10);
             correctAnswer = a * b;
@@ -86,18 +159,44 @@ class Grade2 {
           default:
             throw Exception('Error: No valid operator selected');
         }
+        question = "$a $operator $b = ?";
         break;
 
       default:
         throw Exception('Error: Invalid operation');
     }
 
-    String question = "$a $operator $b = ?";
-    print("Generated question with operator: $operator"); // Debug log
+    print("Generated question with operator: $operator");
     return MathQuestion(
       question: question,
       operator: operator,
       correctAnswer: correctAnswer,
+      correctCompare: correctCompare,
     );
+  }
+
+  // Evaluates the expression in templateAnswer and returns the result
+  int _evaluateExpression(String expression, Map<String, int> variables) {
+    expression = expression.trim();
+
+    // Replace variables with their values, ensuring standalone matches only
+    for (String varName in variables.keys) {
+      final pattern = RegExp(r'\b' + varName + r'\b');
+      expression = expression.replaceAll(pattern, variables[varName]!.toString());
+    }
+
+    // Handle basic arithmetic operations
+    if (expression.contains('+')) {
+      final parts = expression.split('+');
+      return int.parse(parts[0].trim()) + int.parse(parts[1].trim());
+    } else if (expression.contains('-')) {
+      final parts = expression.split('-');
+      return int.parse(parts[0].trim()) - int.parse(parts[1].trim());
+    } else if (expression.contains('x')) {
+      final parts = expression.split('x');
+      return int.parse(parts[0].trim()) * int.parse(parts[1].trim());
+    } else {
+      return int.parse(expression); // Return the number if no operator is present
+    }
   }
 }

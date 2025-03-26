@@ -232,13 +232,27 @@ class FullScreenSignature extends CustomPainter {
   @override
   bool shouldRepaint(FullScreenSignature oldDelegate) => true;
 }
-//full screen calculation
-Widget fullScreenCaculation (String text){
-  return Text(
-      text,
-    style: TextStyle(
-      fontSize: 40,
-      fontWeight: FontWeight.w600
+Widget fullScreenCaculation(String text) {
+  // Adjust size based on long text
+  double fontSize = 40.0; // Default size
+  if (text.length > 50) {
+    fontSize = 25.0; 
+  } else if (text.length > 30) {
+    fontSize = 30.0; 
+  }
+
+  return Flexible(
+    child: Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: fontSize,
+          fontWeight: FontWeight.w600,
+        ),
+        textAlign: TextAlign.center,
+        softWrap: true,
+      ),
     ),
   );
 }

@@ -40,34 +40,52 @@ class TwoPlayersNotifier extends ChangeNotifier{
     clearPadSecondPlayer?.call();
   }
 
-    void generateQuestions(BuildContext context, String grade, String operation) {
+// Generate 30 questions based on grade and operation
+  Future<void> generateQuestions(BuildContext context, String grade, String operation) async {
     _questions.clear();
     _answers.clear();
     _compares.clear();
 
     for (int i = 0; i < 30; i++) {
-      switch (grade) {        
-          case 'grade_1':
-          var grade1 = Grade1(operation);
-          MathQuestion mathQuestion = grade1.generateRandomQuestion(context: context);
-          _questions.add(mathQuestion.question); 
-          _answers.add(mathQuestion.correctAnswer); 
-           _compares.add(mathQuestion.correctCompare.toString());
+      switch (grade) {
+        case 'grade_1':
+          final grade1 = Grade1(operation); 
+          try {
+            final MathQuestion mathQuestion = await grade1.generateRandomQuestion(context: context);
+            _questions.add(mathQuestion.question);
+            _answers.add(mathQuestion.correctAnswer);
+            _compares.add(mathQuestion.correctCompare!); 
+          } catch (e) {
+            print('Error generating Grade 1 question: $e');
+          }
           break;
-          case 'grade_2':
-          var grade2 = Grade2(operation);
-          MathQuestion mathQuestion = grade2.generateRandomQuestion(context: context);
-          _questions.add(mathQuestion.question); 
-          _answers.add(mathQuestion.correctAnswer); 
-          _compares.add("");
+
+        case 'grade_2':
+          final grade2 = Grade2(operation);
+          try {
+            final MathQuestion mathQuestion = await grade2.generateRandomQuestion(context: context);
+            _questions.add(mathQuestion.question);
+            _answers.add(mathQuestion.correctAnswer);
+            _compares.add(mathQuestion.correctCompare!); 
+          } catch (e) {
+            print('Error generating Grade 2 question: $e');
+          }
           break;
 
         case 'grade_3':
-          var grade3 = Grade3(operation);
-          MathQuestion mathQuestion = grade3.generateRandomQuestion(context: context);
-          _questions.add(mathQuestion.question); 
-          _answers.add(mathQuestion.correctAnswer); 
-          _compares.add("");
+          final grade3 = Grade3(operation);
+          try {
+            final MathQuestion mathQuestion = await grade3.generateRandomQuestion(context: context);
+            _questions.add(mathQuestion.question);
+            _answers.add(mathQuestion.correctAnswer);
+            _compares.add(mathQuestion.correctCompare!); 
+          } catch (e) {
+            print('Error generating Grade 3 question: $e');
+          }
+          break;
+
+        default:
+          print('Unsupported grade: $grade');
           break;
       }
     }

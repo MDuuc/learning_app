@@ -1,10 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:raccoon_learning/presentation/admin/page/admin_page.dart';
 import 'package:raccoon_learning/presentation/home/control_page.dart';
 import 'package:raccoon_learning/presentation/intro/intro_page.dart';
-import 'package:raccoon_learning/presentation/user/notify_provider/User_notifier.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Wrapper extends StatelessWidget {
@@ -35,13 +33,13 @@ class Wrapper extends StatelessWidget {
                 );
               } else {
                 if (authSnapshot.data == null) {
-                  return IntroPage();
+                  return const IntroPage();
                 } else {
                   String? userRole = roleSnapshot.data;
                   if (userRole == 'admin') {
-                    return AdminPage();
+                    return const AdminPage();
                   } else {
-                    return ControlPage();
+                    return const ControlPage();
                   }
                 }
               }

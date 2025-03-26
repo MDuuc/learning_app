@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:raccoon_learning/constants/assets/app_images.dart';
+import 'package:raccoon_learning/data/firebase/question/question_modle.dart';
+import 'package:raccoon_learning/data/firebase/question/question_repository.dart';
 
 class QuestionPage extends StatefulWidget {
   const QuestionPage({super.key});
@@ -11,11 +14,54 @@ class _QuestionPageState extends State<QuestionPage> {
   String? _selectedGrade = 'Grade 1';
   String? _selectedVariables = 'X';
   final TextEditingController _questionController = TextEditingController();
+  final TextEditingController _answer = TextEditingController();
+  final QuestionRepository _questionRepository = QuestionRepository();
+  bool _isLoading = false;
 
   @override
   void dispose() {
     _questionController.dispose();
+    _answer.dispose();
     super.dispose();
+  }
+
+  Future<void> _submitQuestion() async {
+    if (_questionController.text.isEmpty || _answer.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill in all fields')),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+    
+    try {
+      final question = QuestionModle(
+        _selectedGrade ?? 'Grade 1',
+        _questionController.text,
+        _answer.text,
+      );
+      
+      await _questionRepository.uploadQuestionToFirebase(question);
+      
+      // Clear fields after successful submission
+      _questionController.clear();
+      _answer.clear();
+      setState(() {
+        _selectedGrade = 'Grade 1';
+        _selectedVariables = 'X';
+      });
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Question submitted successfully')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error submitting question: $e')),
+      );
+    } finally {
+      setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -114,7 +160,7 @@ class _QuestionPageState extends State<QuestionPage> {
                         controller: _questionController,
                         maxLines: 5,
                         decoration: InputDecoration(
-                          hintText: 'Enter your question here...',
+                          hintText: 'Example: If Ann has X apples, but Ann eats Y apples. How many apples Ann have?',
                           hintStyle: const TextStyle(color: Colors.grey),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(5),
@@ -124,14 +170,29 @@ class _QuestionPageState extends State<QuestionPage> {
                         ),
                       ),
                       const SizedBox(height: 20),
-                      // Submit Button
+                      // Answer Text Field
+                      const Text(
+                        'Answer',
+                        style: TextStyle(color: Colors.grey, fontSize: 16),
+                      ),
+                      const SizedBox(height: 10),
+                      TextField(
+                        controller: _answer,
+                        maxLines: 1,
+                        decoration: InputDecoration(
+                          hintText: 'Example: X-Y',
+                          hintStyle: const TextStyle(color: Colors.grey),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                          filled: true,
+                          fillColor: const Color(0xFFF5F7FA),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      // Submit Button with loading state
                       ElevatedButton(
-                        onPressed: () {
-                          // Handle submit action here
-                          print('Grade: $_selectedGrade');
-                          print('Variables: $_selectedVariables');
-                          print('Question: ${_questionController.text}');
-                        },
+                        onPressed: _isLoading ? null : _submitQuestion,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF3B82F6),
                           padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
@@ -139,10 +200,19 @@ class _QuestionPageState extends State<QuestionPage> {
                             borderRadius: BorderRadius.circular(5),
                           ),
                         ),
-                        child: const Text(
-                          'Submit',
-                          style: TextStyle(color: Colors.white, fontSize: 16),
-                        ),
+                        child: _isLoading
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Text(
+                                'Submit',
+                                style: TextStyle(color: Colors.white, fontSize: 16),
+                              ),
                       ),
                     ],
                   ),
@@ -155,6 +225,7 @@ class _QuestionPageState extends State<QuestionPage> {
     );
   }
 
+  // _buildHeader remains unchanged
   Widget _buildHeader(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(10),
@@ -181,7 +252,7 @@ class _QuestionPageState extends State<QuestionPage> {
           ),
           const SizedBox(width: 10),
           const CircleAvatar(
-            backgroundImage: NetworkImage('https://via.placeholder.com/150'),
+            backgroundImage: AssetImage(AppImages.user),
             radius: 15,
           ),
           const SizedBox(width: 5),

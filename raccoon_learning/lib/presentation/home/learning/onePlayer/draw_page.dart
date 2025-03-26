@@ -703,40 +703,58 @@ void _restartGame(){
     bestScore = userNotifier.bestScore;
   }
 
-  void recognizeAndGenerateQuestion (String grade){
-    switch(grade){
-      case 'grade_1':
-       late final Grade1 _grade1;
-       _grade1 = Grade1(widget.operation);
-      setState(() {
-      MathQuestion mathQuestion = _grade1.generateRandomQuestion(context: context);
-      _currentQuestion = mathQuestion.question;
-      _currentOperator = mathQuestion.operator;
-      _correctAnswer = mathQuestion.correctAnswer;
-      _correctCompare= mathQuestion.correctCompare.toString();
-    });
+Future<void> recognizeAndGenerateQuestion(String grade) async {
+  switch (grade) {
+    case 'grade_1':
+      final Grade1 _grade1 = Grade1(widget.operation); 
+      try {
+        final MathQuestion mathQuestion = await _grade1.generateRandomQuestion(context: context);
+        setState(() {
+          _currentQuestion = mathQuestion.question;
+          _currentOperator = mathQuestion.operator;
+          _correctAnswer = mathQuestion.correctAnswer;
+          _correctCompare = mathQuestion.correctCompare!; 
+        });
+      } catch (e) {
+        print('Error generating question for Grade 1: $e');
+      }
+      break;
 
     case 'grade_2':
-       late final Grade2 _grade2;
-       _grade2 = Grade2(widget.operation);
-      setState(() {
-      MathQuestion mathQuestion = _grade2.generateRandomQuestion(context: context);
-      _currentQuestion = mathQuestion.question;
-      _currentOperator = mathQuestion.operator;
-      _correctAnswer = mathQuestion.correctAnswer;
-    });
+      final Grade2 _grade2 = Grade2(widget.operation); 
+      try {
+        final MathQuestion mathQuestion = await _grade2.generateRandomQuestion(context: context);
+        setState(() {
+          _currentQuestion = mathQuestion.question;
+          _currentOperator = mathQuestion.operator;
+          _correctAnswer = mathQuestion.correctAnswer;
+          _correctCompare = mathQuestion.correctCompare!; 
+        });
+      } catch (e) {
+        print('Error generating question for Grade 2: $e');
+      }
+      break;
 
-        case 'grade_3':
-       late final Grade3 _grade3;
-       _grade3 = Grade3(widget.operation);
-      setState(() {
-      MathQuestion mathQuestion = _grade3.generateRandomQuestion(context: context);
-      _currentQuestion = mathQuestion.question;
-      _currentOperator = mathQuestion.operator;
-      _correctAnswer = mathQuestion.correctAnswer;
-    });
-    }
+    case 'grade_3':
+      final Grade3 _grade3 = Grade3(widget.operation); 
+      try {
+        final MathQuestion mathQuestion = await _grade3.generateRandomQuestion(context: context);
+        setState(() {
+          _currentQuestion = mathQuestion.question;
+          _currentOperator = mathQuestion.operator;
+          _correctAnswer = mathQuestion.correctAnswer;
+          _correctCompare = mathQuestion.correctCompare!; 
+        });
+      } catch (e) {
+        print('Error generating question for Grade 3: $e');
+      }
+      break;
+
+    default:
+      print('Unsupported grade: $grade');
+      break;
   }
+}
 
   void _updateAnalysisData(){
     final dataNotifier = Provider.of<AnalysisDataNotifier>(context, listen: false);

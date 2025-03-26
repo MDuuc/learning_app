@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:raccoon_learning/constants/assets/app_images.dart';
 import 'package:raccoon_learning/data/firebase/authservice.dart';
@@ -45,6 +46,20 @@ class UserNotifier extends ChangeNotifier {
     await prefs.setString('user_name', username);
     _username = username;
     notifyListeners();
+  }
+
+  Future<void> fetchUserRole(String uid) async {
+    try {
+      final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      if (doc.exists) {
+        _role = doc.data()?['role'] ?? 'user';
+        notifyListeners();
+      }
+    } catch (e) {
+      print("Error fetching role: $e");
+      _role = 'user'; 
+      notifyListeners();
+    }
   }
 
 }

@@ -1,9 +1,9 @@
-
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:raccoon_learning/data/firebase/authservice.dart';
 import 'package:raccoon_learning/presentation/admin/page/dash_board.dart';
 import 'package:raccoon_learning/presentation/admin/page/question_page.dart';
-import 'package:raccoon_learning/presentation/home/store_page.dart';
+import 'package:raccoon_learning/presentation/admin/page/store_admin_page.dart';
+import 'package:raccoon_learning/presentation/intro/signup_or_signin_page.dart'; // Add this import
 
 class AdminPage extends StatefulWidget {
   const AdminPage({super.key});
@@ -15,11 +15,14 @@ class AdminPage extends StatefulWidget {
 class _AdminPageState extends State<AdminPage> {
   bool _isSidebarHovered = false;
   int _selectedIndex = 0;
+  
+
+  final AuthService _authService = AuthService(); 
 
   final List<Widget> _pages = [
     const DashboardPage(),
     const QuestionPage(),
-    const StorePage(),
+    const StoreAdminPage(),
   ];
 
   @override
@@ -53,7 +56,7 @@ class _AdminPageState extends State<AdminPage> {
                       _buildSidebarItem(context, 'Store', Icons.store, 2),
                       const Spacer(),
                       _buildSidebarItem(context, 'Settings', Icons.settings, -1),
-                      _buildSidebarItem(context, 'Logout', Icons.logout, -1),
+                      _buildLogoutItem(context), // Logout item
                       const SizedBox(height: 20),
                     ],
                   ),
@@ -93,5 +96,44 @@ class _AdminPageState extends State<AdminPage> {
       ),
     );
   }
-}
 
+  // New logout item widget
+  Widget _buildLogoutItem(BuildContext context) {
+    return MouseRegion(
+      child: ListTile(
+        leading: const Icon(
+          Icons.logout,
+          color: Colors.red,
+        ),
+        title: const Text(
+          'Logout',
+          style: TextStyle(
+            color: Colors.red,
+            fontWeight: FontWeight.normal,
+          ),
+        ),
+        onTap: () => _handleLogout(context),
+        hoverColor: Colors.grey.withOpacity(0.1),
+      ),
+    );
+  }
+
+  // Logout function
+  Future<void> _handleLogout(BuildContext context) async {
+    try {
+      await _authService.signOut(); 
+      // Redirect to login page
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (BuildContext context) => const SignupOrSigninPage(),
+        ),
+      );
+    } catch (e) {
+      print("Error logging out: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error logging out: $e')),
+      );
+    }
+  }
+}
