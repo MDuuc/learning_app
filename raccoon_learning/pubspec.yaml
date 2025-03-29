@@ -50,6 +50,8 @@ dependencies:
   csv: ^6.0.0
   path_provider: ^2.1.5
   fl_chart: ^0.70.2
+  file_picker: ^9.2.3
+  supabase_flutter: ^2.8.4
   # firebase_auth_web: ^5.13.5
 
 dev_dependencies:

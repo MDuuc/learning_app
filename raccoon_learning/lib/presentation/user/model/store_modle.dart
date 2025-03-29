@@ -12,4 +12,12 @@ class StoreModle {
       data['purchase'] ?? false,    
     );
   }
+
+    Map<String, dynamic> toMap() {
+    return {
+      'image': image,
+      'price': price,
+      'purchase': purchase,
+    };
+  }
 }

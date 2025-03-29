@@ -2,6 +2,7 @@ import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:raccoon_learning/constants/theme/app_colors.dart';
 import 'package:raccoon_learning/data/firebase/authservice.dart';
+import 'package:raccoon_learning/data/firebase/gameplay.dart';
 import 'package:raccoon_learning/presentation/home/chart_page.dart';
 import 'package:raccoon_learning/presentation/home/home_page.dart';
 import 'package:raccoon_learning/presentation/home/notification_page.dart';
@@ -9,6 +10,7 @@ import 'package:raccoon_learning/presentation/home/profile/profile_page.dart';
 import 'package:raccoon_learning/presentation/home/store_page.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/analysis_data_notifier.dart';
 import 'package:raccoon_learning/presentation/widgets/draw/model_manage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ControlPage extends StatefulWidget {
   const ControlPage({super.key});
@@ -33,15 +35,25 @@ class _ControlPageState extends State<ControlPage> {
     //dowload model
   final ModelManage _modelManager = ModelManage();
   final String _language = 'en';
+  Gameplay gameplay = Gameplay();
 
  @override
   void initState() {
     super.initState();
     AuthService().loadInfoOfUser(context);
      _modelManager.ensureModelDownloaded(_language, context);
+     trackingStoreImage();
+  }
+
+  Future <void> trackingStoreImage()async{
+    final prefs = await SharedPreferences.getInstance();
+    String? userId = prefs.getString('user_uid');
+     gameplay.listenToAllStoreUpdates(userId!);
+
   }
   @override
   void dispose() {
+    gameplay.dispose();
     super.dispose();
   }
   @override

@@ -150,11 +150,11 @@ class _StorePageState extends State<StorePage> {
         children: [
           GestureDetector(
             onTap: () {
-              showFullImage(context, AssetImage(image));
+              showFullImage(context, NetworkImage(image));
             },
             child: CircleAvatar(
               radius: 50,
-              backgroundImage: AssetImage(image),
+              backgroundImage: NetworkImage(image),
             ),
           ),
           const SizedBox(height: 16),

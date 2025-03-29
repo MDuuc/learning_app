@@ -58,7 +58,7 @@ import 'package:shared_preferences/shared_preferences.dart';
           'username': username,
           'email': email,
           'role': 'user',
-          'avatar': 'assets/images/user.png',
+          'avatar': 'https://wgwzbsfxetgyropkgmkq.supabase.co/storage/v1/object/public/image//user.jpg',
           'created_at': FieldValue.serverTimestamp(),
         });
 

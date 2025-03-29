@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:raccoon_learning/data/firebase/question/question_modle.dart';
+import 'package:raccoon_learning/presentation/admin/data/question/question_modle.dart';
 
 class QuestionRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;

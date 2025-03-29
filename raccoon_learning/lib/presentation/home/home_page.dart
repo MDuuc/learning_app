@@ -23,7 +23,7 @@ class _HomePageState extends State<HomePage> {
     double screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       body: Consumer<UserNotifier>(builder: (context, user, child){
-        currentAvatar = AssetImage(user.avatarPath);
+        currentAvatar = NetworkImage(user.avatarPath);
         return Column(
         children: [
           Container(

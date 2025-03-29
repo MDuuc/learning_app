@@ -57,7 +57,7 @@ class _ChangeAvatarState extends State<ChangeAvatar> {
                       },
                       child: CircleAvatar(
                         radius: 40, 
-                        backgroundImage: AssetImage(avatars[index]) ,
+                        backgroundImage: NetworkImage(avatars[index]) ,
                         child: selectedIndex == index 
                             ? Container(
                                 decoration: BoxDecoration(

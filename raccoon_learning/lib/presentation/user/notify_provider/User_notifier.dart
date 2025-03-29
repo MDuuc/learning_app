@@ -5,7 +5,7 @@ import 'package:raccoon_learning/data/firebase/authservice.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class UserNotifier extends ChangeNotifier {
-  String _avatarPath = AppImages.user;  // Avatar default
+  String _avatarPath = 'https://wgwzbsfxetgyropkgmkq.supabase.co/storage/v1/object/public/image//user.jpg"';  // Avatar default
   String _username = '';     
   String _role = '';          
   int _streakCount = 1;

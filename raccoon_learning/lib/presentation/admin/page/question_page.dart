@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:raccoon_learning/constants/assets/app_images.dart';
-import 'package:raccoon_learning/data/firebase/question/question_modle.dart';
-import 'package:raccoon_learning/data/firebase/question/question_repository.dart';
+import 'package:raccoon_learning/presentation/admin/data/question/question_modle.dart';
+import 'package:raccoon_learning/presentation/admin/data/question/question_repository.dart';
+import 'package:raccoon_learning/presentation/admin/page/dash_board.dart';
 
 class QuestionPage extends StatefulWidget {
   const QuestionPage({super.key});
@@ -68,7 +68,7 @@ class _QuestionPageState extends State<QuestionPage> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        _buildHeader(context),
+        buildHeader(context),
         Expanded(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(20),
@@ -222,43 +222,6 @@ class _QuestionPageState extends State<QuestionPage> {
           ),
         ),
       ],
-    );
-  }
-
-  // _buildHeader remains unchanged
-  Widget _buildHeader(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(10),
-      color: Colors.white,
-      child: Row(
-        children: [
-          const SizedBox(width: 10),
-          Expanded(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF5F7FA),
-                borderRadius: BorderRadius.circular(5),
-              ),
-              child: const TextField(
-                decoration: InputDecoration(
-                  hintText: 'Search',
-                  hintStyle: TextStyle(color: Colors.grey),
-                  border: InputBorder.none,
-                  icon: Icon(Icons.search, color: Colors.grey),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 10),
-          const CircleAvatar(
-            backgroundImage: AssetImage(AppImages.user),
-            radius: 15,
-          ),
-          const SizedBox(width: 5),
-          const Text('Moni Roy', style: TextStyle(color: Colors.black87)),
-        ],
-      ),
     );
   }
 }

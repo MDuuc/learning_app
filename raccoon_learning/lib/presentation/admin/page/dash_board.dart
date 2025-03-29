@@ -10,7 +10,7 @@ class DashboardPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        _buildHeader(context),
+        buildHeader(context),
         Expanded(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(20),
@@ -158,38 +158,22 @@ class DashboardPage extends StatelessWidget {
   }
 }
 
-// Common Header Widget
-Widget _buildHeader(BuildContext context) {
+
+  // Header widget with search bar and user profile
+Widget buildHeader(BuildContext context) {
   return Container(
     padding: const EdgeInsets.all(10),
     color: Colors.white,
     child: Row(
+      mainAxisAlignment: MainAxisAlignment.end, // Align content to the right
       children: [
-        const SizedBox(width: 10),
-        Expanded(
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF5F7FA),
-              borderRadius: BorderRadius.circular(5),
-            ),
-            child: const TextField(
-              decoration: InputDecoration(
-                hintText: 'Search',
-                hintStyle: TextStyle(color: Colors.grey),
-                border: InputBorder.none,
-                icon: Icon(Icons.search, color: Colors.grey),
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(width: 10),
         const CircleAvatar(
           backgroundImage: AssetImage(AppImages.user),
           radius: 15,
         ),
-        const SizedBox(width: 5),
+        const SizedBox(width: 5), // Space between avatar and text
         const Text('Moni Roy', style: TextStyle(color: Colors.black87)),
+        const SizedBox(width:  20,),
       ],
     ),
   );

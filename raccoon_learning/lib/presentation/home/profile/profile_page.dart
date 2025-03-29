@@ -35,7 +35,7 @@ class _ProfilePageState extends State<ProfilePage> {
         backgroundColor: AppColors.black,
       ),
       body: Consumer <UserNotifier>(builder: (context, avatar, child){
-        currentAvatar =AssetImage(avatar.avatarPath);
+        currentAvatar =NetworkImage(avatar.avatarPath);
         return  Stack(
         children: [
           // Background header
