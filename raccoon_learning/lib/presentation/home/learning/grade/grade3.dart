@@ -67,10 +67,9 @@ class Grade3 {
         break;
 
       case 'word_problem':
-        // Fetch a random word problem from Firestore for Grade 3
         final snapshot = await _firestore
             .collection('questions')
-            .doc('grade3') // Use grade3 document
+            .doc('grade3')
             .collection('items')
             .get();
 
@@ -78,70 +77,77 @@ class Grade3 {
           throw Exception('No word problems found in Firestore for Grade 3');
         }
 
-        // Select a random question from the fetched documents
         final randomDoc = snapshot.docs[random.nextInt(snapshot.docs.length)];
         final data = randomDoc.data();
         String templateQuestion = data['question'] ?? '';
         String templateAnswer = data['answer'] ?? '';
 
-        // Map to store variable values 
         Map<String, int> variables = {};
         List<String> variableNames = ['A', 'B', 'C', 'D'];
 
-        // Replace variables in the question based on the operation in templateAnswer
         for (int i = 0; i < variableNames.length; i++) {
           String varName = variableNames[i];
-          final pattern = RegExp(r'\b' + varName + r'\b'); // Match standalone variables only
+          final pattern = RegExp(r'\b' + varName + r'\b');
           if (templateQuestion.contains(varName)) {
             if (templateAnswer.contains('-') && i == 0) {
-              // Subtraction: First variable (A) should be large (50-100)
-              variables[varName] = random.nextInt(51) + 50; // Range: 50 to 100
+              variables[varName] = random.nextInt(51) + 50; // A: 50-100
             } else if (templateAnswer.contains('-') && i == 1) {
-              // Subtraction: Second variable (B) should be less than A
               int maxB = variables[variableNames[0]]! - 1;
-              variables[varName] = random.nextInt(maxB) + 1; // Range: 1 to A-1
+              variables[varName] = random.nextInt(maxB) + 1; // B: 1 to A-1
             } else if (templateAnswer.contains('x')) {
-              // Multiplication: Keep numbers reasonable (1-13)
-              variables[varName] = random.nextInt(13) + 1; // Range: 1 to 13
+              variables[varName] = random.nextInt(13) + 1; // 1-13
             } else if (templateAnswer.contains('/') && i == 0) {
-              // Division: First variable (A) is the dividend, calculated as B * quotient
-              if (variables.containsKey(variableNames[1])) {
-                // If B is already set, calculate A = B * random quotient
-                int quotient = random.nextInt(9) + 1; // Quotient: 1 to 9
-                variables[varName] = variables[variableNames[1]]! * quotient;
-              } else {
-                variables[varName] = random.nextInt(100) + 1; // Default: 1-100
+              // Division: A (dividend) sẽ được tính sau khi B được gán
+              if (!variables.containsKey(variableNames[1])) {
+                variables[varName] = 0; // Placeholder, sẽ cập nhật sau
               }
             } else if (templateAnswer.contains('/') && i == 1) {
-              // Division: Second variable (B) is the divisor
-              variables[varName] = random.nextInt(12) + 1; // Range: 1 to 12
-              // If A is already set, adjust A to be divisible by B
-              if (variables.containsKey(variableNames[0])) {
-                int quotient = variables[variableNames[0]]! ~/ variables[varName]!;
-                if (quotient > 9) quotient = 9; // Cap quotient at 9
-                variables[variableNames[0]] = variables[varName]! * quotient;
-              }
+              // Division: Gán B trước, rồi tính A dựa trên B
+              variables[varName] = random.nextInt(12) + 1; // B: 1-12
+              int b = variables[varName]!;
+              int quotient = random.nextInt(9) + 1; // Quotient: 1-9
+              variables[variableNames[0]] = b * quotient; // A = B * quotient
+              int a = variables[variableNames[0]]!;
+              print("Generated: $a/$b");
+              // Cập nhật templateQuestion cho cả A và B
+              templateQuestion = templateQuestion.replaceAll(
+                RegExp(r'\b' + variableNames[0] + r'\b'),
+                a.toString(),
+              );
+              templateQuestion = templateQuestion.replaceAll(
+                pattern,
+                b.toString(),
+              );
             } else if (templateAnswer.contains('+') && i == 0) {
-              // Addition: First variable (A) from 1-51
-              variables[varName] = random.nextInt(51) + 1; // Range: 1 to 51
+              variables[varName] = random.nextInt(51) + 1; // A: 1-51
             } else if (templateAnswer.contains('+') && i == 1) {
-              // Addition: Second variable (B) so that A + B <= 100
               int maxB = 100 - variables[variableNames[0]]!;
-              variables[varName] = random.nextInt(maxB + 1); // Range: 0 to 100-A
+              variables[varName] = random.nextInt(maxB + 1); // B: 0 to 100-A
             } else {
-              // Default case: Random number from 1-100
-              variables[varName] = random.nextInt(100) + 1;
+              variables[varName] = random.nextInt(100) + 1; // Default: 1-100
             }
-            templateQuestion = templateQuestion.replaceAll(
-              pattern,
-              variables[varName]!.toString(),
-            );
+            // Chỉ thay thế nếu không phải trường hợp đặc biệt của division
+            if (!(templateAnswer.contains('/') && i == 0)) {
+              templateQuestion = templateQuestion.replaceAll(
+                pattern,
+                variables[varName]!.toString(),
+              );
+            }
           }
         }
+        if (templateAnswer.contains('+')) {
+          operator = '+';
+        } else if (templateAnswer.contains('-')) {
+          operator = '-';
+        } else if (templateAnswer.contains('x') || templateAnswer.contains('*')) {
+          operator = 'x';
+        } else if (templateAnswer.contains('/')) {
+          operator = '/';
+        } else {
+          operator = ''; 
+        }
 
-        // Calculate the correct answer based on the templateAnswer
         correctAnswer = _evaluateExpression(templateAnswer, variables);
-        operator = '';
         correctCompare = '';
         question = templateQuestion;
         break;
@@ -208,31 +214,31 @@ class Grade3 {
     );
   }
 
-  // Evaluates the expression in templateAnswer and returns the result
-  int _evaluateExpression(String expression, Map<String, int> variables) {
-    expression = expression.trim();
+  // Evaluates the templateAnswer in templateAnswer and returns the result
+  int _evaluateExpression(String templateAnswer, Map<String, int> variables) {
+    templateAnswer = templateAnswer.trim();
 
     // Replace variables with their values, ensuring standalone matches only
     for (String varName in variables.keys) {
-      final pattern = RegExp(r'\b' + varName + r'\b');
-      expression = expression.replaceAll(pattern, variables[varName]!.toString());
+      templateAnswer = templateAnswer.replaceAll(varName, variables[varName]!.toString());
     }
+    print(templateAnswer);
 
     // Handle basic arithmetic operations
-    if (expression.contains('+')) {
-      final parts = expression.split('+');
+    if (templateAnswer.contains('+')) {
+      final parts = templateAnswer.split('+');
       return int.parse(parts[0].trim()) + int.parse(parts[1].trim());
-    } else if (expression.contains('-')) {
-      final parts = expression.split('-');
+    } else if (templateAnswer.contains('-')) {
+      final parts = templateAnswer.split('-');
       return int.parse(parts[0].trim()) - int.parse(parts[1].trim());
-    } else if (expression.contains('x')) {
-      final parts = expression.split('x');
+    } else if (templateAnswer.contains('x') || templateAnswer.contains('*')) {
+      final parts = templateAnswer.contains('x') ? templateAnswer.split('x') : templateAnswer.split('*');
       return int.parse(parts[0].trim()) * int.parse(parts[1].trim());
-    } else if (expression.contains('/')) {
-      final parts = expression.split('/');
+    } else if (templateAnswer.contains('/')) {
+      final parts = templateAnswer.split('/');
       return int.parse(parts[0].trim()) ~/ int.parse(parts[1].trim()); // Integer division
     } else {
-      return int.parse(expression); // Return number if no operator is present
+      return int.parse(templateAnswer); // Return number if no operator is present
     }
   }
 }

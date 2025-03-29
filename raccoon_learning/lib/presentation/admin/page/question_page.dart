@@ -12,7 +12,7 @@ class QuestionPage extends StatefulWidget {
 
 class _QuestionPageState extends State<QuestionPage> {
   String? _selectedGrade = 'Grade 1';
-  String? _selectedVariables = 'X';
+  String? _selectedVariables = 'A';
   final TextEditingController _questionController = TextEditingController();
   final TextEditingController _answer = TextEditingController();
   final QuestionRepository _questionRepository = QuestionRepository();
@@ -49,7 +49,7 @@ class _QuestionPageState extends State<QuestionPage> {
       _answer.clear();
       setState(() {
         _selectedGrade = 'Grade 1';
-        _selectedVariables = 'X';
+        _selectedVariables = 'A';
       });
       
       ScaffoldMessenger.of(context).showSnackBar(
@@ -139,7 +139,7 @@ class _QuestionPageState extends State<QuestionPage> {
                           filled: true,
                           fillColor: const Color(0xFFF5F7FA),
                         ),
-                        items: ['X', 'XY', 'XYZ', 'XYZH']
+                        items: ['A', 'AB', 'ABC', 'ABCD']
                             .map((vars) => DropdownMenuItem(
                                   value: vars,
                                   child: Text(vars),
@@ -160,7 +160,7 @@ class _QuestionPageState extends State<QuestionPage> {
                         controller: _questionController,
                         maxLines: 5,
                         decoration: InputDecoration(
-                          hintText: 'Example: If Ann has X apples, but Ann eats Y apples. How many apples Ann have?',
+                          hintText: 'Example: If Ann has A apples, but Ann eats B apples. How many apples Ann have?',
                           hintStyle: const TextStyle(color: Colors.grey),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(5),
@@ -180,7 +180,7 @@ class _QuestionPageState extends State<QuestionPage> {
                         controller: _answer,
                         maxLines: 1,
                         decoration: InputDecoration(
-                          hintText: 'Example: X-Y',
+                          hintText: 'Example: A-B',
                           hintStyle: const TextStyle(color: Colors.grey),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(5),

@@ -104,16 +104,24 @@ class Grade1 {
               );
             }
           }
+        if (templateAnswer.contains('+')) {
+          operator = '+';
+        } else if (templateAnswer.contains('-')) {
+          operator = '-';
+        } else {
+          operator = '';
+        }
 
         // Calculate answer based on templateAnswer
         correctAnswer = _evaluateExpression(templateAnswer, variables);
-        operator = ''; 
         correctCompare = '';
         question = templateQuestion;
         break;
 
       case 'mix_operations':
-        List<String> operators = ["+", "-", ">", "word_problem"];
+        // List<String> operators = ["+", "-", ">", "word_problem"];
+        List<String> operators = ["+", "-",];
+
         List<double> cumulativeWeights = [];
         double sum = 0;
 
@@ -201,23 +209,24 @@ class Grade1 {
   }
 
   // Hàm tính toán biểu thức từ template answer
-  int _evaluateExpression(String expression, Map<String, int> variables) {
-    expression = expression.trim();
+  int _evaluateExpression(String templateAnswer, Map<String, int> variables) {
+    templateAnswer = templateAnswer.trim();
 
     // Thay thế biến bằng giá trị
     for (String varName in variables.keys) {
-      expression = expression.replaceAll(varName, variables[varName]!.toString());
+      templateAnswer = templateAnswer.replaceAll(varName, variables[varName]!.toString());
     }
+    print(templateAnswer);
 
     // Xử lý các phép tính đơn giản (+ và -)
-    if (expression.contains('+')) {
-      final parts = expression.split('+');
+    if (templateAnswer.contains('+')) {
+      final parts = templateAnswer.split('+');
       return int.parse(parts[0].trim()) + int.parse(parts[1].trim());
-    } else if (expression.contains('-')) {
-      final parts = expression.split('-');
+    } else if (templateAnswer.contains('-')) {
+      final parts = templateAnswer.split('-');
       return int.parse(parts[0].trim()) - int.parse(parts[1].trim());
     } else {
-      return int.parse(expression); // Nếu không có toán tử, trả về số trực tiếp
+      return int.parse(templateAnswer); // Nếu không có toán tử, trả về số trực tiếp
     }
   }
 }
