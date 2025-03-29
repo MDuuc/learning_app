@@ -23,11 +23,12 @@ class Grade2 {
     String question = '';
 
     final analysisDataNotifier = Provider.of<AnalysisDataNotifier>(context, listen: false);
-    Map<String, double> weights = analysisDataNotifier.weights['grade_1'] ?? {};
-    print('📊 Weights for Grade 1: $weights');
+    Map<String, double> weights = analysisDataNotifier.weights['grade_2'] ?? {};
+    print('📊 Weights for Grade 2: $weights');
     if (weights.isEmpty) {
       print("⚠ Weights empty, using default equal weights");
-      weights = {"+": 1.0, "-": 1.0, ">": 1.0, "word_problem": 1.0};
+      // weights = {"+": 1.0, "-": 1.0, "x": 1.0, "word_problem": 1.0};
+      weights = {"+": 1.0, "-": 1.0, "x": 1.0};
     }
 
     switch (operation) {
@@ -49,12 +50,12 @@ class Grade2 {
         question = "$a $operator $b = ?";
         break;
 
-      case 'multiplication': // Sửa case multiplication theo logic bạn cung cấp
-        a = random.nextInt(10); // a từ 0-9
-        b = random.nextInt(10); // b từ 0-9
+      case 'multiplication': 
+        a = random.nextInt(10); 
+        b = random.nextInt(10); 
         operator = "x";
         correctAnswer = a * b;
-        question = "$a $operator $b = ?"; // Tạo câu hỏi ngay trong case
+        question = "$a $operator $b = ?"; 
         correctCompare = '';
         break;
 

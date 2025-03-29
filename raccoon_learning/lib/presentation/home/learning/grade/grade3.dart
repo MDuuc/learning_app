@@ -126,7 +126,6 @@ class Grade3 {
             } else {
               variables[varName] = random.nextInt(100) + 1; // Default: 1-100
             }
-            // Chỉ thay thế nếu không phải trường hợp đặc biệt của division
             if (!(templateAnswer.contains('/') && i == 0)) {
               templateQuestion = templateQuestion.replaceAll(
                 pattern,

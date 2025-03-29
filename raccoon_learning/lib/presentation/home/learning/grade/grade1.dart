@@ -29,7 +29,9 @@ class Grade1 {
     print('📊 Weight for Grade 1: $weights');
     if (weights.isEmpty) {
       print("⚠ Weights empty, using default equal weights");
-      weights = {"+": 1.0, "-": 1.0, ">": 1.0, "word_problem": 1.0}; // Thêm word_problem
+      // weights = {"+": 1.0, "-": 1.0, ">": 1.0, "word_problem": 1.0}; 
+      weights = {"+": 1.0, "-": 1.0, ">": 1.0,}; 
+
     }
 
     switch (operation) {
@@ -226,7 +228,7 @@ class Grade1 {
       final parts = templateAnswer.split('-');
       return int.parse(parts[0].trim()) - int.parse(parts[1].trim());
     } else {
-      return int.parse(templateAnswer); // Nếu không có toán tử, trả về số trực tiếp
+      return int.parse(templateAnswer); 
     }
   }
 }
