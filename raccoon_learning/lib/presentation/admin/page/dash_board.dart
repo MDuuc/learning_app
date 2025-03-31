@@ -172,7 +172,7 @@ Widget buildHeader(BuildContext context) {
           radius: 15,
         ),
         const SizedBox(width: 5), // Space between avatar and text
-        const Text('Moni Roy', style: TextStyle(color: Colors.black87)),
+        const Text('Admin', style: TextStyle(color: Colors.black87)),
         const SizedBox(width:  20,),
       ],
     ),

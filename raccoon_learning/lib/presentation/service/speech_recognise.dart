@@ -1,15 +1,18 @@
-import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:flutter/material.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
 
+// SpeechService class to handle speech-to-text functionality
 class SpeechService {
   final stt.SpeechToText _speech = stt.SpeechToText();
-  final ValueNotifier<bool> isListeningNotifier = ValueNotifier(false);
-  final ValueNotifier<String> textNotifier = ValueNotifier('Press and hold to start listening');
+  final ValueNotifier<bool> isListeningNotifier = ValueNotifier(false); // Notifier for listening state
+  final ValueNotifier<String> textNotifier = ValueNotifier('Press and hold to start listening'); // Notifier for recognized text
+  final ValueNotifier<String> localeIdNotifier = ValueNotifier('vi_VN'); // Notifier for current language (default: Vietnamese)
 
   SpeechService() {
     _initSpeech();
   }
 
+  // Initialize the speech-to-text service
   Future<void> _initSpeech() async {
     bool available = await _speech.initialize(
       onStatus: (val) {
@@ -27,7 +30,8 @@ class SpeechService {
     }
   }
 
-  Future<void> startListening(Function(String) onResult, {String localeId = 'vi_VN'}) async {
+  // Start listening for speech input with the specified language
+  Future<void> startListening(Function(String) onResult) async {
     if (!isListeningNotifier.value) {
       bool available = await _speech.initialize();
       if (available) {
@@ -35,12 +39,12 @@ class SpeechService {
         textNotifier.value = 'Listening...';
         _speech.listen(
           onResult: (val) {
-          String result = val.recognizedWords.isNotEmpty ? val.recognizedWords : 'Listening...';
-          result = normalizeVoiceText(result);
-          textNotifier.value = result;
-          onResult(result);
+            String result = val.recognizedWords.isNotEmpty ? val.recognizedWords : 'Listening...';
+            result = normalizeVoiceText(result);
+            textNotifier.value = result;
+            onResult(result);
           },
-          localeId: localeId,
+          localeId: localeIdNotifier.value, // Use the current localeId (VN or EN)
         );
       } else {
         textNotifier.value = 'Unable to use voice recognition';
@@ -48,6 +52,7 @@ class SpeechService {
     }
   }
 
+  // Stop listening for speech input
   void stopListening() {
     if (isListeningNotifier.value) {
       _speech.stop();
@@ -56,16 +61,24 @@ class SpeechService {
     }
   }
 
-  void defaultText(){
+  // Reset the text to the default message
+  void defaultText() {
     textNotifier.value = '';
-    textNotifier.value= 'Press and hold to start listening';
+    textNotifier.value = 'Press and hold to start listening';
   }
 
+  // Update the language for speech recognition
+  void updateLanguage(bool isVN) {
+    localeIdNotifier.value = isVN ? 'vi_VN' : 'en_US';
+  }
+
+  // Dispose of the speech service
   void dispose() {
     _speech.stop();
   }
 }
 
+// Normalize the recognized text (e.g., convert spoken numbers to digits)
 String normalizeVoiceText(String input) {
   switch (input.toLowerCase().trim()) {
     case 'một':
@@ -132,36 +145,77 @@ String normalizeVoiceText(String input) {
     case 'mưới':  
       return '10';
 
-    // Compare
-  case 'dấu bằng':
-  case 'bằng':
-  case 'bằngg':
-  case 'bàn':  
-  case 'bang':  
-    return '=';
+    // Compare symbols
+    case 'dấu bằng':
+    case 'bằng':
+    case 'bằngg':
+    case 'bàn':  
+    case 'bang':  
+      return '=';
 
-  case 'dấu lớn hơn':
-  case 'lớn hơn':
-  case 'lớn':
-  case 'lơn':
-  case 'lớnn':
-  case 'lớn hơnn':
-  case 'lướn':
-    return '>';
+    case 'dấu lớn hơn':
+    case 'lớn hơn':
+    case 'lớn':
+    case 'lơn':
+    case 'lớnn':
+    case 'lớn hơnn':
+    case 'lướn':
+      return '>';
 
-  case 'dấu nhỏ hơn':
-  case 'nhỏ hơn':
-  case 'nhỏ':
-  case 'nho':
-  case 'nhó':
-  case 'nhỏn':
-  case 'nhở':
-  case 'nhõ':
-    return '<';
+    case 'dấu nhỏ hơn':
+    case 'nhỏ hơn':
+    case 'nhỏ':
+    case 'nho':
+    case 'nhó':
+    case 'nhỏn':
+    case 'nhở':
+    case 'nhõ':
+      return '<';
+
+      // English numbers (1 to 12)
+    case 'one':
+      return '1';
+    case 'two':
+      return '2';
+    case 'three':
+      return '3';
+    case 'four':
+      return '4';
+    case 'five':
+      return '5';
+    case 'six':
+      return '6';
+    case 'seven':
+      return '7';
+    case 'eight':
+      return '8';
+    case 'nine':
+      return '9';
+    case 'ten':
+      return '10';
+    case 'eleven':
+      return '11';
+    case 'twelve':
+      return '12';
+
+    // English comparison symbols (already added in previous response, included here for completeness)
+    case 'equals':
+    case 'equal':
+      return '=';
+    case 'greater than':
+    case 'bigger than':
+    case 'bigger':
+
+
+      return '>';
+    case 'less than':
+    case 'smaller than':
+    case 'smaller':
+
+
+      return '<';
 
     default:
       return input; 
   }
 }
-
-

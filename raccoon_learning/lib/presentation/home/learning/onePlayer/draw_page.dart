@@ -25,7 +25,7 @@ class DrawPage extends StatefulWidget {
 }
 
 class _DrawPageState extends State<DrawPage> {
-  late SpeechService _speechService;
+  late SpeechService speechService;
   final String _language = 'en';
   late DigitalInkRecognizer _digitalInkRecognizer;
   final Ink _ink = Ink();
@@ -54,6 +54,7 @@ class _DrawPageState extends State<DrawPage> {
 
   bool _isDrawing = false;
   String _speechText='';
+  bool _isVN= true;
   
     @override
   void initState() {
@@ -67,13 +68,14 @@ class _DrawPageState extends State<DrawPage> {
     startTimer();
     final userNotifier = Provider.of<GameplayNotifier>(context, listen: false);
     bestScore = userNotifier.bestScore;
-    _speechService = SpeechService();
+    speechService = SpeechService();
+    speechService.updateLanguage(_isVN);
   }
 
 
   @override
   void dispose() {
-    _speechService.dispose();
+    speechService.dispose();
     // Close the recognizer to free resources
     _digitalInkRecognizer.close();
     timer?.cancel();
@@ -82,7 +84,7 @@ class _DrawPageState extends State<DrawPage> {
   
 void _updateQuestion(String userAnswer) {
   setState(() {
-    if (userAnswer.isNotEmpty) {
+    if (userAnswer.isNotEmpty && _currentQuestion.length<20) {
       _currentQuestion = _currentQuestion.replaceFirst("?", userAnswer);
     }
   });
@@ -293,46 +295,130 @@ void _updateQuestion(String userAnswer) {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Padding(
-                          padding: const EdgeInsets.all(10.0),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                padding: EdgeInsets.all(10),
+                        padding: const EdgeInsets.all(10.0),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            // Keyboard button to toggle between drawing and speech
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: const BoxDecoration(
+                                color: Colors.blue,
+                                shape: BoxShape.circle,
+                              ),
+                              child: IconButton(
+                                icon: const Icon(Icons.keyboard, color: Colors.white, size: 35),
+                                onPressed: () {
+                                  setState(() {
+                                    _isDrawing = !_isDrawing;
+                                  });
+                                },
+                                tooltip: 'Speech',
+                              ),
+                            ),
+                            // Language toggle button (VN/EN)
+                            GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _isVN = !_isVN;
+                                  // Update the language in SpeechService
+                                  speechService.updateLanguage(_isVN);
+                                });
+                              },
+                              child: Container(
+                                width: 100,
+                                height: 50,
                                 decoration: BoxDecoration(
-                                  color: Colors.blue,
-                                  shape: BoxShape.circle
+                                  color: _isVN ? AppColors.primary : AppColors.black,
+                                  borderRadius: BorderRadius.circular(25),
+                                  border: Border.all(color: Colors.black, width: 2),
                                 ),
-                                child: IconButton(
-                                  icon: Icon(Icons.keyboard, color: Colors.white, size: 35),
-                                  onPressed: (){
-                                    setState(() {
-                                      _isDrawing = !_isDrawing;
-                                    });
-                                  },
-                                  tooltip: 'Speech',
+                                child: Stack(
+                                  children: [
+                                    // Animated toggle circle
+                                    AnimatedAlign(
+                                      duration: const Duration(milliseconds: 300),
+                                      alignment: _isVN ? Alignment.centerLeft : Alignment.centerRight,
+                                      child: Container(
+                                        width: 50,
+                                        height: 50,
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          shape: BoxShape.circle,
+                                          border: Border.all(color: Colors.black, width: 2),
+                                        ),
+                                      ),
+                                    ),
+                                    // VN and EN labels
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.only(left: 15),
+                                          child: SizedBox(
+                                            height: 50,
+                                            child: Center(
+                                              child: Text(
+                                                "VN",
+                                                style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: _isVN ? Colors.black : Colors.white,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.only(right: 15),
+                                          child: SizedBox(
+                                            height: 50,
+                                            child: Center(
+                                              child: Text(
+                                                "EN",
+                                                style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: _isVN ? Colors.white : Colors.black,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
                                 ),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
+                      ),
+                      // Display the recognized speech text
                       Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: ValueListenableBuilder<String>(
-                          valueListenable: _speechService.textNotifier,
+                          valueListenable: speechService.textNotifier,
                           builder: (context, text, child) {
-                            _speechText=text;
-                            return Text(text, style: const TextStyle(fontSize: 20.0), textAlign: TextAlign.center);
+                            _speechText = text;
+                            return Text(
+                              text,
+                              style: const TextStyle(fontSize: 20.0),
+                              textAlign: TextAlign.center,
+                            );
                           },
                         ),
                       ),
+                      // Microphone button to start/stop listening
                       GestureDetector(
-                        onTapDown: (_) => _speechService.startListening((text) {
-                          setState(() {}); 
+                        onTapDown: (_) => speechService.startListening((text) {
+                          setState(() {});
                         }),
-                        onTapUp: (_) => _speechService.stopListening(),
+                        onTapUp: (_) => speechService.stopListening(),
                         child: ValueListenableBuilder<bool>(
-                          valueListenable: _speechService.isListeningNotifier,
+                          valueListenable: speechService.isListeningNotifier,
                           builder: (context, isListening, child) {
                             return Padding(
                               padding: const EdgeInsets.all(10),
@@ -350,29 +436,30 @@ void _updateQuestion(String userAnswer) {
                                       color: Colors.white,
                                     ),
                                   ),
-                                    Padding(
-                                      padding: EdgeInsets.only(right: 20),
-                                      child: Align(
-                                        alignment: Alignment.bottomRight,
-                                        child: Container(
-                                          padding: EdgeInsets.all(10),
-                                          decoration: BoxDecoration(
-                                            color: Colors.green,
-                                            borderRadius: BorderRadius.circular(12),
-                                          ),
-                                          child: IconButton(
-                                            icon: const Icon(Icons.verified, color: Colors.white, size: 35),
-                                            onPressed: (){
-                                              if (_speechText != 'No match found') {
+                                  // Confirm button to submit the recognized answer
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 20),
+                                    child: Align(
+                                      alignment: Alignment.bottomRight,
+                                      child: Container(
+                                        padding: const EdgeInsets.all(10),
+                                        decoration: BoxDecoration(
+                                          color: Colors.green,
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        child: IconButton(
+                                          icon: const Icon(Icons.verified, color: Colors.white, size: 35),
+                                          onPressed: () {
+                                            if (_speechText != 'No match found') {
                                               _updateQuestion(_speechText);
                                             }
                                             setState(() {});
-                                            },
-                                            tooltip: 'Confirm Anwser',
-                                          ),
+                                          },
+                                          tooltip: 'Confirm Answer',
                                         ),
                                       ),
                                     ),
+                                  ),
                                 ],
                               ),
                             );
@@ -623,7 +710,7 @@ void _restartGame(){
       _scorePoint=0;
       recognizeAndGenerateQuestion(widget.grade);
       _clearPad();
-      _speechService.defaultText();
+      speechService.defaultText();
       startTimer();
       _updateAnalysisData();
 
@@ -639,7 +726,7 @@ void _restartGame(){
       _scorePoint=0;
       recognizeAndGenerateQuestion(widget.grade);
       _clearPad();
-      _speechService.defaultText();
+      speechService.defaultText();
       startTimer();
       _updateAnalysisData();
 

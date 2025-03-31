@@ -66,20 +66,25 @@ class _OperationDialogState extends State<OperationDialog> {
                         ),
                         const SizedBox(height: 20),
 
-                        // Word Problem
-                        buildDialogButton(
-                          context,
-                          text: 'Word Problem',
-                          icon: Icons.app_registration_rounded,
-                          onPressed: () {
-                            operation = 'word_problem';
-                            setState(() {
-                              chooseOperation = true;
-                            });
-                          },
-                        ),
+                        // Word Problem dont have 2 player function
+                       buildDialogButton(
+                        context,
+                        text: 'Word Problem',
+                        icon: Icons.app_registration_rounded,
+                        onPressed: () {
+                          operation = 'word_problem';
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (BuildContext context) => DrawPage(
+                                grade: widget.grade,
+                                operation: operation,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
                         const SizedBox(height: 10),
-
                         // Addition
                         buildDialogButton(
                           context,
