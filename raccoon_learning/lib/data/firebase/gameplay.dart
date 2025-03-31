@@ -81,7 +81,6 @@ Future<void> fetchStoreItemsFromFirebase() async {
     print('Initial data uploaded for user $userId');
   }
 
-// Method to listen for updates in store_default and sync new items to user data
 void listenToAllStoreUpdates(String userId) {
   _storeSubscription = _firestore.collection('store_default').snapshots().listen(
     (snapshot) async {
@@ -89,7 +88,6 @@ void listenToAllStoreUpdates(String userId) {
       // Extract store items directly from each document
       for (var doc in snapshot.docs) {
         if (doc.exists && doc.data() != null) {
-          // Create a StoreModle directly from the document data
           Map<String, dynamic> storeItemData = {
             'image': doc.data()['avatarurl'] ?? '',
             'price': doc.data()['price'] ?? 0,
@@ -106,21 +104,75 @@ void listenToAllStoreUpdates(String userId) {
       List<dynamic> currentStore = userDoc.get('store') ?? [];
       List<StoreModle> currentStoreItems = currentStore.map((item) => StoreModle.fromMap(item)).toList();
 
-      // Identify new items by comparing image (assuming image is unique)
+      // Identify new items, items with price updates, and items to remove
       List<Map<String, dynamic>> itemsToAdd = [];
+      List<Map<String, dynamic>> itemsToUpdate = [];
+      List<Map<String, dynamic>> itemsToRemove = [];
+
+      // Check for new items and price updates
       for (var newItem in newStoreItems) {
-        bool exists = currentStoreItems.any((currentItem) => currentItem.image == newItem.image);
-        if (!exists) {
-          itemsToAdd.add(newItem.toMap()..['purchase'] = false); // Add new item with purchase = false
+        int existingIndex = currentStoreItems.indexWhere((currentItem) => currentItem.image == newItem.image);
+        
+        if (existingIndex == -1) {
+          // New item doesn't exist in user's store
+          itemsToAdd.add(newItem.toMap()..['purchase'] = false);
+        } else {
+          // Item exists, check if price has changed
+          StoreModle existingItem = currentStoreItems[existingIndex];
+          if (existingItem.price != newItem.price) {
+            // Price has changed, prepare update while preserving purchase status
+            itemsToUpdate.add({
+              'image': newItem.image,
+              'price': newItem.price,
+              'purchase': existingItem.purchase, // Keep the existing purchase status
+            });
+          }
         }
       }
 
-      // Update user data with new items if any
-      if (itemsToAdd.isNotEmpty) {
-        await _firestore.collection('gameplay').doc(userId).update({
-          'store': FieldValue.arrayUnion(itemsToAdd), // Add only new items without overwriting
-        });
-        print('Added ${itemsToAdd.length} new store items for user $userId');
+      // Check for items that exist in user's store but not in store_default (to be removed)
+      for (var currentItem in currentStoreItems) {
+        bool existsInDefault = newStoreItems.any((newItem) => newItem.image == currentItem.image);
+        if (!existsInDefault) {
+          itemsToRemove.add(currentItem.toMap());
+        }
+      }
+
+      // Update user data with new items, price updates, and removals
+      if (itemsToAdd.isNotEmpty || itemsToUpdate.isNotEmpty || itemsToRemove.isNotEmpty) {
+        // First, remove items that need to be deleted or updated
+        if (itemsToRemove.isNotEmpty || itemsToUpdate.isNotEmpty) {
+          await _firestore.collection('gameplay').doc(userId).update({
+            'store': FieldValue.arrayRemove(
+              [
+                ...itemsToRemove,
+                ...currentStoreItems
+                    .where((item) => itemsToUpdate.any((update) => update['image'] == item.image))
+                    .map((item) => item.toMap())
+              ]
+            ),
+          });
+        }
+
+        // Then add both new items and updated items
+        if (itemsToAdd.isNotEmpty || itemsToUpdate.isNotEmpty) {
+          await _firestore.collection('gameplay').doc(userId).update({
+            'store': FieldValue.arrayUnion(
+              [...itemsToAdd, ...itemsToUpdate]
+            ),
+          });
+        }
+
+        // Logging
+        if (itemsToAdd.isNotEmpty) {
+          print('Added ${itemsToAdd.length} new store items for user $userId');
+        }
+        if (itemsToUpdate.isNotEmpty) {
+          print('Updated price for ${itemsToUpdate.length} existing store items for user $userId');
+        }
+        if (itemsToRemove.isNotEmpty) {
+          print('Removed ${itemsToRemove.length} store items for user $userId');
+        }
       }
     },
     onError: (error) {

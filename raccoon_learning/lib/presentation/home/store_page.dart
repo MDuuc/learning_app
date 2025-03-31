@@ -13,6 +13,11 @@ class StorePage extends StatefulWidget {
 }
 
 class _StorePageState extends State<StorePage> {
+  Future<void> _refreshStore(BuildContext context) async {
+    final gameplay = Provider.of<GameplayNotifier>(context, listen: false);
+    await gameplay.refreshStoreData();
+  }
+
   @override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
@@ -20,7 +25,7 @@ class _StorePageState extends State<StorePage> {
 
     return Scaffold(
       body: Consumer<GameplayNotifier>(builder: (context, gameplay, child) {
-        final sortedItems = gameplay.storeItems;  
+        final sortedItems = gameplay.storeItems;
         final coin = gameplay.coin;
         return Column(
           children: [
@@ -38,25 +43,23 @@ class _StorePageState extends State<StorePage> {
                 child: Column(
                   children: [
                     const SizedBox(height: 60),
-                    Text(
+                    const Text(
                       "Store",
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 26,
                         color: Colors.white,
                       ),
                     ),
                     const SizedBox(height: 20),
                     Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 10),
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Container(
                             height: 45,
-                            child: Image.asset(
-                              AppImages.coin,
-                            ),
+                            child: Image.asset(AppImages.coin),
                           ),
                           Text(
                             coin.toString(),
@@ -82,43 +85,54 @@ class _StorePageState extends State<StorePage> {
               ),
             ),
             Expanded(
-              child: GridView.builder(
-                padding: const EdgeInsets.all(16),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2, 
-                  crossAxisSpacing: 16,
-                  mainAxisSpacing: 16,
-                  childAspectRatio: 0.8, 
+              child: RefreshIndicator(
+                  onRefresh: () => _refreshStore(context),
+                  color: AppColors.yellow_coin,
+                  backgroundColor: AppColors.black,
+                  strokeWidth: 3.0,
+                  displacement: 20.0,
+                child: GridView.builder(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.all(16),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                    childAspectRatio: 0.8,
+                  ),
+                  itemCount: sortedItems.length,
+                  itemBuilder: (context, index) {
+                    final item = sortedItems[index];
+                    bool isPurchased = item.purchase;
+                    return storeItem(
+                      context,
+                      item.image,
+                      item.price,
+                      isPurchased
+                          ? null
+                          : () async {
+                              my_alert_dialog(
+                                  context,
+                                  'Purchase',
+                                  'Are you sure to purchase this',
+                                  () async {
+                                    if (coin >= item.price) {
+                                      await gameplay.purchaseAvatar(item.image, item.price);
+                                      await gameplay.purchaseItem(item);
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text('Avatar purchased successfully!')),
+                                      );
+                                    } else {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text('Not enough coins!')),
+                                      );
+                                    }
+                                  });
+                            },
+                      isPurchased,
+                    );
+                  },
                 ),
-                itemCount: sortedItems.length,
-                itemBuilder: (context, index) {
-                  final item = sortedItems[index];
-                  bool isPurchased = item.purchase;
-                  return storeItem(
-                    context,
-                    item.image,
-                    item.price,
-                    isPurchased
-                        ? null
-                        : () async {
-                              my_alert_dialog(context, 'Purchase', 'Are you sure to purchase this', () async {
-                                                            if (coin >= item.price) {
-                                    await gameplay.purchaseAvatar(item.image, item.price);
-                                    await gameplay.purchaseItem(item);
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text('Avatar purchased successfully!')),
-                                    );
-                                  } else {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text('Not enough coins!')),
-                                    );
-                                  }
-                                }
-                              );
-                          },
-                    isPurchased,
-                  );
-                },
               ),
             ),
           ],
@@ -126,11 +140,7 @@ class _StorePageState extends State<StorePage> {
       }),
     );
   }
-}
 
-
-
-  @override
   Widget storeItem(BuildContext context, String image, int price, VoidCallback? onPress, bool isPurchased) {
     return Container(
       padding: const EdgeInsets.all(16.0),
@@ -184,3 +194,4 @@ class _StorePageState extends State<StorePage> {
       ),
     );
   }
+}

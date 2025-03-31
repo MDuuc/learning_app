@@ -63,6 +63,45 @@ Future<void> fetchDataFirebase(String userId) async {
   }
 }
 
+Future<void> refreshStoreData() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? userId = prefs.getString('user_uid');
+  DocumentReference userDocRef = FirebaseFirestore.instance.collection('gameplay').doc(userId);
+
+  try {
+    DocumentSnapshot userDoc = await userDocRef.get();
+
+    if (userDoc.exists) {
+      Map<String, dynamic> data = userDoc.data() as Map<String, dynamic>;
+      
+      // Refresh coin
+      if (data.containsKey('coin') && data['coin'] is int) {
+        int coin = data['coin'] as int;
+        _coin = coin;
+      }
+
+      // Refresh store items
+      if (data.containsKey('store') && data['store'] is List) {
+        List storeList = data['store'] as List;
+        _storeItems = storeList
+            .map((item) => StoreModle.fromMap(item))
+            .toList();
+        sortStoreItems();
+      }
+
+      // Refresh purchased avatars
+      if (data.containsKey('avatarPurchased') && data['avatarPurchased'] is List) {
+        List avatarList = data['avatarPurchased'] as List;
+        _purchasedAvatars = avatarList.map((item) => item.toString()).toList();
+      }
+
+      notifyListeners();
+    }
+  } catch (e) {
+    print('Error refreshing store data: $e');
+  }
+}
+
 
   Future<void> purchaseItem(StoreModle item) async {
     final prefs = await SharedPreferences.getInstance();
