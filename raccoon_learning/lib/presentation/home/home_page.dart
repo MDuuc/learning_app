@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:raccoon_learning/constants/assets/app_images.dart';
 import 'package:raccoon_learning/constants/theme/app_colors.dart';
 import 'package:raccoon_learning/presentation/home/achievement/tab_controler_achive.dart';
+import 'package:raccoon_learning/presentation/home/custom_page.dart';
 import 'package:raccoon_learning/presentation/home/learning/choose_grade_page.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/User_notifier.dart';
 import 'package:raccoon_learning/presentation/widgets/dialog/competive_dialog.dart';
@@ -173,6 +174,10 @@ class _HomePageState extends State<HomePage> {
                       );
                   }),
                   _menuHome(context, AppImages.raccoon_custom, "Custom", (){    
+                    Navigator.push(
+                      context, 
+                      MaterialPageRoute(builder: (BuildContext context) => const CustomPage())
+                      );
                     }),
                 ],
                             ),
@@ -182,7 +187,7 @@ class _HomePageState extends State<HomePage> {
       })
     );
   }
-  Widget _menuHome (BuildContext context, String image, String tilte, VoidCallback onTap){
+  Widget _menuHome (BuildContext context, String image, String title, VoidCallback onTap){
     double screenWidth = MediaQuery.of(context).size.width;
     double size = screenWidth / 3;
     return GestureDetector(
@@ -201,7 +206,7 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           Text(
-            tilte,
+            title,
             style: const TextStyle(
               color: Colors.black,
               fontSize: 16,
