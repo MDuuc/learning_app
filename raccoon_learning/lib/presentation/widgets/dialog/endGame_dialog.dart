@@ -3,10 +3,12 @@ import 'package:provider/provider.dart';
 import 'package:raccoon_learning/constants/assets/app_images.dart';
 import 'package:raccoon_learning/presentation/home/control_page.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/competitve_notifier.dart';
+import 'package:raccoon_learning/presentation/widgets/dialog/rank_dialog.dart';
 
 class EndgameDialog extends StatelessWidget {
   final String endMatchStatus;
-  const EndgameDialog({super.key, required this.endMatchStatus});
+  final String grade;
+  const EndgameDialog({super.key, required this.endMatchStatus, required this.grade});
 
   @override
   Widget build(BuildContext context) {
@@ -14,10 +16,21 @@ class EndgameDialog extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: GestureDetector(
-        onTap: () => {
-          competiveNotifer.endPlayRoom(),
-          Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => const ControlPage()),(route) => false),
-          },
+      onTap: () {
+                competiveNotifer.endPlayRoom();
+                // Show RankDialog as a dialog instead of pushing it as a route
+                showDialog(
+                  context: context,
+                  builder: (context) => RankDialog(grade: grade), // Pass the grade here
+                ).then((_) {
+                  // After RankDialog is dismissed, navigate to a new page or clear stack
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (context) => const ControlPage()), // Replace with your target page
+                    (route) => false,
+                  );
+                });
+              },
         child: Stack(
           fit: StackFit.expand,
           children: [

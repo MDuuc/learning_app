@@ -148,7 +148,7 @@ void _updateQuestion(String userAnswer) {
             if (!notifier.hasShownDialog&&(notifier.statusEndMatchUser == 'win' || notifier.statusEndMatchUser == 'lose')) {
               Future.microtask((){ 
               notifier.hasShownDialog=true;
-              _showEndingDialog(context, notifier.statusEndMatchUser);});
+              _showEndingDialog(context, notifier.statusEndMatchUser, widget.grade);});
             }
             return const SizedBox(); 
           },
@@ -163,7 +163,7 @@ void _updateQuestion(String userAnswer) {
             child:  Row(
               children: [
                CircleAvatar(
-                backgroundImage: AssetImage(userNotifer.avatarPath),
+                backgroundImage: NetworkImage(userNotifer.avatarPath),
                 radius: 30,
                ),
                 const SizedBox(width: 10,),
@@ -190,7 +190,7 @@ void _updateQuestion(String userAnswer) {
                 ),
                 const SizedBox(width: 10,),
                CircleAvatar(
-                backgroundImage: AssetImage(competiveNotifer.avatarOpponent),
+                backgroundImage: NetworkImage(competiveNotifer.avatarOpponent),
                 radius: 30,
                ),
                //handle endMatch status
@@ -491,12 +491,12 @@ Future<void> recognizeAndGenerateQuestion(String grade) async {
   }
 }
 
-    void _showEndingDialog(BuildContext context, String status) {
+    void _showEndingDialog(BuildContext context, String status, String grade) {
     timer?.cancel();
     showDialog(
       context: context,
       builder: (context) {
-        return EndgameDialog(endMatchStatus: status,); 
+        return EndgameDialog(endMatchStatus: status, grade:  grade,); 
       },
     );
 }

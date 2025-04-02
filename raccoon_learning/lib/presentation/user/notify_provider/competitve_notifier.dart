@@ -13,6 +13,11 @@ class CompetitveNotifier extends ChangeNotifier {
  String _statusEndMatchUser= "";
  bool _hasShownDialog = false;
  String _avatarOpponent = "";
+ //rank
+ int _rank_grade1 = 0;
+ int _rank_grade2 = 0;
+ int _rank_grade3 = 0;
+
 
 
  int get myScore => _myScore;
@@ -24,6 +29,11 @@ class CompetitveNotifier extends ChangeNotifier {
  String get statusEndMatchUser => _statusEndMatchUser;
  bool get hasShownDialog => _hasShownDialog;
 String get avatarOpponent => _avatarOpponent;
+//rank
+int get rank_grade1 => _rank_grade1;
+int get rank_grade2 => _rank_grade2;
+int get rank_grade3 => _rank_grade3;
+
 
 
 
@@ -156,27 +166,95 @@ Future<bool> createOrJoinGame( String grade) async {
   }
 
 // delete room after finish
-  Future <void> existPlayRoom()async{
-    DocumentReference playRoomDoc = _firestore.collection('play_rooms').doc(_playRoomID);
-    CollectionReference waitingRoom = _firestore.collection('waiting_room');
-        try {
-      _statusEndMatchUser="lose";
-      _statusEndMatchOpponent="win";
+Future<void> existPlayRoom() async {
+  DocumentReference playRoomDoc = _firestore.collection('play_rooms').doc(_playRoomID);
+  CollectionReference waitingRoom = _firestore.collection('waiting_room');
+  try {
+    _statusEndMatchUser = "lose"; // Set user as loser
+    _statusEndMatchOpponent = "win"; // Set opponent as winner
 
-      // Update the score for the user by incrementing it atomically
-      await playRoomDoc.update({
-        '$userID.status': _statusEndMatchUser,
-        '$opponentID.status': _statusEndMatchOpponent,
+    // Update the status for user and opponent in the play_room document
+    await playRoomDoc.update({
+      '$userID.status': _statusEndMatchUser,
+      '$opponentID.status': _statusEndMatchOpponent,
+    });
 
-      });
-      // Notify listeners about the change
-      // _statusEndMatchUser.close();
-      notifyListeners();
-    } catch (error) {
+    // Fetch the play room document to get the grade
+    DocumentSnapshot playRoomSnapshot = await playRoomDoc.get();
+    String? grade = playRoomSnapshot.get('grade'); // Retrieve the grade field
+
+    // Update ranks based on the grade if it exists
+    if (grade != null) {
+      // Update loser's rank (user) by subtracting 15 points, with a minimum of 0
+      DocumentReference userDoc = _firestore.collection('gameplay').doc(_userID);
+      if (_statusEndMatchUser == "lose") {
+        DocumentSnapshot userSnapshot = await userDoc.get();
+        Map<String, dynamic>? userData = userSnapshot.data() as Map<String, dynamic>?;
+        if (userData != null) {
+          if (grade == "grade_1") {
+            int currentRank = userData['rank_grade1'] ?? 0;
+            int newRank = (currentRank - 15).clamp(0, double.infinity).toInt(); // Ensure rank doesn't go below 0
+            _rank_grade1 = newRank; // Update local variable
+            await userDoc.update({
+              'rank_grade1': newRank,
+            });
+          } else if (grade == "grade_2") {
+            int currentRank = userData['rank_grade2'] ?? 0;
+            int newRank = (currentRank - 15).clamp(0, double.infinity).toInt();
+            _rank_grade2 = newRank; // Update local variable
+            await userDoc.update({
+              'rank_grade2': newRank,
+            });
+          } else if (grade == "grade_3") {
+            int currentRank = userData['rank_grade3'] ?? 0;
+            int newRank = (currentRank - 15).clamp(0, double.infinity).toInt();
+            _rank_grade3 = newRank; // Update local variable
+            await userDoc.update({
+              'rank_grade3': newRank,
+            });
+          }
+        }
+      }
+
+      // Update winner's rank (opponent) by adding 15 points
+      DocumentReference opponentDoc = _firestore.collection('gameplay').doc(_opponentID);
+      if (_statusEndMatchOpponent == "win") {
+        DocumentSnapshot opponentSnapshot = await opponentDoc.get();
+        Map<String, dynamic>? opponentData = opponentSnapshot.data() as Map<String, dynamic>?;
+        if (opponentData != null) {
+          if (grade == "grade_1") {
+            int currentRank = opponentData['rank_grade1'] ?? 0;
+            int newRank = currentRank + 15;
+            await opponentDoc.update({
+              'rank_grade1': newRank,
+            });
+          } else if (grade == "grade_2") {
+            int currentRank = opponentData['rank_grade2'] ?? 0;
+            int newRank = currentRank + 15;
+            await opponentDoc.update({
+              'rank_grade2': newRank,
+            });
+          } else if (grade == "grade_3") {
+            int currentRank = opponentData['rank_grade3'] ?? 0;
+            int newRank = currentRank + 15;
+            await opponentDoc.update({
+              'rank_grade3': newRank,
+            });
+          }
+        }
+      }
     }
+
+    // Notify listeners about the changes (e.g., for UI updates)
+    notifyListeners();
+
+    // Clean up by deleting waiting room entries for both user and opponent
     await waitingRoom.doc(_opponentID).delete();
     await waitingRoom.doc(_userID).delete();
+  } catch (error) {
+    print('Error exiting play room: $error'); // Log any errors
   }
+}
 
   // endPlayRoom
     Future <void> endPlayRoom()async{
@@ -211,24 +289,113 @@ void updateScore() async {
   }
 }
 
-  // update endMatch status  
-  Future <void> updateEndMatchStatus()async{
-    DocumentReference playRoomDoc = _firestore.collection('play_rooms').doc(_playRoomID);
-        try {
-      _statusEndMatchUser="win";
-      _statusEndMatchOpponent="lose";
+//Handle endmatch with win and lose, plus point to winner and minus to loser
+Future<void> updateEndMatchStatus() async {
+  DocumentReference playRoomDoc = _firestore.collection('play_rooms').doc(_playRoomID);
+  try {
+    _statusEndMatchUser = "win";
+    _statusEndMatchOpponent = "lose";
 
-      // Update the score for the user by incrementing it atomically
-      await playRoomDoc.update({
-        '$userID.status': _statusEndMatchUser,
-        '$opponentID.status': _statusEndMatchOpponent,
+    // Update the status for user and opponent in play_room
+    await playRoomDoc.update({
+      '$userID.status': _statusEndMatchUser,
+      '$opponentID.status': _statusEndMatchOpponent,
+    });
 
-      });
-      // Notify listeners about the change
-      // _statusEndMatchUser.close();
-      notifyListeners();
+    // Get the play room document to fetch the grade
+    DocumentSnapshot playRoomSnapshot = await playRoomDoc.get();
+    String? grade = playRoomSnapshot.get('grade'); // Fetch the grade field
+
+
+
+    // Update ranks based on the grade
+    if (grade != null) {
+      // Update winner's rank (user)
+      DocumentReference userDoc = _firestore.collection('gameplay').doc(_userID);
+      if (_statusEndMatchUser == "win") {
+        if (grade == "grade_1") {
+            _rank_grade1+=15;
+          await userDoc.update({
+            'rank_grade1': _rank_grade1
+          });
+        } else if (grade == "grade_2") {
+          _rank_grade2+=15;
+          await userDoc.update({
+            'rank_grade2': _rank_grade2, 
+          });
+        } else if (grade == "grade_3") {
+          _rank_grade3+=15;
+          await userDoc.update({
+            'rank_grade3': _rank_grade3, 
+          });
+        }
+      }
+
+      // Update loser's rank (opponent) with minimum of 0
+      DocumentReference opponentDoc = _firestore.collection('gameplay').doc(_opponentID);
+      if (_statusEndMatchOpponent == "lose") {
+        DocumentSnapshot opponentSnapshot = await opponentDoc.get();
+        Map<String, dynamic>? opponentData = opponentSnapshot.data() as Map<String, dynamic>?;
+        if (opponentData != null) {
+          if (grade == "grade_1") {
+            int currentRank = opponentData['rank_grade1'] ?? 0;
+            int newRank = (currentRank - 15).clamp(0, double.infinity).toInt(); 
+            await opponentDoc.update({
+              'rank_grade1': newRank,
+            });
+          } else if (grade == "grade_2") {
+            int currentRank = opponentData['rank_grade2'] ?? 0;
+            int newRank = (currentRank - 15).clamp(0, double.infinity).toInt();
+            await opponentDoc.update({
+              'rank_grade2': newRank,
+            });
+          } else if (grade == "grade_3") {
+            int currentRank = opponentData['rank_grade3'] ?? 0;
+            int newRank = (currentRank - 15).clamp(0, double.infinity).toInt();
+            await opponentDoc.update({
+              'rank_grade3': newRank,
+            });
+          }
+        }
+      }
+    }
+
+    // Notify listeners about the change
+    notifyListeners();
+  } catch (error) {
+    print('Error updating end match status: $error');
+  }
+}
+
+// Method to fetch and update local rank variables from Firestore
+  Future<void> fetchAndUpdateRanks() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? userId = prefs.getString('user_uid');
+    try {
+      DocumentReference userDoc = _firestore.collection('gameplay').doc(userId);
+
+      DocumentSnapshot userSnapshot = await userDoc.get();
+
+      // Check if the document exists and has data
+      if (userSnapshot.exists) {
+        Map<String, dynamic>? userData = userSnapshot.data() as Map<String, dynamic>?;
+        if (userData != null) {
+          // Update local rank variables with values from Firestore, default to 0 if missing
+          _rank_grade1 = userData['rank_grade1'] ?? 0;
+          _rank_grade2 = userData['rank_grade2'] ?? 0;
+          _rank_grade3 = userData['rank_grade3'] ?? 0;
+
+          // Notify listeners to update the UI or other dependent components
+          notifyListeners();
+
+        } else {
+          print('No data found in user document for user $userId');
+        }
+      } else {
+        print('User document does not exist for user $userId');
+      }
     } catch (error) {
-      print('Error out room: $error');
+      print('Error fetching ranks: $error');
     }
   }
 

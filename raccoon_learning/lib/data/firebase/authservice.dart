@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:raccoon_learning/data/firebase/gamePlay.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/User_notifier.dart';
+import 'package:raccoon_learning/presentation/user/notify_provider/competitve_notifier.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/gameplay_notifier.dart';
 import 'package:raccoon_learning/presentation/widgets/widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -140,9 +141,12 @@ Future<void> loadInfoOfUser(BuildContext context) async {
       // Load into Notifier
       final userNotifier = Provider.of<UserNotifier>(context, listen: false);
       final gameplayNotifer = Provider.of<GameplayNotifier>(context, listen: false);
+      final competitveNotifier = Provider.of<CompetitveNotifier>(context, listen: false);
+
 
       await userNotifier.loadUserInfo(userName!, avatar!, streakCount!, role!);
       await gameplayNotifer.fetchDataFirebase(userId);
+      await competitveNotifier.fetchAndUpdateRanks();
     } else {
       throw Exception('User document not found in Firestore');
     }

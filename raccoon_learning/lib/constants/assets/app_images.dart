@@ -24,17 +24,33 @@ class AppImages{
   static const String raccoon_grade_3 = '${basePath}raccoon_grade_3.png';
   static const String raccoon_notifi = '${basePath}raccoon_notifi.png';
 
-  //store
-  static const String raccoon_store_1 = '${basePath}raccoon_store_1.png';
-  static const String raccoon_store_2 = '${basePath}raccoon_store_2.png';
-  static const String raccoon_store_3 = '${basePath}raccoon_store_3.png';
-  static const String raccoon_store_4 = '${basePath}raccoon_store_4.png';
-  static const String raccoon_store_5 = '${basePath}raccoon_store_5.png';
-  static const String raccoon_store_6 = '${basePath}raccoon_store_6.png';
-  static const String raccoon_store_7 = '${basePath}raccoon_store_7.png';
-  static const String raccoon_store_8 = '${basePath}raccoon_store_8.png';
-  static const String raccoon_store_9 = '${basePath}raccoon_store_9.png';
-  static const String raccoon_store_10 = '${basePath}raccoon_store_10.png';
+  static const String Iron_1_Rank = '${basePath}Iron_1_Rank.png';
+  static const String Iron_2_Rank = '${basePath}Iron_2_Rank.png';
+  static const String Iron_3_Rank = '${basePath}Iron_3_Rank.png';
+
+  static const String Bronze_1_Rank = '${basePath}Bronze_1_Rank.png';
+  static const String Bronze_2_Rank = '${basePath}Bronze_2_Rank.png';
+  static const String Bronze_3_Rank = '${basePath}Bronze_3_Rank.png';
+
+  static const String Silver_1_Rank = '${basePath}Silver_1_Rank.png';
+  static const String Silver_2_Rank = '${basePath}Silver_2_Rank.png';
+  static const String Silver_3_Rank = '${basePath}Silver_3_Rank.png';
+
+  static const String Gold_1_Rank = '${basePath}Gold_1_Rank.png';
+  static const String Gold_2_Rank = '${basePath}Gold_2_Rank.png';
+  static const String Gold_3_Rank = '${basePath}Gold_3_Rank.png';
+
+  static const String Platinum_1_Rank = '${basePath}Platinum_1_Rank.png';
+  static const String Platinum_2_Rank = '${basePath}Platinum_2_Rank.png';
+  static const String Platinum_3_Rank = '${basePath}Platinum_3_Rank.png';
+
+  static const String Diamond_1_Rank = '${basePath}Diamond_1_Rank.png';
+  static const String Diamond_2_Rank = '${basePath}Diamond_2_Rank.png';
+  static const String Diamond_3_Rank = '${basePath}Diamond_3_Rank.png';
+
+  static const String Ascendant_1_Rank = '${basePath}Ascendant_1_Rank.png';
+  static const String Ascendant_2_Rank = '${basePath}Ascendant_2_Rank.png';
+  static const String Ascendant_3_Rank = '${basePath}Ascendant_3_Rank.png';
 
 
 
