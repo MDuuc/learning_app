@@ -192,23 +192,20 @@ Future<void> existPlayRoom() async {
         Map<String, dynamic>? userData = userSnapshot.data() as Map<String, dynamic>?;
         if (userData != null) {
           if (grade == "grade_1") {
-            int currentRank = userData['rank_grade1'] ?? 0;
-            int newRank = (currentRank - 15).clamp(0, double.infinity).toInt(); // Ensure rank doesn't go below 0
-            _rank_grade1 = newRank; // Update local variable
+            int newRank = (_rank_grade1 - 15).clamp(0, double.infinity).toInt(); 
+            _rank_grade1 = newRank; 
             await userDoc.update({
               'rank_grade1': newRank,
             });
           } else if (grade == "grade_2") {
-            int currentRank = userData['rank_grade2'] ?? 0;
-            int newRank = (currentRank - 15).clamp(0, double.infinity).toInt();
-            _rank_grade2 = newRank; // Update local variable
+            int newRank = (_rank_grade2 - 15).clamp(0, double.infinity).toInt();
+            _rank_grade2 = newRank; 
             await userDoc.update({
               'rank_grade2': newRank,
             });
           } else if (grade == "grade_3") {
-            int currentRank = userData['rank_grade3'] ?? 0;
-            int newRank = (currentRank - 15).clamp(0, double.infinity).toInt();
-            _rank_grade3 = newRank; // Update local variable
+            int newRank = (_rank_grade3 - 15).clamp(0, double.infinity).toInt();
+            _rank_grade3 = newRank; 
             await userDoc.update({
               'rank_grade3': newRank,
             });
