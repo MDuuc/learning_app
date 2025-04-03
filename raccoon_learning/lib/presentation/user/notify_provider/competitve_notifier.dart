@@ -1,6 +1,10 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:raccoon_learning/presentation/home/learning/grade/grade1.dart';
+import 'package:raccoon_learning/presentation/home/learning/grade/grade2.dart';
+import 'package:raccoon_learning/presentation/home/learning/grade/grade3.dart';
+import 'package:raccoon_learning/presentation/home/learning/grade/math_question.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CompetitveNotifier extends ChangeNotifier {
@@ -17,6 +21,12 @@ class CompetitveNotifier extends ChangeNotifier {
  int _rank_grade_1 = 0;
  int _rank_grade_2 = 0;
  int _rank_grade_3 = 0;
+//question
+  List<String> _questions = [];
+  List<int> _answers = [];
+  List<String> _compares = [];
+  int _currentQuestionIndex = 0;
+
 
 
 
@@ -33,7 +43,19 @@ String get avatarOpponent => _avatarOpponent;
 int get rank_grade_1 => _rank_grade_1;
 int get rank_grade_2 => _rank_grade_2;
 int get rank_grade_3 => _rank_grade_3;
+//question
+List<String> get questions => _questions;
+  List<int> get answers => _answers;
+  List<String> get compares => _compares;
+  int get currentQuestionIndex => _currentQuestionIndex;
+  String get currentQuestion => _questions.isNotEmpty ? _questions[_currentQuestionIndex] : "";
+  int get currentAnswer => _answers.isNotEmpty ? _answers[_currentQuestionIndex] : 0;
+  String get currentCompare => _compares.isNotEmpty ? _compares[_currentQuestionIndex] : "";
 
+  set currentQuestionIndex(int value) {
+  _currentQuestionIndex = value;
+  notifyListeners();
+}
 
 
 
@@ -88,7 +110,7 @@ Future<bool> addToWaitingRoom(String grade) async {
   return completer.future;
 }
 
-Future<bool> createOrJoinGame(String grade) async {
+Future<bool> createOrJoinGame(BuildContext context, String grade) async {
   _myScore = 0;
   _opponentScore = 0;
   _playRoomID = "";
@@ -127,7 +149,7 @@ Future<bool> createOrJoinGame(String grade) async {
       DocumentSnapshot? matchingPlayer;
       for (var player in matchingPlayers.docs) {
         int opponentScore = player['score'] ?? 0;
-        if ((myScore - opponentScore).abs() <= 600) {
+        if ((myScore - opponentScore).abs() <= 300) {
           matchingPlayer = player;
           break;
         }
@@ -137,6 +159,55 @@ Future<bool> createOrJoinGame(String grade) async {
         _opponentID = matchingPlayer.id;
         _playRoomID = playRoom.id;
         DocumentSnapshot opponentDoc = await _firestore.collection('users').doc(_opponentID).get();
+        // Generate questions (similar to TwoPlayersNotifier)
+        List<String> questions = [];
+        List<int> answers = [];
+        List<String> compares = [];
+        String operation = 'mix_operations'; //default mode
+
+        for (int i = 0; i < 30; i++) {
+          switch (grade) {
+            case 'grade_1':
+              final grade1 = Grade1(operation);
+              try {
+                final MathQuestion mathQuestion = await grade1.generateRandomQuestion(context: context); 
+                questions.add(mathQuestion.question);
+                answers.add(mathQuestion.correctAnswer);
+                compares.add(mathQuestion.correctCompare ?? '');
+              } catch (e) {
+                print('Error generating Grade 1 question: $e');
+              }
+              break;
+
+            case 'grade_2':
+              final grade2 = Grade2(operation);
+              try {
+                final MathQuestion mathQuestion = await grade2.generateRandomQuestion(context: context);
+                questions.add(mathQuestion.question);
+                answers.add(mathQuestion.correctAnswer);
+                compares.add(mathQuestion.correctCompare ?? '');
+              } catch (e) {
+                print('Error generating Grade 2 question: $e');
+              }
+              break;
+
+            case 'grade_3':
+              final grade3 = Grade3(operation);
+              try {
+                final MathQuestion mathQuestion = await grade3.generateRandomQuestion(context: context);
+                questions.add(mathQuestion.question);
+                answers.add(mathQuestion.correctAnswer);
+                compares.add(mathQuestion.correctCompare ?? '');
+              } catch (e) {
+                print('Error generating Grade 3 question: $e');
+              }
+              break;
+
+            default:
+              print('Unsupported grade: $grade');
+              break;
+          }
+        }
 
         // Create a play room document
         transaction.set(playRoom, {
@@ -144,7 +215,10 @@ Future<bool> createOrJoinGame(String grade) async {
           _opponentID: {'score': 0, 'status': 'playing'},
           'grade': grade,
           'created_at': FieldValue.serverTimestamp(),
-          'status': 'active'
+          'status': 'active',
+          'questions': questions, 
+          'answers': answers,
+          'compares': compares,
         });
 
         // Update both players in waiting room
@@ -300,7 +374,7 @@ Future<void> existPlayRoom() async {
   }
 
   // update point 
-void updateScore() async {
+ updateScore() async {
   if (_playRoomID.isNotEmpty) {
     DocumentReference playRoomDoc = _firestore.collection('play_rooms').doc(_playRoomID);
     try {
@@ -429,7 +503,25 @@ Future<void> updateEndMatchStatus() async {
     }
   }
 
-
-
-
+  Future<void> fetchQuestions() async {
+  if (_playRoomID.isNotEmpty) {
+    try {
+      DocumentSnapshot playRoomDoc = await _firestore.collection('play_rooms').doc(_playRoomID).get();
+      if (playRoomDoc.exists) {
+        final data = playRoomDoc.data() as Map<String, dynamic>;
+        _questions = List<String>.from(data['questions'] ?? []);
+        _answers = List<int>.from(data['answers'] ?? []);
+        _compares = List<String>.from(data['compares'] ?? []);
+        _currentQuestionIndex = 0; // Reset index
+        notifyListeners();
+      } else {
+        print('Play room document does not exist.');
+      }
+    } catch (e) {
+      print('Error fetching questions: $e');
+    }
+  } else {
+    print('Play room ID is empty.');
+  }
+}
 }

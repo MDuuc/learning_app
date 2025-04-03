@@ -26,7 +26,7 @@ class _WaitingDialogState extends State<WaitingDialog> {
 
   Future<void> _checkForMatch() async {
     final competiveNotifer = Provider.of<CompetitveNotifier>(context, listen: false);
-    final result = await competiveNotifer.createOrJoinGame(widget.grade);
+    final result = await competiveNotifer.createOrJoinGame(context,widget.grade);
     setState(() {
       isMatch = result;
     });
@@ -40,7 +40,7 @@ class _WaitingDialogState extends State<WaitingDialog> {
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(
-        builder: (BuildContext context) => DrawCompetitve(
+        builder: (BuildContext context) => DrawCompetitive(
           grade: widget.grade,
           operation: 'mix_operations',
         ),
