@@ -69,9 +69,9 @@ Future<void> fetchStoreItemsFromFirebase() async {
       'user_id': userId,
       'best_score': bestScore,
       'coin': coin,
-      'rank_grade1': 0,
-      'rank_grade2': 0,
-      'rank_grade3': 0,
+      'rank_grade_1': 0,
+      'rank_grade_2': 0,
+      'rank_grade_3': 0,
       'store': storeItems.map((item) => item.toMap()..['purchase'] = false).toList(), // Set all items as unpurchased initially
       'achivement_learning': achivementLearning.map((item) => {
         'description': item['description'],

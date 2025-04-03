@@ -73,11 +73,11 @@ class _RankDialogState extends State<RankDialog> with SingleTickerProviderStateM
     competitiveNotifier.fetchAndUpdateRanks();
     statusMatch = competitiveNotifier.statusEndMatchUser; 
     if (widget.grade == 'grade_1') {
-      rank = competitiveNotifier.rank_grade1; 
+      rank = competitiveNotifier.rank_grade_1; 
     } else if (widget.grade == 'grade_2') {
-      rank = competitiveNotifier.rank_grade2;
+      rank = competitiveNotifier.rank_grade_2;
     } else if (widget.grade == 'grade_3') {
-      rank = competitiveNotifier.rank_grade3;
+      rank = competitiveNotifier.rank_grade_3;
     }
     // Calculate previous rank based on match result
     if(statusMatch=='win') {rank+=15;};

@@ -14,9 +14,9 @@ class CompetitveNotifier extends ChangeNotifier {
  bool _hasShownDialog = false;
  String _avatarOpponent = "";
  //rank
- int _rank_grade1 = 0;
- int _rank_grade2 = 0;
- int _rank_grade3 = 0;
+ int _rank_grade_1 = 0;
+ int _rank_grade_2 = 0;
+ int _rank_grade_3 = 0;
 
 
 
@@ -30,9 +30,9 @@ class CompetitveNotifier extends ChangeNotifier {
  bool get hasShownDialog => _hasShownDialog;
 String get avatarOpponent => _avatarOpponent;
 //rank
-int get rank_grade1 => _rank_grade1;
-int get rank_grade2 => _rank_grade2;
-int get rank_grade3 => _rank_grade3;
+int get rank_grade_1 => _rank_grade_1;
+int get rank_grade_2 => _rank_grade_2;
+int get rank_grade_3 => _rank_grade_3;
 
 
 
@@ -43,54 +43,77 @@ int get rank_grade3 => _rank_grade3;
   }
 
 final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-Future<bool> addToWaitingRoom( String grade) async {
+Future<bool> addToWaitingRoom(String grade) async {
   DocumentReference waitingRoom = _firestore.collection('waiting_room').doc(_userID);
   StreamSubscription? waitingRoomListener;
-  
+
+  // Fetch the player's score from the gameplay collection
+  DocumentSnapshot gameplayDoc = await _firestore.collection('gameplay').doc(_userID).get();
+  int playerScore = 0;
+  if (gameplayDoc.exists) {
+    Map<String, dynamic> gameplayData = gameplayDoc.data() as Map<String, dynamic>;
+    // Assuming the score for the specific grade is stored like 'rank_grade_1', 'rank_grade_2', etc.
+    playerScore = gameplayData['rank_$grade'] ?? 0;
+  }
+
+  // Add player to waiting room with their score
   await waitingRoom.set({
     'id': _userID,
     'grade': grade,
     'status': 'waiting',
+    'score': playerScore, // Store the player's score
     'timestamp': FieldValue.serverTimestamp(),
   });
 
   final completer = Completer<bool>();
 
   waitingRoomListener = _firestore
-  .collection('waiting_room')
-  .doc(_userID)
-  .snapshots()
-  .listen((snapshot) async {
+      .collection('waiting_room')
+      .doc(_userID)
+      .snapshots()
+      .listen((snapshot) async {
     if (snapshot.exists) {
       final data = snapshot.data() as Map<String, dynamic>;
-      if (data['status'] == 'matched')  {
-       _playRoomID = data['play_room_id'];
-       _opponentID = data['matched_with'];
+      if (data['status'] == 'matched') {
+        _playRoomID = data['play_room_id'];
+        _opponentID = data['matched_with'];
         DocumentSnapshot opponentDoc = await _firestore.collection('users').doc(_opponentID).get();
-      _avatarOpponent = opponentDoc['avatar'];
+        _avatarOpponent = opponentDoc['avatar'];
         waitingRoomListener?.cancel();
-        return completer.complete(true);
+        completer.complete(true);
       }
     }
   });
-    return completer.future;
+
+  return completer.future;
 }
 
-Future<bool> createOrJoinGame( String grade) async {
+Future<bool> createOrJoinGame(String grade) async {
   _myScore = 0;
-  _opponentScore =0;
-  _playRoomID ="";
-  _opponentID="";
-  _userID="";
+  _opponentScore = 0;
+  _playRoomID = "";
+  _opponentID = "";
+  _userID = "";
   _statusEndMatchOpponent = "";
-  _statusEndMatchUser= "";
+  _statusEndMatchUser = "";
   _hasShownDialog = false;
+
   final prefs = await SharedPreferences.getInstance();
   String? userId = prefs.getString('user_uid');
-  _userID= (userId) as String;
+  _userID = userId as String;
+
+  // Fetch the current player's score from the gameplay collection
+  DocumentSnapshot gameplayDoc = await _firestore.collection('gameplay').doc(_userID).get();
+  int myScore = 0;
+  if (gameplayDoc.exists) {
+    Map<String, dynamic> gameplayData = gameplayDoc.data() as Map<String, dynamic>;
+    myScore = gameplayData['rank_$grade'] ?? 0;
+  }
+
   CollectionReference waitingRoom = _firestore.collection('waiting_room');
   DocumentReference playRoom = _firestore.collection('play_rooms').doc();
-   return await _firestore.runTransaction((transaction) async {
+
+  return await _firestore.runTransaction((transaction) async {
     // Attempt to find a matching player
     final QuerySnapshot matchingPlayers = await waitingRoom
         .where('grade', isEqualTo: grade)
@@ -100,47 +123,57 @@ Future<bool> createOrJoinGame( String grade) async {
         .get();
 
     if (matchingPlayers.docs.isNotEmpty) {
-      final matchingPlayer = matchingPlayers.docs.first;
-      _opponentID = matchingPlayer.id;
-      _playRoomID = playRoom.id;
-      DocumentSnapshot opponentDoc = await _firestore.collection('users').doc(opponentID).get();
+      // Filter players based on score difference (<= 300)
+      DocumentSnapshot? matchingPlayer;
+      for (var player in matchingPlayers.docs) {
+        int opponentScore = player['score'] ?? 0;
+        if ((myScore - opponentScore).abs() <= 600) {
+          matchingPlayer = player;
+          break;
+        }
+      }
 
+      if (matchingPlayer != null) {
+        _opponentID = matchingPlayer.id;
+        _playRoomID = playRoom.id;
+        DocumentSnapshot opponentDoc = await _firestore.collection('users').doc(_opponentID).get();
 
-      // Create a play room document
-      transaction.set(playRoom, {
-        userId: {'score': 0, 'status': 'playing'},
-        _opponentID: {'score': 0, 'status': 'playing'},
-        'grade': grade,
-        'created_at': FieldValue.serverTimestamp(),
-        'status': 'active'
-      });
+        // Create a play room document
+        transaction.set(playRoom, {
+          userId: {'score': 0, 'status': 'playing'},
+          _opponentID: {'score': 0, 'status': 'playing'},
+          'grade': grade,
+          'created_at': FieldValue.serverTimestamp(),
+          'status': 'active'
+        });
 
-      // Update both players in waiting room
-      transaction.set(waitingRoom.doc(userId), {
-        'status': 'matched',
-        'play_room_id': _playRoomID,
-        'matched_with': _opponentID,
-        'id': _userID,
-        'grade': grade,
-        'timestamp': FieldValue.serverTimestamp(),
-      });
+        // Update both players in waiting room
+        transaction.set(waitingRoom.doc(userId), {
+          'status': 'matched',
+          'play_room_id': _playRoomID,
+          'matched_with': _opponentID,
+          'id': _userID,
+          'grade': grade,
+          'score': myScore, // Include score for consistency
+          'timestamp': FieldValue.serverTimestamp(),
+        });
 
-      transaction.update(waitingRoom.doc(_opponentID), {
-        'status': 'matched',
-        'play_room_id': _playRoomID,
-        'matched_with': userId,
-      });
+        transaction.update(waitingRoom.doc(_opponentID), {
+          'status': 'matched',
+          'play_room_id': _playRoomID,
+          'matched_with': userId,
+        });
 
-      //get opponent avatar
-      _avatarOpponent = opponentDoc['avatar'];
+        // Get opponent avatar
+        _avatarOpponent = opponentDoc['avatar'];
 
-      return true;
-    } else {
-      // No match found, add player to waiting room
-      return await addToWaitingRoom(grade);
+        return true;
+      }
     }
-  });
 
+    // No suitable match found, add player to waiting room
+    return await addToWaitingRoom(grade);
+  });
 }
 
   // Listen to room updates for real-time score changes
@@ -192,22 +225,22 @@ Future<void> existPlayRoom() async {
         Map<String, dynamic>? userData = userSnapshot.data() as Map<String, dynamic>?;
         if (userData != null) {
           if (grade == "grade_1") {
-            int newRank = (_rank_grade1 - 15).clamp(0, double.infinity).toInt(); 
-            _rank_grade1 = newRank; 
+            int newRank = (_rank_grade_1 - 15).clamp(0, double.infinity).toInt(); 
+            _rank_grade_1 = newRank; 
             await userDoc.update({
-              'rank_grade1': newRank,
+              'rank_grade_1': newRank,
             });
           } else if (grade == "grade_2") {
-            int newRank = (_rank_grade2 - 15).clamp(0, double.infinity).toInt();
-            _rank_grade2 = newRank; 
+            int newRank = (_rank_grade_2 - 15).clamp(0, double.infinity).toInt();
+            _rank_grade_2 = newRank; 
             await userDoc.update({
-              'rank_grade2': newRank,
+              'rank_grade_2': newRank,
             });
           } else if (grade == "grade_3") {
-            int newRank = (_rank_grade3 - 15).clamp(0, double.infinity).toInt();
-            _rank_grade3 = newRank; 
+            int newRank = (_rank_grade_3 - 15).clamp(0, double.infinity).toInt();
+            _rank_grade_3 = newRank; 
             await userDoc.update({
-              'rank_grade3': newRank,
+              'rank_grade_3': newRank,
             });
           }
         }
@@ -220,22 +253,22 @@ Future<void> existPlayRoom() async {
         Map<String, dynamic>? opponentData = opponentSnapshot.data() as Map<String, dynamic>?;
         if (opponentData != null) {
           if (grade == "grade_1") {
-            int currentRank = opponentData['rank_grade1'] ?? 0;
+            int currentRank = opponentData['rank_grade_1'] ?? 0;
             int newRank = currentRank + 15;
             await opponentDoc.update({
-              'rank_grade1': newRank,
+              'rank_grade_1': newRank,
             });
           } else if (grade == "grade_2") {
-            int currentRank = opponentData['rank_grade2'] ?? 0;
+            int currentRank = opponentData['rank_grade_2'] ?? 0;
             int newRank = currentRank + 15;
             await opponentDoc.update({
-              'rank_grade2': newRank,
+              'rank_grade_2': newRank,
             });
           } else if (grade == "grade_3") {
-            int currentRank = opponentData['rank_grade3'] ?? 0;
+            int currentRank = opponentData['rank_grade_3'] ?? 0;
             int newRank = currentRank + 15;
             await opponentDoc.update({
-              'rank_grade3': newRank,
+              'rank_grade_3': newRank,
             });
           }
         }
@@ -311,19 +344,19 @@ Future<void> updateEndMatchStatus() async {
       DocumentReference userDoc = _firestore.collection('gameplay').doc(_userID);
       if (_statusEndMatchUser == "win") {
         if (grade == "grade_1") {
-            _rank_grade1+=15;
+            _rank_grade_1+=15;
           await userDoc.update({
-            'rank_grade1': _rank_grade1
+            'rank_grade_1': _rank_grade_1
           });
         } else if (grade == "grade_2") {
-          _rank_grade2+=15;
+          _rank_grade_2+=15;
           await userDoc.update({
-            'rank_grade2': _rank_grade2, 
+            'rank_grade_2': _rank_grade_2, 
           });
         } else if (grade == "grade_3") {
-          _rank_grade3+=15;
+          _rank_grade_3+=15;
           await userDoc.update({
-            'rank_grade3': _rank_grade3, 
+            'rank_grade_3': _rank_grade_3, 
           });
         }
       }
@@ -335,22 +368,22 @@ Future<void> updateEndMatchStatus() async {
         Map<String, dynamic>? opponentData = opponentSnapshot.data() as Map<String, dynamic>?;
         if (opponentData != null) {
           if (grade == "grade_1") {
-            int currentRank = opponentData['rank_grade1'] ?? 0;
+            int currentRank = opponentData['rank_grade_1'] ?? 0;
             int newRank = (currentRank - 15).clamp(0, double.infinity).toInt(); 
             await opponentDoc.update({
-              'rank_grade1': newRank,
+              'rank_grade_1': newRank,
             });
           } else if (grade == "grade_2") {
-            int currentRank = opponentData['rank_grade2'] ?? 0;
+            int currentRank = opponentData['rank_grade_2'] ?? 0;
             int newRank = (currentRank - 15).clamp(0, double.infinity).toInt();
             await opponentDoc.update({
-              'rank_grade2': newRank,
+              'rank_grade_2': newRank,
             });
           } else if (grade == "grade_3") {
-            int currentRank = opponentData['rank_grade3'] ?? 0;
+            int currentRank = opponentData['rank_grade_3'] ?? 0;
             int newRank = (currentRank - 15).clamp(0, double.infinity).toInt();
             await opponentDoc.update({
-              'rank_grade3': newRank,
+              'rank_grade_3': newRank,
             });
           }
         }
@@ -378,9 +411,9 @@ Future<void> updateEndMatchStatus() async {
         Map<String, dynamic>? userData = userSnapshot.data() as Map<String, dynamic>?;
         if (userData != null) {
           // Update local rank variables with values from Firestore, default to 0 if missing
-          _rank_grade1 = userData['rank_grade1'] ?? 0;
-          _rank_grade2 = userData['rank_grade2'] ?? 0;
-          _rank_grade3 = userData['rank_grade3'] ?? 0;
+          _rank_grade_1 = userData['rank_grade_1'] ?? 0;
+          _rank_grade_2 = userData['rank_grade_2'] ?? 0;
+          _rank_grade_3 = userData['rank_grade_3'] ?? 0;
 
           // Notify listeners to update the UI or other dependent components
           notifyListeners();
