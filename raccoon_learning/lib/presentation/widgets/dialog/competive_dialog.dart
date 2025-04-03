@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:raccoon_learning/presentation/home/competitive/rank_overview_page.dart';
 import 'package:raccoon_learning/presentation/widgets/dialog/waiting_dialog.dart';
 import 'package:raccoon_learning/presentation/widgets/widget.dart';
 
@@ -99,6 +100,21 @@ class CompetiveDialog extends StatelessWidget {
                       //     ),
                       //     (Route<dynamic> route) => false,
                       //   );
+                    },
+                  ),
+
+                const SizedBox(height: 10),
+                // Overview Rank
+                  buildDialogButton(
+                    context,
+                    text: 'Overview Rank',
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (BuildContext context) =>  RankOverviewPage()
+                          ),
+                        );
                     },
                   ),
                 ]
