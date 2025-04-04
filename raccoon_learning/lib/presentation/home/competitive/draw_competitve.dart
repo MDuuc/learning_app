@@ -11,8 +11,7 @@ import 'package:raccoon_learning/presentation/widgets/widget.dart';
 
 class DrawCompetitive extends StatefulWidget {
   final String grade;
-  final String operation;
-  const DrawCompetitive({super.key, required this.grade, required this.operation});
+  const DrawCompetitive({super.key, required this.grade});
 
   @override
   State<DrawCompetitive> createState() => _DrawCompetitiveState();

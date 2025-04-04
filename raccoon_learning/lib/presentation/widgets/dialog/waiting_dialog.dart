@@ -42,7 +42,6 @@ class _WaitingDialogState extends State<WaitingDialog> {
       MaterialPageRoute(
         builder: (BuildContext context) => DrawCompetitive(
           grade: widget.grade,
-          operation: 'mix_operations',
         ),
       ),
       (Route<dynamic> route) => false,

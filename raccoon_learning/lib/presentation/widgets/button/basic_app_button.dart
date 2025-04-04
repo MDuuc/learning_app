@@ -6,6 +6,7 @@ class BasicAppButton extends StatelessWidget {
   final String title;
   final double? height;
   final double? width;
+  final bool enabled;
 
   const BasicAppButton({
     super.key,
@@ -13,12 +14,13 @@ class BasicAppButton extends StatelessWidget {
     required this.title,
     this.height,
     this.width,
+    this.enabled = true,
   });
 
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
-      onPressed: onPressed,
+      onPressed: enabled ? onPressed : null,
       style: ElevatedButton.styleFrom(
         backgroundColor: AppColors.primary,
         elevation: 0,
