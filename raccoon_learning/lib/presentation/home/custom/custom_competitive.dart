@@ -5,19 +5,18 @@ import 'package:provider/provider.dart';
 import 'package:raccoon_learning/constants/assets/app_images.dart';
 import 'package:raccoon_learning/constants/theme/app_colors.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/User_notifier.dart';
-import 'package:raccoon_learning/presentation/user/notify_provider/competitve_notifier.dart';
-import 'package:raccoon_learning/presentation/widgets/dialog/endGame_dialog.dart';
+import 'package:raccoon_learning/presentation/user/notify_provider/custom_competitive_notifier.dart';
+import 'package:raccoon_learning/presentation/widgets/dialog/endGame_custom_dialog.dart';
 import 'package:raccoon_learning/presentation/widgets/widget.dart';
 
-class DrawCompetitive extends StatefulWidget {
-  final String grade;
-  const DrawCompetitive({super.key, required this.grade});
+class CustomCompetitive extends StatefulWidget {
+  const CustomCompetitive({super.key});
 
   @override
-  State<DrawCompetitive> createState() => _DrawCompetitiveState();
+  State<CustomCompetitive> createState() => _CustomCompetitiveState();
 }
 
-class _DrawCompetitiveState extends State<DrawCompetitive> {
+class _CustomCompetitiveState extends State<CustomCompetitive> {
   final String _language = 'en';
   late DigitalInkRecognizer _digitalInkRecognizer;
   final Ink _ink = Ink();
@@ -25,7 +24,7 @@ class _DrawCompetitiveState extends State<DrawCompetitive> {
   String _recognizedText = '';
 
   // Timer
-  static int maxSeconds = 30; // Changed to 30 seconds for reasonable question duration
+  static int maxSeconds = 30; 
   int seconds = maxSeconds;
   static Timer? timer;
 
@@ -42,9 +41,8 @@ class _DrawCompetitiveState extends State<DrawCompetitive> {
 
   Future<void> _initializeModel() async {
     _digitalInkRecognizer = DigitalInkRecognizer(languageCode: _language);
-    final competitiveNotifier = Provider.of<CompetitveNotifier>(context, listen: false);
+    final competitiveNotifier = Provider.of<CustomCompetitiveNotifier>(context, listen: false);
     await competitiveNotifier.fetchQuestions();
-    competitiveNotifier.listenToPointUpdates();
     updateCurrentQuestion(); // Load first question
     startTimer();
   }
@@ -57,7 +55,7 @@ class _DrawCompetitiveState extends State<DrawCompetitive> {
   }
 
   void updateCurrentQuestion() {
-    final competitiveNotifier = Provider.of<CompetitveNotifier>(context, listen: false);
+    final competitiveNotifier = Provider.of<CustomCompetitiveNotifier>(context, listen: false);
     setState(() {
       if (competitiveNotifier.questions.isNotEmpty &&
           competitiveNotifier.currentQuestionIndex < competitiveNotifier.questions.length) {
@@ -70,7 +68,7 @@ class _DrawCompetitiveState extends State<DrawCompetitive> {
         _correctCompare = "";
         Future.microtask(() {
           my_alert_dialog(context, "Error", "No questions available. Exiting match.", () {
-            competitiveNotifier.existPlayRoom();
+            competitiveNotifier.exitPlayRoom();
             Navigator.pop(context);
           });
         });
@@ -79,7 +77,7 @@ class _DrawCompetitiveState extends State<DrawCompetitive> {
   }
 
   void _updateQuestion(String userAnswer) {
-    final competitiveNotifier = Provider.of<CompetitveNotifier>(context, listen: false);
+    final competitiveNotifier = Provider.of<CustomCompetitiveNotifier>(context, listen: false);
 
     setState(() {
       if (userAnswer.isNotEmpty) {
@@ -140,14 +138,14 @@ class _DrawCompetitiveState extends State<DrawCompetitive> {
 
   @override
   Widget build(BuildContext context) {
-    final competitiveNotifier = Provider.of<CompetitveNotifier>(context, listen: false);
+    final competitiveNotifier = Provider.of<CustomCompetitiveNotifier>(context, listen: false);
     final userNotifier = Provider.of<UserNotifier>(context, listen: false);
 
     double screenHeight = MediaQuery.of(context).size.height;
     double screenWidth = MediaQuery.of(context).size.width;
 
     return PopScope(
-      canPop: false, // not allow to back, until u press out
+      canPop: false, // not allow to back, until press out
       child: Scaffold(
         backgroundColor: AppColors.lightBackground,
         appBar: AppBar(
@@ -156,7 +154,7 @@ class _DrawCompetitiveState extends State<DrawCompetitive> {
             IconButton(
               onPressed: () {
                 my_alert_dialog(context, "Exit", "Are you sure to exit the match?", () {
-                  competitiveNotifier.existPlayRoom();
+                  competitiveNotifier.exitPlayRoom();
                 });
               },
               icon: Icon(
@@ -170,13 +168,13 @@ class _DrawCompetitiveState extends State<DrawCompetitive> {
         body: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Consumer<CompetitveNotifier>(
+            Consumer<CustomCompetitiveNotifier>(
               builder: (context, notifier, child) {
                 if (!notifier.hasShownDialog &&
                     (notifier.statusEndMatchUser == 'win' || notifier.statusEndMatchUser == 'lose')) {
                   Future.microtask(() {
                     notifier.hasShownDialog = true;
-                    _showEndingDialog(context, notifier.statusEndMatchUser, widget.grade);
+                    _showEndingDialog(context, notifier.statusEndMatchUser);
                   });
                 }
                 return const SizedBox();
@@ -210,7 +208,7 @@ class _DrawCompetitiveState extends State<DrawCompetitive> {
                   ),
                   const Spacer(),
                   Text(
-                    "${competitiveNotifier.rivalScore} / 10",
+                    "${competitiveNotifier.opponentScore} / 10",
                     style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w600,
@@ -450,19 +448,19 @@ class _DrawCompetitiveState extends State<DrawCompetitive> {
   }
 
   void checkScoreAndUpdateStatus() {
-    final competitiveNotifier = Provider.of<CompetitveNotifier>(context, listen: false);
+    final competitiveNotifier = Provider.of<CustomCompetitiveNotifier>(context, listen: false);
     if (competitiveNotifier.myScore >= 10) {
       competitiveNotifier.updateEndMatchStatus();
       timer?.cancel();
     }
   }
 
-  void _showEndingDialog(BuildContext context, String status, String grade) {
+  void _showEndingDialog(BuildContext context, String status) {
     timer?.cancel();
     showDialog(
       context: context,
       builder: (context) {
-        return EndgameDialog(endMatchStatus: status, grade: grade);
+        return EndgameCustomDialog(endMatchStatus: status);
       },
     );
   }

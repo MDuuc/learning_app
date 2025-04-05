@@ -1,9 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:raccoon_learning/constants/assets/app_images.dart';
 import 'package:raccoon_learning/constants/theme/app_colors.dart';
+import 'package:raccoon_learning/presentation/home/custom/custom_competitive.dart';
+import 'package:raccoon_learning/presentation/home/home_page.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/User_notifier.dart';
+import 'package:raccoon_learning/presentation/user/notify_provider/custom_competitive_notifier.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/custom_notifier.dart';
 import 'package:raccoon_learning/presentation/widgets/button/basic_app_button.dart';
 
@@ -14,14 +18,39 @@ class CustomPage extends StatefulWidget {
   State<CustomPage> createState() => _CustomPageState();
 }
 
+
+final Map<String, String> gradeMap = {
+  'Grade 1': 'grade_1',
+  'Grade 2': 'grade_2',
+  'Grade 3': 'grade_3',
+};
+final Map<String, String> operationMap = {
+  'Addition': 'addition',
+  'Subtraction': 'subtraction',
+  'Multiplication': 'multiplication',
+  'Division': 'division',
+  'Mix Operation': 'mix_operations',
+};
+
+  String _gradeSelected ="Grade 1";
+  String _operationSelected="Addition";
+
 class _CustomPageState extends State<CustomPage> {
+
+
   @override
 void initState() {
     super.initState();
     final FirebaseFirestore _firestore = FirebaseFirestore.instance;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final customNotifier = Provider.of<CustomNotifier>(context, listen: false);
+      final competitiveNotifier = Provider.of<CustomCompetitiveNotifier>(context, listen: false);
+      customNotifier.resetPlayRoomId();
+      competitiveNotifier.deletePlayRoom();
       customNotifier.listenForAcceptedInvitations();
+      customNotifier.listenForOpponentLeaving();
+      customNotifier.determineRole();
+      customNotifier.listenForPlayRoomStart( competitiveNotifier);
 
       customNotifier.getInvitationsStream().listen((snapshot) async {
         if (snapshot.docs.isNotEmpty && mounted) {
@@ -34,7 +63,7 @@ void initState() {
               .doc(inviterId)
               .get();
           String inviterUsername = inviterDoc['username'];
-          String? inviterAvatarPath = inviterDoc['avatarPath'];
+          String? inviterAvatarPath = inviterDoc['avatar'];
 
           showDialog(
             context: context,
@@ -69,14 +98,30 @@ void initState() {
     });
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final userNotifier = Provider.of<UserNotifier>(context, listen: false);
-    final customNotifier = Provider.of<CustomNotifier>(context); // Listen to changes
-    double screenHeight = MediaQuery.of(context).size.height;
-    double screenWidth = MediaQuery.of(context).size.width;
-
-    return Scaffold(
+@override
+Widget build(BuildContext context) {
+  final userNotifier = Provider.of<UserNotifier>(context, listen: false);
+  final customNotifier = Provider.of<CustomNotifier>(context);
+  final competitiveNotifier = Provider.of<CustomCompetitiveNotifier>(context, listen: false);
+  double screenHeight = MediaQuery.of(context).size.height;
+  double screenWidth = MediaQuery.of(context).size.width;
+    String gradeValue = gradeMap[_gradeSelected] ?? '';
+  String operationValue= operationMap[_operationSelected] ?? '';
+  // Check Game start or not to change Navigator
+  if (customNotifier.shouldNavigate) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const CustomCompetitive()),
+      ).then((_) {
+        // Reset _shouldNavigate
+        customNotifier.resetNavigationState();
+      });
+    });
+  }
+  return PopScope(
+    canPop: false, // not allow to back, until u press out
+    child: Scaffold(
       body: Column(
         children: [
           Container(
@@ -99,7 +144,72 @@ void initState() {
               ),
             ),
           ),
-          const SizedBox(height: 100),
+          const SizedBox(height: 20),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Dropdown Grade
+                DropdownButton<String>(
+                  value: _gradeSelected, 
+                  items: <String>['Grade 1', 'Grade 2', 'Grade 3']
+                      .map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                  onChanged: (String? newValue) {
+                      if (newValue != null) {
+                        setState(() {
+                          _gradeSelected = newValue;
+                        });
+                      }
+                  },
+                ),
+                // Dropdown Operation
+                DropdownButton<String>(
+                  value: _operationSelected, 
+                  items: <String>[
+                    'Addition',
+                    'Subtraction',
+                    'Multiplication',
+                    'Division',
+                    'Mix Operation'
+                  ].map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                  onChanged: (String? newValue) {
+                      if (newValue != null) {
+                        setState(() {
+                          _operationSelected = newValue;
+                        });
+                      }
+                  }
+                ),
+                // Icon Logout
+                IconButton(
+                  icon: const Icon(
+                    Icons.logout,
+                    color: Colors.red,
+                  ),
+                  onPressed: () async{
+                    await customNotifier.clearAcceptedInvitations();
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (context) => HomePage()),
+                      (Route<dynamic> route) => false, 
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 60),
           Expanded(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -120,25 +230,46 @@ void initState() {
               ],
             ),
           ),
-          Expanded(
-            child: Center(
-              child: BasicAppButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Starting game...')),
-                  );
-                },
-                width: screenWidth / 2,
-                enabled: customNotifier.opponentId != null,
-                title: 'Play',
+            Expanded(
+              child: Center(
+                child: customNotifier.isInviter // Show Play button only to inviter
+                    ? BasicAppButton(
+                        onPressed: () async {
+                          if (customNotifier.opponentId != null) {
+                            await customNotifier.createPlayRoom(
+                              context,
+                              customNotifier.opponentId!,
+                              operationValue,
+                              gradeValue,
+                            );
+                            await competitiveNotifier.initializePlayRoom(
+                              customNotifier.playRoomId!,
+                              customNotifier.opponentId!,
+                              FirebaseAuth.instance.currentUser!.uid,
+                            );
+                            competitiveNotifier.listenToPointUpdates();
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const CustomCompetitive()),
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Please invite an opponent first')),
+                            );
+                          }
+                        },
+                        width: screenWidth / 2,
+                        enabled: customNotifier.opponentId != null,
+                        title: 'Play',
+                      )
+                    : const Text('Waiting for the host to start...'),
               ),
             ),
-          ),
         ],
       ),
-    );
-  }
-
+    ),
+  );
+}
   Widget _playerUI(BuildContext context, String image, String title, VoidCallback onTap) {
     double screenWidth = MediaQuery.of(context).size.width;
     double size = screenWidth / 3;

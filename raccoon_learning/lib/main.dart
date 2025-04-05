@@ -1,11 +1,13 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:raccoon_learning/constants/theme/app_theme.dart';
 import 'package:raccoon_learning/firebase_options.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/User_notifier.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/analysis_data_notifier.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/competitve_notifier.dart';
+import 'package:raccoon_learning/presentation/user/notify_provider/custom_competitive_notifier.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/custom_notifier.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/gameplay_notifier.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/two_players_notifier.dart';
@@ -13,6 +15,9 @@ import 'package:raccoon_learning/wrapper.dart';
 
 void main()  async{
   WidgetsFlutterBinding.ensureInitialized();
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+  ]);
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -26,6 +31,8 @@ void main()  async{
         ChangeNotifierProvider(create: (context) => CompetitveNotifier()),
         ChangeNotifierProvider(create: (context) => TwoPlayersNotifier()),
         ChangeNotifierProvider(create: (context) => CustomNotifier()),
+        ChangeNotifierProvider(create: (context) => CustomCompetitiveNotifier()),
+        
         ChangeNotifierProvider.value(value: analysisDataNotifier),
       ],
       child: const MyApp(),
