@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:raccoon_learning/data/firebase/gamePlay.dart';
+import 'package:raccoon_learning/presentation/home/analysis_data/analysis.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/User_notifier.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/competitve_notifier.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/gameplay_notifier.dart';
@@ -97,7 +98,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 
 
-  // Sign In
+  // Sign In and fetch data analysis 
   Future<User?> signInWithEmailPassword(String email, String password) async {
     try {
       UserCredential userCredential = await _auth.signInWithEmailAndPassword(
@@ -107,7 +108,8 @@ import 'package:shared_preferences/shared_preferences.dart';
       // save user id to local
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('user_uid', userCredential.user?.uid ?? '');
-
+      await fetchAnalyticsOnLogin();
+      await analyzeCombinedData();
       return userCredential.user;
     } on FirebaseAuthException catch (e) {
       print('Error: $e');
@@ -242,8 +244,9 @@ Future<void> changePassword(String currentPassword, String newPassword, String c
   }
 }
 
-  // Signout
+  // Signout and push data analysys to firebase
   Future<void> signOut() async {
+    await uploadAnalyticsOnLogout();
     final prefs = await SharedPreferences.getInstance();
     prefs.clear();
     await _auth.signOut();

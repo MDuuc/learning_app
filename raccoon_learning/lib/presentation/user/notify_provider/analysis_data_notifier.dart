@@ -115,7 +115,7 @@ class AnalysisDataNotifier extends ChangeNotifier {
   }
 
     Future<void> loadAnalysisData() async {
-    await analyzeMathData();
+    await analyzeCombinedData();
     await loadStats();
     await loadWeights(); 
     print('📊 Weight Calculation: $_weights');

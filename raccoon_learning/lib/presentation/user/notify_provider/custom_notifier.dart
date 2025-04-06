@@ -94,23 +94,32 @@ class CustomNotifier extends ChangeNotifier {
     }
   }
 
-  Future<void> sendInvitation(String invitedUserId, BuildContext context) async {
-    try {
-      await _firestore.collection('invitations').add({
-        'invitedUserId': invitedUserId,
-        'inviterId': _auth.currentUser?.uid,
-        'timestamp': FieldValue.serverTimestamp(),
-        'status': 'pending',
-        'play_room_id': null, // Đảm bảo play_room_id là null khi tạo mới
-      });
-      _isInviter = true;
-      notifyListeners();
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error sending invitation: $e')),
-      );
-    }
+Future<void> sendInvitation(String invitedUserId, BuildContext context) async {
+  try {
+    DocumentReference invitationRef = await _firestore.collection('invitations').add({
+      'invitedUserId': invitedUserId,
+      'inviterId': _auth.currentUser?.uid,
+      'timestamp': FieldValue.serverTimestamp(),
+      'status': 'pending',
+      'play_room_id': null,
+    });
+    _isInviter = true;
+    notifyListeners();
+
+    // delete after 10s if status is still pending
+    Timer(Duration(seconds: 10), () async {
+      DocumentSnapshot doc = await invitationRef.get();
+      if (doc.exists && doc['status'] == 'pending') {
+        await invitationRef.delete();
+        print('Deleted pending invitation after 30 seconds');
+      }
+    });
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Error sending invitation: $e')),
+    );
   }
+}
 
   Stream<QuerySnapshot> getInvitationsStream() {
     return _firestore

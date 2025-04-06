@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:raccoon_learning/constants/assets/app_images.dart';
 import 'package:raccoon_learning/presentation/user/model/store_modle.dart';
 
 class Gameplay {
