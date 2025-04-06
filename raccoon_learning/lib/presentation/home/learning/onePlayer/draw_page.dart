@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart' hide Ink;
 import 'package:google_mlkit_digital_ink_recognition/google_mlkit_digital_ink_recognition.dart';
 import 'package:provider/provider.dart';
+import 'package:vibration/vibration.dart';
 import 'package:raccoon_learning/constants/assets/app_images.dart';
 import 'package:raccoon_learning/constants/theme/app_colors.dart';
 import 'package:raccoon_learning/presentation/home/analysis_data/analysis.dart';
@@ -92,6 +93,7 @@ void _updateQuestion(String userAnswer) {
     try {
       // Handle empty answer
       if (userAnswer.isEmpty) {
+        Vibration.vibrate(duration: 150);
         recognizeAndGenerateQuestion(widget.grade);
         _clearPad();
         startTimer();
@@ -113,15 +115,18 @@ void _updateQuestion(String userAnswer) {
         _handleScore(true);
 
       } else {
+        Vibration.vibrate(duration: 150);
         appendToMathDataCsv( operator:_currentOperator,correct:  0,time:  seconds, grade:  widget.grade );
         recognizeAndGenerateQuestion(widget.grade);
         _clearPad();
         startTimer();
         _handleHeart(false);
+        flutter_toast('Correct Answer: $_correctAnswer', Colors.green);
 
       }
     } catch (e) {
       // Catch any unexpected errors
+      Vibration.vibrate(duration: 150);
       recognizeAndGenerateQuestion(widget.grade);
       _clearPad();
       startTimer();

@@ -8,6 +8,7 @@ import 'package:raccoon_learning/presentation/user/notify_provider/User_notifier
 import 'package:raccoon_learning/presentation/user/notify_provider/competitve_notifier.dart';
 import 'package:raccoon_learning/presentation/widgets/dialog/endGame_dialog.dart';
 import 'package:raccoon_learning/presentation/widgets/widget.dart';
+import 'package:vibration/vibration.dart';
 
 class DrawCompetitive extends StatefulWidget {
   final String grade;
@@ -113,7 +114,10 @@ class _DrawCompetitiveState extends State<DrawCompetitive> {
         if (_correctAnswer == parsedUserAnswer || _correctCompare == userAnswer) {
           await competitiveNotifier.updateScore();
           checkScoreAndUpdateStatus();
-        }
+      }else{
+        Vibration.vibrate(duration: 150);
+        flutter_toast('Correct Answer: $_correctAnswer', Colors.green);
+      }
 
         // Move to next question
         if (competitiveNotifier.currentQuestionIndex < competitiveNotifier.questions.length - 1) {
