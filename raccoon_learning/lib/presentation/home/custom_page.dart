@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:raccoon_learning/constants/assets/app_images.dart';
 import 'package:raccoon_learning/constants/theme/app_colors.dart';
+import 'package:raccoon_learning/presentation/home/control_page.dart';
 import 'package:raccoon_learning/presentation/home/custom/custom_competitive.dart';
-import 'package:raccoon_learning/presentation/home/home_page.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/User_notifier.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/custom_competitive_notifier.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/custom_notifier.dart';
@@ -201,7 +201,7 @@ Widget build(BuildContext context) {
                     await customNotifier.clearAcceptedInvitations();
                     Navigator.pushAndRemoveUntil(
                       context,
-                      MaterialPageRoute(builder: (context) => HomePage()),
+                      MaterialPageRoute(builder: (context) => ControlPage()),
                       (Route<dynamic> route) => false, 
                     );
                   },

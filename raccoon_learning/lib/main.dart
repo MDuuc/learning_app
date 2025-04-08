@@ -10,6 +10,7 @@ import 'package:raccoon_learning/presentation/user/notify_provider/competitve_no
 import 'package:raccoon_learning/presentation/user/notify_provider/custom_competitive_notifier.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/custom_notifier.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/gameplay_notifier.dart';
+import 'package:raccoon_learning/presentation/user/notify_provider/history_notifier.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/two_players_notifier.dart';
 import 'package:raccoon_learning/wrapper.dart';
 
@@ -32,6 +33,7 @@ void main()  async{
         ChangeNotifierProvider(create: (context) => TwoPlayersNotifier()),
         ChangeNotifierProvider(create: (context) => CustomNotifier()),
         ChangeNotifierProvider(create: (context) => CustomCompetitiveNotifier()),
+        ChangeNotifierProvider(create: (context) => HistoryNotifier()),
         
         ChangeNotifierProvider.value(value: analysisDataNotifier),
       ],

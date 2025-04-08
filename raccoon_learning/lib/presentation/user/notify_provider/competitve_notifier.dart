@@ -101,6 +101,16 @@ Future<bool> addToWaitingRoom(String grade) async {
         _opponentID = data['matched_with'];
         DocumentSnapshot opponentDoc = await _firestore.collection('users').doc(_opponentID).get();
         _avatarOpponent = opponentDoc['avatar'];
+       //add competitve history
+        await _firestore.collection('gameplay').doc(_userID).set({
+        'competitiveHistory': FieldValue.arrayUnion([
+          {
+            'playRoomID': _playRoomID,
+            'grade': grade,
+            'opponentID': _opponentID,
+          }
+        ]),
+      }, SetOptions(merge: true));
         waitingRoomListener?.cancel();
         completer.complete(true);
       }
@@ -231,12 +241,24 @@ Future<bool> createOrJoinGame(BuildContext context, String grade) async {
           'score': myScore, // Include score for consistency
           'timestamp': FieldValue.serverTimestamp(),
         });
-
+        
+        //add competitve history
+        await _firestore.collection('gameplay').doc(_userID).set({
+        'competitiveHistory': FieldValue.arrayUnion([
+          {
+            'playRoomID': _playRoomID,
+            'grade': grade,
+            'opponentID': _opponentID,
+          }
+        ]),
+      }, SetOptions(merge: true));
         transaction.update(waitingRoom.doc(_opponentID), {
           'status': 'matched',
           'play_room_id': _playRoomID,
           'matched_with': userId,
         });
+
+        
 
         // Get opponent avatar
         _avatarOpponent = opponentDoc['avatar'];

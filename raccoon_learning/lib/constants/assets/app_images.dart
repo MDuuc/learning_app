@@ -13,6 +13,8 @@ class AppImages{
   static const String youWin = '${basePath}youWin.png';
   static const String are_you_ready = '${basePath}are_you_ready.png';
   static const String draw = '${basePath}draw.png';
+  static const String win_raccoon = '${basePath}win_raccoon.png';
+  static const String lose_raccoon = '${basePath}lose_raccoon.png';
 
 
   static const String raccoon_playing = '${basePath}raccoon_playing.png';

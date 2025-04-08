@@ -1,8 +1,10 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:raccoon_learning/presentation/home/competitive/history/history_page.dart';
 import 'package:raccoon_learning/presentation/home/competitive/rank_overview_page.dart';
 import 'package:raccoon_learning/presentation/widgets/dialog/waiting_dialog.dart';
 import 'package:raccoon_learning/presentation/widgets/widget.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CompetiveDialog extends StatelessWidget {
   const CompetiveDialog({super.key});
@@ -113,6 +115,20 @@ class CompetiveDialog extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                           builder: (BuildContext context) =>  RankOverviewPage()
+                          ),
+                        );
+                    },
+                  ),
+                const SizedBox(height: 10),
+                //History
+                  buildDialogButton(
+                    context,
+                    text: 'History',
+                    onPressed: (){
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (BuildContext context) =>  HistoryPage()
                           ),
                         );
                     },
