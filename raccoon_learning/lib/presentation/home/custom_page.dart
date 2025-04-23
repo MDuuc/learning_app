@@ -18,7 +18,6 @@ class CustomPage extends StatefulWidget {
   State<CustomPage> createState() => _CustomPageState();
 }
 
-
 final Map<String, String> gradeMap = {
   'Grade 1': 'grade_1',
   'Grade 2': 'grade_2',
@@ -32,14 +31,13 @@ final Map<String, String> operationMap = {
   'Mix Operation': 'mix_operations',
 };
 
-  String _gradeSelected ="Grade 1";
-  String _operationSelected="Addition";
-
 class _CustomPageState extends State<CustomPage> {
-
+  String _gradeSelected = "Grade 1";
+  String _operationSelected = "Addition";
+  final TextEditingController _messageController = TextEditingController();
 
   @override
-void initState() {
+  void initState() {
     super.initState();
     final FirebaseFirestore _firestore = FirebaseFirestore.instance;
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -50,7 +48,8 @@ void initState() {
       customNotifier.listenForAcceptedInvitations();
       customNotifier.listenForOpponentLeaving();
       customNotifier.determineRole();
-      customNotifier.listenForPlayRoomStart( competitiveNotifier);
+      customNotifier.listenForMessageId();
+      customNotifier.listenForPlayRoomStart(competitiveNotifier);
 
       customNotifier.getInvitationsStream().listen((snapshot) async {
         if (snapshot.docs.isNotEmpty && mounted) {
@@ -72,7 +71,7 @@ void initState() {
                 backgroundColor: Colors.grey.shade300,
                 title: const Text('Invitation'),
                 content: Text('$inviterUsername wants to invite you to play'),
-                actions: [
+                 actions: [
                   TextButton(
                     onPressed: () async {
                       await customNotifier.updateInvitationStatus(invitationId, 'declined');
@@ -98,141 +97,145 @@ void initState() {
     });
   }
 
-@override
-Widget build(BuildContext context) {
-  final userNotifier = Provider.of<UserNotifier>(context, listen: false);
-  final customNotifier = Provider.of<CustomNotifier>(context);
-  final competitiveNotifier = Provider.of<CustomCompetitiveNotifier>(context, listen: false);
-  double screenHeight = MediaQuery.of(context).size.height;
-  double screenWidth = MediaQuery.of(context).size.width;
-    String gradeValue = gradeMap[_gradeSelected] ?? '';
-  String operationValue= operationMap[_operationSelected] ?? '';
-  // Check Game start or not to change Navigator
-  if (customNotifier.shouldNavigate) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const CustomCompetitive()),
-      ).then((_) {
-        // Reset _shouldNavigate
-        customNotifier.resetNavigationState();
-      });
-    });
+  @override
+  void dispose() {
+    _messageController.dispose();
+    super.dispose();
   }
-  return PopScope(
-    canPop: false, // not allow to back, until u press out
-    child: Scaffold(
-      body: Column(
-        children: [
-          Container(
-            height: screenHeight / 8,
-            decoration: const BoxDecoration(
-              color: AppColors.black,
-              borderRadius: BorderRadius.only(
-                bottomRight: Radius.circular(30),
-                bottomLeft: Radius.circular(30),
+
+  @override
+  Widget build(BuildContext context) {
+    final userNotifier = Provider.of<UserNotifier>(context, listen: false);
+    final customNotifier = Provider.of<CustomNotifier>(context);
+    final competitiveNotifier = Provider.of<CustomCompetitiveNotifier>(context, listen: false);
+    double screenHeight = MediaQuery.of(context).size.height;
+    double screenWidth = MediaQuery.of(context).size.width;
+    String gradeValue = gradeMap[_gradeSelected] ?? '';
+    String operationValue = operationMap[_operationSelected] ?? '';
+
+    if (customNotifier.shouldNavigate) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const CustomCompetitive()),
+        ).then((_) {
+          customNotifier.resetNavigationState();
+        });
+      });
+    }
+
+    return PopScope(
+      canPop: false,
+      child: Scaffold(
+        resizeToAvoidBottomInset: true,
+        body: Column(
+          children: [
+            Container(
+              height: screenHeight / 9,
+              decoration: const BoxDecoration(
+                color: AppColors.black,
+                borderRadius: BorderRadius.only(
+                  bottomRight: Radius.circular(30),
+                  bottomLeft: Radius.circular(30),
+                ),
               ),
-            ),
-            child: const Center(
-              child: Text(
-                "Custom Room",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20,
+              child: const Center(
+                child: Text(
+                  "Custom Room",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                  ),
                 ),
               ),
             ),
-          ),
-          const SizedBox(height: 20),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // Dropdown Grade
-                DropdownButton<String>(
-                  value: _gradeSelected, 
-                  items: <String>['Grade 1', 'Grade 2', 'Grade 3']
-                      .map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-                  onChanged: (String? newValue) {
+            const SizedBox(height: 20),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  DropdownButton<String>(
+                    value: _gradeSelected,
+                    items: <String>['Grade 1', 'Grade 2', 'Grade 3']
+                        .map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                    onChanged: (String? newValue) {
                       if (newValue != null) {
                         setState(() {
                           _gradeSelected = newValue;
                         });
                       }
-                  },
-                ),
-                // Dropdown Operation
-                DropdownButton<String>(
-                  value: _operationSelected, 
-                  items: <String>[
-                    'Addition',
-                    'Subtraction',
-                    'Multiplication',
-                    'Division',
-                    'Mix Operation'
-                  ].map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-                  onChanged: (String? newValue) {
+                    },
+                  ),
+                  DropdownButton<String>(
+                    value: _operationSelected,
+                    items: <String>[
+                      'Addition',
+                      'Subtraction',
+                      'Multiplication',
+                      'Division',
+                      'Mix Operation'
+                    ].map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                    onChanged: (String? newValue) {
                       if (newValue != null) {
                         setState(() {
                           _operationSelected = newValue;
                         });
                       }
-                  }
-                ),
-                // Icon Logout
-                IconButton(
-                  icon: const Icon(
-                    Icons.logout,
-                    color: Colors.red,
+                    },
                   ),
-                  onPressed: () async{
-                    await customNotifier.clearAcceptedInvitations();
-                    Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(builder: (context) => ControlPage()),
-                      (Route<dynamic> route) => false, 
-                    );
-                  },
-                ),
-              ],
+                  IconButton(
+                    icon: const Icon(
+                      Icons.logout,
+                      color: Colors.red,
+                    ),
+                    onPressed: () async {
+                      await customNotifier.clearAcceptedInvitations();
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(builder: (context) => ControlPage()),
+                        (Route<dynamic> route) => false,
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 60),
-          Expanded(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                _playerUI(context, userNotifier.avatarPath, userNotifier.username, () {}),
-                Image(
-                  image: const AssetImage(AppImages.vs),
-                  height: screenWidth / 3 * 0.5,
-                  fit: BoxFit.contain,
-                ),
-                _OpponentUI(
-                  context,
-                  customNotifier.opponentAvatarPath,
-                  customNotifier.opponentUsername ?? "Opponent",
-                  () => _showSearchDialog(context, customNotifier),
-                ),
-              ],
-            ),
-          ),
             Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  _playerUI(context, userNotifier.avatarPath, userNotifier.username, () {}),
+                  Image(
+                    image: const AssetImage(AppImages.vs),
+                    height: screenWidth / 3 * 0.5,
+                    fit: BoxFit.contain,
+                  ),
+                  _OpponentUI(
+                    context,
+                    customNotifier.opponentAvatarPath,
+                    customNotifier.opponentUsername ?? "Opponent",
+                    () => _showSearchDialog(context, customNotifier),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
               child: Center(
-                child: customNotifier.isInviter // Show Play button only to inviter
+                child: customNotifier.isInviter
                     ? BasicAppButton(
                         onPressed: () async {
                           if (customNotifier.opponentId != null) {
@@ -265,11 +268,116 @@ Widget build(BuildContext context) {
                     : const Text('Waiting for the host to start...'),
               ),
             ),
-        ],
+            Padding(
+              padding: const EdgeInsets.only( bottom: 15),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 200,
+                    height: 180,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.9),
+                      borderRadius: const BorderRadius.only(
+                        topRight: Radius.circular(20),
+                        bottomRight: Radius.circular(20),
+                      ),
+                      border: const Border(
+                        right: BorderSide(
+                          color: Colors.black,
+                          width: 2,
+                        ),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          spreadRadius: 2,
+                          blurRadius: 8,
+                          offset: const Offset(2, 2),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: Consumer<CustomNotifier>(
+                            builder: (context, notifier, _) {
+                              if (notifier.messageId == null) {
+                                return const Center(child: Text('No chat available'));
+                              }
+                              if (notifier.messages.isEmpty) {
+                                return const Center(child: Text('No messages yet'));
+                              }
+                              return ListView.builder(
+                                padding: const EdgeInsets.all(8),
+                                itemCount: notifier.messages.length,
+                                itemBuilder: (context, index) {
+                                  final message = notifier.messages[index];
+                                  return _buildListChat(
+                                    message.username,
+                                    message.message,
+                                  );
+                                },
+                                reverse: true,
+                              );
+                            },
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: TextField(
+                                  controller: _messageController,
+                                  decoration: const InputDecoration(
+                                    hintText: 'Enter message...',
+                                    contentPadding: EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 8,
+                                    ),
+                                  ),
+                                  style: const TextStyle(fontSize: 12),
+                                  maxLines: 1,
+                                  onSubmitted: (value) {
+                                    if (value.trim().isNotEmpty) {
+                                      Provider.of<CustomNotifier>(context, listen: false)
+                                          .sendMessage(value.trim(), context);
+                                      _messageController.clear();
+                                    }
+                                  },
+                                ),
+                              ),
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.send,
+                                  color: Colors.blue,
+                                  size: 24,
+                                ),
+                                onPressed: () {
+                                  final message = _messageController.text.trim();
+                                  if (message.isNotEmpty) {
+                                    Provider.of<CustomNotifier>(context, listen: false)
+                                        .sendMessage(message, context);
+                                    _messageController.clear();
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
+
   Widget _playerUI(BuildContext context, String image, String title, VoidCallback onTap) {
     double screenWidth = MediaQuery.of(context).size.width;
     double size = screenWidth / 3;
@@ -318,7 +426,7 @@ Widget build(BuildContext context) {
             height: size,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
-              color: image == null ? Colors.grey[300] : null,
+              color:  image == null ? Colors.grey[300] : null,
               image: image != null
                   ? DecorationImage(
                       image: NetworkImage(image),
@@ -418,6 +526,36 @@ Widget build(BuildContext context) {
           ],
         );
       },
+    );
+  }
+
+  Widget _buildListChat(String username, String text) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: RichText(
+          text: TextSpan(
+            children: [
+              TextSpan(
+                text: '$username: ',
+                style: const TextStyle(
+                  color: Colors.black,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              TextSpan(
+                text: text,
+                style: const TextStyle(
+                  color: Colors.black,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

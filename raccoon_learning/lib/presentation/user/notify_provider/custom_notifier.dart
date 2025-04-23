@@ -1,13 +1,16 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:raccoon_learning/presentation/home/learning/grade/grade1.dart'; 
+import 'package:provider/provider.dart';
+import 'package:raccoon_learning/presentation/home/learning/grade/grade1.dart';
 import 'package:raccoon_learning/presentation/home/learning/grade/grade2.dart';
 import 'package:raccoon_learning/presentation/home/learning/grade/grade3.dart';
 import 'package:raccoon_learning/presentation/home/learning/grade/math_question.dart';
+import 'package:raccoon_learning/presentation/user/model/message_model.dart';
+import 'package:raccoon_learning/presentation/user/notify_provider/User_notifier.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/custom_competitive_notifier.dart';
+import 'package:raccoon_learning/presentation/widgets/widget.dart';
 
 class CustomNotifier extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -19,13 +22,21 @@ class CustomNotifier extends ChangeNotifier {
   String? _playRoomId;
   bool _isInviter = false;
   bool _shouldNavigate = false;
+  String? _messageId;
+  String? _invitationIds;
+  List<Message> _messages = [];
   StreamSubscription? _playRoomStartSubscription;
+  StreamSubscription? _messageIdSubscription;
+  StreamSubscription<void>? _messageStream;
 
   String? get opponentId => _opponentId;
   String? get opponentUsername => _opponentUsername;
   String? get opponentAvatarPath => _opponentAvatarPath;
   String? get playRoomId => _playRoomId;
   bool get isInviter => _isInviter;
+  String? get messageId => _messageId;
+  String? get invitationIds => _invitationIds;
+  List<Message> get messages => _messages;
   bool get shouldNavigate => _shouldNavigate;
 
   Future<void> determineRole() async {
@@ -94,32 +105,30 @@ class CustomNotifier extends ChangeNotifier {
     }
   }
 
-Future<void> sendInvitation(String invitedUserId, BuildContext context) async {
-  try {
-    DocumentReference invitationRef = await _firestore.collection('invitations').add({
-      'invitedUserId': invitedUserId,
-      'inviterId': _auth.currentUser?.uid,
-      'timestamp': FieldValue.serverTimestamp(),
-      'status': 'pending',
-      'play_room_id': null,
-    });
-    _isInviter = true;
-    notifyListeners();
+  Future<void> sendInvitation(String invitedUserId, BuildContext context) async {
+    try {
+      DocumentReference invitationRef = await _firestore.collection('invitations').add({
+        'invitedUserId': invitedUserId,
+        'inviterId': _auth.currentUser?.uid,
+        'timestamp': FieldValue.serverTimestamp(),
+        'status': 'pending',
+        'play_room_id': null,
+        'messageID': null,
+      });
+      _isInviter = true;
+      _invitationIds = invitationRef.id;
+      notifyListeners();
 
-    // delete after 10s if status is still pending
-    Timer(Duration(seconds: 10), () async {
-      DocumentSnapshot doc = await invitationRef.get();
-      if (doc.exists && doc['status'] == 'pending') {
-        await invitationRef.delete();
-        print('Deleted pending invitation after 30 seconds');
-      }
-    });
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Error sending invitation: $e')),
-    );
+      Timer(Duration(seconds: 10), () async {
+        DocumentSnapshot doc = await invitationRef.get();
+        if (doc.exists && doc['status'] == 'pending') {
+          await invitationRef.delete();
+        }
+      });
+    } catch (e) {
+      flutter_toast('Error sending invitation', Colors.red);
+    }
   }
-}
 
   Stream<QuerySnapshot> getInvitationsStream() {
     return _firestore
@@ -130,14 +139,45 @@ Future<void> sendInvitation(String invitedUserId, BuildContext context) async {
   }
 
   void listenForAcceptedInvitations() {
+    final currentUserId = _auth.currentUser?.uid;
+    if (currentUserId == null) return;
+
     _firestore
         .collection('invitations')
-        .where('inviterId', isEqualTo: _auth.currentUser?.uid)
+        .where('inviterId', isEqualTo: currentUserId)
         .where('status', isEqualTo: 'accepted')
         .snapshots()
         .listen((snapshot) async {
       if (snapshot.docs.isNotEmpty) {
         await determineRole();
+        var invitation = snapshot.docs.first;
+        String invitationId = invitation.id;
+
+        // Kiểm tra xem invitation đã có messageID chưa
+        String? existingMessageId = invitation['messageID'];
+        if (existingMessageId != null && existingMessageId.isNotEmpty) {
+          if (_messageId != existingMessageId) {
+            _messageId = existingMessageId;
+            fetchMessages();
+          }
+          return;
+        }
+
+        // Chỉ tạo messageId mới nếu chưa có và _invitationIds khớp
+        if (_messageId == null && _invitationIds == invitationId) {
+          DocumentReference messageDoc = _firestore.collection('message').doc();
+          _messageId = messageDoc.id;
+          await messageDoc.set({
+            'created_at': FieldValue.serverTimestamp(),
+            'participants': [currentUserId, invitation['invitedUserId']],
+          });
+          // Cập nhật invitation với messageID
+          await _firestore.collection('invitations').doc(invitationId).update({
+            'messageID': _messageId,
+          });
+
+          fetchMessages();
+        }
       }
     });
   }
@@ -159,40 +199,30 @@ Future<void> sendInvitation(String invitedUserId, BuildContext context) async {
     listenForOpponentLeaving();
   }
 
-  Future<void> clearAcceptedInvitations() async {
-    final currentUserId = _auth.currentUser?.uid;
-    if (currentUserId == null) return;
+Future<void> clearAcceptedInvitations() async {
+  final currentUserId = _auth.currentUser?.uid;
+  if (currentUserId == null || _invitationIds == null) return;
 
-    final inviterSnapshot = await _firestore
-        .collection('invitations')
-        .where('inviterId', isEqualTo: currentUserId)
-        .where('status', isEqualTo: 'accepted')
-        .get();
-
-    for (var doc in inviterSnapshot.docs) {
-      await doc.reference.delete();
-    }
-
-    final invitedSnapshot = await _firestore
-        .collection('invitations')
-        .where('invitedUserId', isEqualTo: currentUserId)
-        .where('status', isEqualTo: 'accepted')
-        .get();
-
-    for (var doc in invitedSnapshot.docs) {
-      await doc.reference.delete();
-    }
-
-    resetRoom();
-    notifyListeners();
+  try {
+    await _firestore.collection('invitations').doc(_invitationIds).delete();
+  } catch (e) {
+    print('Error deleting invitation: $e');
   }
+
+  resetRoom();
+  notifyListeners();
+}
 
   void resetRoom() {
     _opponentId = null;
     _opponentUsername = null;
     _opponentAvatarPath = null;
-    _playRoomId = null; // Reset playRoomId về null
+    _playRoomId = null;
     _isInviter = false;
+    _messageId = null;
+    _invitationIds = null;
+    _messages = [];
+    _messageStream?.cancel();
     notifyListeners();
   }
 
@@ -219,7 +249,7 @@ Future<void> sendInvitation(String invitedUserId, BuildContext context) async {
     });
   }
 
-Future<void> createPlayRoom(BuildContext context, String opponentId, String operationSelected, String gradeSelected) async {
+ Future<void> createPlayRoom(BuildContext context, String opponentId, String operationSelected, String gradeSelected) async {
   if (!_isInviter) return;
 
   final currentUserId = _auth.currentUser?.uid;
@@ -316,44 +346,44 @@ Future<void> createPlayRoom(BuildContext context, String opponentId, String oper
   notifyListeners();
 }
 
-Future<void> resetPlayRoomId() async {
-  final currentUserId = _auth.currentUser?.uid;
-  if (currentUserId == null) return;
+  Future<void> resetPlayRoomId() async {
+    final currentUserId = _auth.currentUser?.uid;
+    if (currentUserId == null) return;
 
-  QuerySnapshot inviterSnapshot = await _firestore
-      .collection('invitations')
-      .where('inviterId', isEqualTo: currentUserId)
-      .where('status', isEqualTo: 'accepted')
-      .limit(1)
-      .get();
+    QuerySnapshot inviterSnapshot = await _firestore
+        .collection('invitations')
+        .where('inviterId', isEqualTo: currentUserId)
+        .where('status', isEqualTo: 'accepted')
+        .limit(1)
+        .get();
 
-  if (inviterSnapshot.docs.isNotEmpty) {
-    String invitationId = inviterSnapshot.docs.first.id;
-    await _firestore.collection('invitations').doc(invitationId).update({
-      'play_room_id': null,
-    });
+    if (inviterSnapshot.docs.isNotEmpty) {
+      String invitationId = inviterSnapshot.docs.first.id;
+      await _firestore.collection('invitations').doc(invitationId).update({
+        'play_room_id': null,
+      });
+    }
+
+    QuerySnapshot invitedSnapshot = await _firestore
+        .collection('invitations')
+        .where('invitedUserId', isEqualTo: currentUserId)
+        .where('status', isEqualTo: 'accepted')
+        .limit(1)
+        .get();
+
+    if (invitedSnapshot.docs.isNotEmpty) {
+      String invitationId = invitedSnapshot.docs.first.id;
+      await _firestore.collection('invitations').doc(invitationId).update({
+        'play_room_id': null,
+      });
+    }
+
+    _playRoomId = null;
+    _shouldNavigate = false;
+    notifyListeners();
   }
 
-  QuerySnapshot invitedSnapshot = await _firestore
-      .collection('invitations')
-      .where('invitedUserId', isEqualTo: currentUserId)
-      .where('status', isEqualTo: 'accepted')
-      .limit(1)
-      .get();
-
-  if (invitedSnapshot.docs.isNotEmpty) {
-    String invitationId = invitedSnapshot.docs.first.id;
-    await _firestore.collection('invitations').doc(invitationId).update({
-      'play_room_id': null,
-    });
-  }
-
-  _playRoomId = null; 
-  _shouldNavigate = false;
-  notifyListeners();
-}
-
-void listenForPlayRoomStart(CustomCompetitiveNotifier competitiveNotifier) {
+  void listenForPlayRoomStart(CustomCompetitiveNotifier competitiveNotifier) {
     final currentUserId = _auth.currentUser?.uid;
     if (currentUserId == null || _isInviter) return;
 
@@ -365,6 +395,7 @@ void listenForPlayRoomStart(CustomCompetitiveNotifier competitiveNotifier) {
         .listen((snapshot) async {
       if (snapshot.docs.isNotEmpty) {
         var invitation = snapshot.docs.first;
+        _invitationIds = invitation.id;
         String? playRoomId = invitation['play_room_id'];
         if (playRoomId != null && playRoomId.isNotEmpty && _playRoomId != playRoomId) {
           _playRoomId = playRoomId;
@@ -377,8 +408,8 @@ void listenForPlayRoomStart(CustomCompetitiveNotifier competitiveNotifier) {
             );
             print("After initializing play room ID: $playRoomId");
             competitiveNotifier.listenToPointUpdates();
-            _shouldNavigate = true; 
-            notifyListeners(); 
+            _shouldNavigate = true;
+            notifyListeners();
           } catch (e) {
             print("Error in listenForPlayRoomStart: $e");
           }
@@ -387,13 +418,82 @@ void listenForPlayRoomStart(CustomCompetitiveNotifier competitiveNotifier) {
     });
   }
 
-void cancelSubscriptions() {
+  void listenForMessageId() {
+    final currentUserId = _auth.currentUser?.uid;
+    if (currentUserId == null) return;
+
+    _messageIdSubscription = _firestore
+        .collection('invitations')
+        .where('status', isEqualTo: 'accepted')
+        .where(Filter.or(
+          Filter('inviterId', isEqualTo: currentUserId),
+          Filter('invitedUserId', isEqualTo: currentUserId),
+        ))
+        .snapshots()
+        .listen((snapshot) {
+      if (snapshot.docs.isNotEmpty) {
+        var doc = snapshot.docs.first;
+        _messageId = doc['messageID'];
+        if (_messageId != null && _messageId!.isNotEmpty) {
+          fetchMessages();
+        }
+      }
+    });
+  }
+
+  Future<void> sendMessage(String message, BuildContext context) async {
+    if (_messageId == null) {
+        flutter_toast('No chat room available', Colors.red);
+      return;
+    }
+    try {
+      final username = Provider.of<UserNotifier>(context, listen: false).username;
+      await _firestore
+          .collection('message')
+          .doc(_messageId)
+          .collection('messages')
+          .add({
+            'username': username,
+            'message': message,
+            'timestamp': FieldValue.serverTimestamp(),
+          });
+    } catch (e) {
+      flutter_toast('Error sending message', Colors.red);
+    }
+  }
+
+  void fetchMessages() {
+    if (_messageStream != null) {
+      _messageStream!.cancel();
+    }
+    try {
+      _messageStream = FirebaseFirestore.instance
+          .collection('message')
+          .doc(_messageId)
+          .collection('messages')
+          .orderBy('timestamp', descending: false)
+          .snapshots()
+          .listen((querySnapshot) {
+        _messages = querySnapshot.docs.map((doc) => Message.fromFirestore(doc)).toList().reversed.toList();
+        notifyListeners();
+      }, onError: (e) {
+        _messages = [];
+        notifyListeners();
+      });
+    } catch (e) {
+      _messages = [];
+      notifyListeners();
+    }
+  }
+
+  void cancelSubscriptions() {
     _playRoomStartSubscription?.cancel();
+    _messageIdSubscription?.cancel();
+    _messageStream?.cancel();
   }
 
   void resetNavigationState() {
-  _shouldNavigate = false;
-  notifyListeners();
-}
-
+    _shouldNavigate = false;
+    notifyListeners();
+  }
 }
