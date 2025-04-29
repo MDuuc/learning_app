@@ -16,7 +16,7 @@ MathMaster is a mobile application designed for children in grades 1–3 to prac
   <tr>
     <td><img src="learning_screenShot/project_img_7.png" alt="Choose Mode" width="300"></td>
     <td><img src="learning_screenShot/project_img_8.jpg" alt="Playing" width="300"></td>
-    <td><img src="learning_screenShot/project_img_9.png" alt="Pause Game" width="300"></td>
+    <td><img src="learning_screenShot/project_img_9.jpg" alt="Pause Game" width="300"></td>
   </tr>
   <tr>
     <td><img src="learning_screenShot/project_img_10.png" alt="Achievement Page" width="300"></td>
@@ -50,7 +50,6 @@ MathMaster is a mobile application designed for children in grades 1–3 to prac
   </tr>
   <tr>
     <td><img src="learning_screenShot/project_img_28.jpg" alt="Image 28" width="300"></td>
-    <td><img src="learning_screenShot/project_img_29.jpg" alt="Image 28" width="300"></td>
 
   </tr>
 </table>
