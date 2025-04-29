@@ -1,6 +1,6 @@
 
 # Preview of My Project
-MathMaster is a mobile application designed for children in grades 1–3 to practice math calculations and engage in real-time competitive matches by drawing their answers on the screen.
+MathMaster is a mobile application designed for children in grades 1–3 to practice math calculations and engage in real-time competitive matches by drawing or speaking their answers on the screen.
 
 <table>
   <tr>
@@ -15,7 +15,7 @@ MathMaster is a mobile application designed for children in grades 1–3 to prac
   </tr>
   <tr>
     <td><img src="learning_screenShot/project_img_7.png" alt="Choose Mode" width="300"></td>
-    <td><img src="learning_screenShot/project_img_8.png" alt="Playing" width="300"></td>
+    <td><img src="learning_screenShot/project_img_8.jpg" alt="Playing" width="300"></td>
     <td><img src="learning_screenShot/project_img_9.png" alt="Pause Game" width="300"></td>
   </tr>
   <tr>
@@ -50,5 +50,7 @@ MathMaster is a mobile application designed for children in grades 1–3 to prac
   </tr>
   <tr>
     <td><img src="learning_screenShot/project_img_28.jpg" alt="Image 28" width="300"></td>
+    <td><img src="learning_screenShot/project_img_29.jpg" alt="Image 28" width="300"></td>
+
   </tr>
 </table>
