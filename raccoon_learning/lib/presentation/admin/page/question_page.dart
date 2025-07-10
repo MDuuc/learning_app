@@ -403,11 +403,11 @@ class _QuestionPageState extends State<QuestionPage> {
                                         ),
                                         child: ListTile(
                                           contentPadding: const EdgeInsets.all(10),
-                                          title: Text(
+                                          title: SelectableText(
                                             question.question,
                                             style: const TextStyle(fontWeight: FontWeight.w500),
                                           ),
-                                          subtitle: Text(
+                                          subtitle: SelectableText(
                                             'Answer: ${question.answer}',
                                             style: const TextStyle(color: Colors.grey),
                                           ),

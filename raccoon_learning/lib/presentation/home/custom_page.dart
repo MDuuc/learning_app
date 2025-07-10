@@ -71,7 +71,7 @@ class _CustomPageState extends State<CustomPage> {
                 backgroundColor: Colors.grey.shade300,
                 title: const Text('Invitation'),
                 content: Text('$inviterUsername wants to invite you to play'),
-                 actions: [
+                actions: [
                   TextButton(
                     onPressed: () async {
                       await customNotifier.updateInvitationStatus(invitationId, 'declined');
@@ -127,32 +127,39 @@ class _CustomPageState extends State<CustomPage> {
     return PopScope(
       canPop: false,
       child: Scaffold(
-        resizeToAvoidBottomInset: true,
-        body: Column(
+        resizeToAvoidBottomInset: true, // Cho phép resize để khung chat đẩy lên
+        body: Stack(
           children: [
-            Container(
-              height: screenHeight / 9,
-              decoration: const BoxDecoration(
-                color: AppColors.black,
-                borderRadius: BorderRadius.only(
-                  bottomRight: Radius.circular(30),
-                  bottomLeft: Radius.circular(30),
+            // Các thành phần cố định
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                height: screenHeight / 9,
+                decoration: const BoxDecoration(
+                  color: AppColors.black,
+                  borderRadius: BorderRadius.only(
+                    bottomRight: Radius.circular(30),
+                    bottomLeft: Radius.circular(30),
+                  ),
                 ),
-              ),
-              child: const Center(
-                child: Text(
-                  "Custom Room",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20,
+                child: const Center(
+                  child: Text(
+                    "Custom Room",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                    ),
                   ),
                 ),
               ),
             ),
-            const SizedBox(height: 20),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            Positioned(
+              top: screenHeight / 9 + 20,
+              left: 16,
+              right: 16,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -212,7 +219,11 @@ class _CustomPageState extends State<CustomPage> {
                 ],
               ),
             ),
-            Expanded(
+            Positioned(
+              top: screenHeight / 9 + 80,
+              left: 0,
+              right: 0,
+              bottom: 250, // Để lại không gian cho nút Play và khung chat
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -232,144 +243,154 @@ class _CustomPageState extends State<CustomPage> {
                 ],
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: Center(
-                child: customNotifier.isInviter
-                    ? BasicAppButton(
-                        onPressed: () async {
-                          if (customNotifier.opponentId != null) {
-                            await customNotifier.createPlayRoom(
-                              context,
-                              customNotifier.opponentId!,
-                              operationValue,
-                              gradeValue,
-                            );
-                            await competitiveNotifier.initializePlayRoom(
-                              customNotifier.playRoomId!,
-                              customNotifier.opponentId!,
-                              FirebaseAuth.instance.currentUser!.uid,
-                            );
-                            competitiveNotifier.listenToPointUpdates();
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => const CustomCompetitive()),
-                            );
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Please invite an opponent first')),
-                            );
-                          }
-                        },
-                        width: screenWidth / 2,
-                        enabled: customNotifier.opponentId != null,
-                        title: 'Play',
-                      )
-                    : const Text('Waiting for the host to start...'),
+            Positioned(
+              bottom: 190,
+              left: 0,
+              right: 0,
+              child: SafeArea(
+                top: false,
+                child: Center(
+                  child: customNotifier.isInviter
+                      ? BasicAppButton(
+                          onPressed: () async {
+                            if (customNotifier.opponentId != null) {
+                              await customNotifier.createPlayRoom(
+                                context,
+                                customNotifier.opponentId!,
+                                operationValue,
+                                gradeValue,
+                              );
+                              await competitiveNotifier.initializePlayRoom(
+                                customNotifier.playRoomId!,
+                                customNotifier.opponentId!,
+                                FirebaseAuth.instance.currentUser!.uid,
+                              );
+                              competitiveNotifier.listenToPointUpdates();
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => const CustomCompetitive()),
+                              );
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Please invite an opponent first')),
+                              );
+                            }
+                          },
+                          width: screenWidth / 2,
+                          enabled: customNotifier.opponentId != null,
+                          title: 'Play',
+                        )
+                      : const Text('Waiting for the host to start...'),
+                ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.only( bottom: 15),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 200,
-                    height: 180,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.9),
-                      borderRadius: const BorderRadius.only(
-                        topRight: Radius.circular(20),
-                        bottomRight: Radius.circular(20),
-                      ),
-                      border: const Border(
-                        right: BorderSide(
-                          color: Colors.black,
-                          width: 2,
+            // Khung chat sẽ được đẩy lên khi bàn phím xuất hiện
+            Positioned(
+              bottom: 0,
+              left: 0,
+              child: SafeArea(
+                top: false,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 200,
+                      height: 180,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.9),
+                        borderRadius: const BorderRadius.only(
+                          topRight: Radius.circular(20),
+                          bottomRight: Radius.circular(20),
                         ),
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
-                          spreadRadius: 2,
-                          blurRadius: 8,
-                          offset: const Offset(2, 2),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      children: [
-                        Expanded(
-                          child: Consumer<CustomNotifier>(
-                            builder: (context, notifier, _) {
-                              if (notifier.messageId == null) {
-                                return const Center(child: Text('No chat available'));
-                              }
-                              if (notifier.messages.isEmpty) {
-                                return const Center(child: Text('No messages yet'));
-                              }
-                              return ListView.builder(
-                                padding: const EdgeInsets.all(8),
-                                itemCount: notifier.messages.length,
-                                itemBuilder: (context, index) {
-                                  final message = notifier.messages[index];
-                                  return _buildListChat(
-                                    message.username,
-                                    message.message,
-                                  );
-                                },
-                                reverse: true,
-                              );
-                            },
+                        border: const Border(
+                          right: BorderSide(
+                            color: Colors.black,
+                            width: 2,
                           ),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: TextField(
-                                  controller: _messageController,
-                                  decoration: const InputDecoration(
-                                    hintText: 'Enter message...',
-                                    contentPadding: EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 8,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            spreadRadius: 2,
+                            blurRadius: 8,
+                            offset: const Offset(2, 2),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          Expanded(
+                            child: Consumer<CustomNotifier>(
+                              builder: (context, notifier, _) {
+                                if (notifier.messageId == null) {
+                                  return const Center(child: Text('No chat available'));
+                                }
+                                if (notifier.messages.isEmpty) {
+                                  return const Center(child: Text('No messages yet'));
+                                }
+                                return ListView.builder(
+                                  padding: const EdgeInsets.all(8),
+                                  itemCount: notifier.messages.length,
+                                  itemBuilder: (context, index) {
+                                    final message = notifier.messages[index];
+                                    return _buildListChat(
+                                      message.username,
+                                      message.message,
+                                    );
+                                  },
+                                  reverse: true,
+                                );
+                              },
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: TextField(
+                                    controller: _messageController,
+                                    decoration: const InputDecoration(
+                                      hintText: 'Enter message...',
+                                      contentPadding: EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 8,
+                                      ),
                                     ),
+                                    style: const TextStyle(fontSize: 12),
+                                    maxLines: 1,
+                                    onSubmitted: (value) {
+                                      if (value.trim().isNotEmpty) {
+                                        Provider.of<CustomNotifier>(context, listen: false)
+                                            .sendMessage(value.trim(), context);
+                                        _messageController.clear();
+                                      }
+                                    },
                                   ),
-                                  style: const TextStyle(fontSize: 12),
-                                  maxLines: 1,
-                                  onSubmitted: (value) {
-                                    if (value.trim().isNotEmpty) {
+                                ),
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.send,
+                                    color: Colors.blue,
+                                    size: 24,
+                                  ),
+                                  onPressed: () {
+                                    final message = _messageController.text.trim();
+                                    if (message.isNotEmpty) {
                                       Provider.of<CustomNotifier>(context, listen: false)
-                                          .sendMessage(value.trim(), context);
+                                          .sendMessage(message, context);
                                       _messageController.clear();
                                     }
                                   },
                                 ),
-                              ),
-                              IconButton(
-                                icon: const Icon(
-                                  Icons.send,
-                                  color: Colors.blue,
-                                  size: 24,
-                                ),
-                                onPressed: () {
-                                  final message = _messageController.text.trim();
-                                  if (message.isNotEmpty) {
-                                    Provider.of<CustomNotifier>(context, listen: false)
-                                        .sendMessage(message, context);
-                                    _messageController.clear();
-                                  }
-                                },
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ],
@@ -426,7 +447,7 @@ class _CustomPageState extends State<CustomPage> {
             height: size,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
-              color:  image == null ? Colors.grey[300] : null,
+              color: image == null ? Colors.grey[300] : null,
               image: image != null
                   ? DecorationImage(
                       image: NetworkImage(image),

@@ -22,7 +22,7 @@ class SpeechService {
       },
       onError: (val) {
         isListeningNotifier.value = false;
-        textNotifier.value = 'Error: $val';
+        textNotifier.value = 'Listening failed';
       },
     );
     if (!available) {
@@ -174,28 +174,42 @@ String normalizeVoiceText(String input) {
 
       // English numbers (1 to 12)
     case 'one':
+    case 'one number':
       return '1';
     case 'two':
+    case 'two number':
       return '2';
     case 'three':
+    case 'three number':
       return '3';
     case 'four':
+    case 'four number':
+    case 'phone number':
       return '4';
     case 'five':
+    case 'five number':
       return '5';
     case 'six':
+    case 'six number':
       return '6';
     case 'seven':
+    case 'seven number':
       return '7';
     case 'eight':
+    case 'eight number':
+    case 'it':
       return '8';
     case 'nine':
+    case 'nine number':
       return '9';
     case 'ten':
+    case 'ten number':
       return '10';
     case 'eleven':
+    case 'eleven number':
       return '11';
     case 'twelve':
+    case 'twelve number':
       return '12';
 
     // English comparison symbols (already added in previous response, included here for completeness)

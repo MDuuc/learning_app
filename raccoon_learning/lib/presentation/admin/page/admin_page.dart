@@ -20,7 +20,7 @@ class _AdminPageState extends State<AdminPage> {
   final AuthService _authService = AuthService(); 
 
   final List<Widget> _pages = [
-    const DashboardPage(),
+    // const DashboardPage(),
     const QuestionPage(),
     const StoreAdminPage(),
   ];
@@ -51,9 +51,11 @@ class _AdminPageState extends State<AdminPage> {
                         ),
                       ),
                       const SizedBox(height: 20),
-                      _buildSidebarItem(context, 'Dashboard', Icons.dashboard, 0),
-                      _buildSidebarItem(context, 'Question', Icons.app_registration_rounded, 1),
-                      _buildSidebarItem(context, 'Store', Icons.store, 2),
+                      // _buildSidebarItem(context, 'Dashboard', Icons.dashboard, 0),
+                      // _buildSidebarItem(context, 'Question', Icons.app_registration_rounded, 1),
+                      // _buildSidebarItem(context, 'Store', Icons.store, 2),
+                      _buildSidebarItem(context, 'Question', Icons.app_registration_rounded, 0),
+                      _buildSidebarItem(context, 'Store', Icons.store, 1),
                       const Spacer(),
                       _buildSidebarItem(context, 'Settings', Icons.settings, -1),
                       _buildLogoutItem(context), // Logout item
