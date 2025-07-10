@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:raccoon_learning/constants/theme/app_colors.dart';
 import 'package:raccoon_learning/presentation/admin/data/question/question_modle.dart';
 import 'package:raccoon_learning/presentation/admin/data/question/question_repository.dart';
+import 'package:dropdown_button2/dropdown_button2.dart';
 
 class QuestionPage extends StatefulWidget {
   const QuestionPage({super.key});
@@ -211,25 +212,45 @@ class _QuestionPageState extends State<QuestionPage> {
                           style: TextStyle(color: Colors.grey, fontSize: 16),
                         ),
                         const SizedBox(height: 10),
-                        DropdownButtonFormField<String>(
+                        DropdownButton2<String>(
                           value: _selectedGrade,
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(5),
-                              borderSide: const BorderSide(color: Colors.grey),
-                            ),
-                            filled: true,
-                            fillColor: const Color(0xFFF5F7FA),
-                          ),
+                          onChanged: (String? value) {
+                            setState(() {
+                              _selectedGrade = value;
+                            });
+                          },
                           items: ['Grade 1', 'Grade 2', 'Grade 3']
-                              .map((grade) => DropdownMenuItem(
+                              .map((grade) => DropdownMenuItem<String>(
                                     value: grade,
                                     child: Text(grade),
                                   ))
                               .toList(),
-                          onChanged: (value) {
-                            setState(() => _selectedGrade = value);
-                          },
+                          dropdownStyleData: DropdownStyleData(
+                            maxHeight: 200,
+                            width: 200,
+                            padding: const EdgeInsets.symmetric(horizontal: 10),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(5),
+                              color: const Color(0xFFF5F7FA),
+                            ),
+                            elevation: 8,
+                            offset: const Offset(0, -5),
+                          ),
+                          buttonStyleData: ButtonStyleData(
+                            height: 50,
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(horizontal: 15),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(5),
+                              border: Border.all(color: Colors.grey),
+                              color: const Color(0xFFF5F7FA),
+                            ),
+                          ),
+                          iconStyleData: const IconStyleData(
+                            icon: Icon(Icons.arrow_drop_down, color: Colors.grey),
+                            iconSize: 24,
+                          ),
+                          underline: const SizedBox(),
                         ),
                         const SizedBox(height: 20),
                         // Variables Dropdown
@@ -238,25 +259,45 @@ class _QuestionPageState extends State<QuestionPage> {
                           style: TextStyle(color: Colors.grey, fontSize: 16),
                         ),
                         const SizedBox(height: 10),
-                        DropdownButtonFormField<String>(
+                        DropdownButton2<String>(
                           value: _selectedVariables,
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(5),
-                              borderSide: const BorderSide(color: Colors.grey),
-                            ),
-                            filled: true,
-                            fillColor: const Color(0xFFF5F7FA),
-                          ),
+                          onChanged: (String? value) {
+                            setState(() {
+                              _selectedVariables = value;
+                            });
+                          },
                           items: ['A', 'AB', 'ABC', 'ABCD']
-                              .map((vars) => DropdownMenuItem(
+                              .map((vars) => DropdownMenuItem<String>(
                                     value: vars,
                                     child: Text(vars),
                                   ))
                               .toList(),
-                          onChanged: (value) {
-                            setState(() => _selectedVariables = value);
-                          },
+                          dropdownStyleData: DropdownStyleData(
+                            maxHeight: 200,
+                            width: 200,
+                            padding: const EdgeInsets.symmetric(horizontal: 10),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(5),
+                              color: const Color(0xFFF5F7FA),
+                            ),
+                            elevation: 8,
+                            offset: const Offset(0, -5),
+                          ),
+                          buttonStyleData: ButtonStyleData(
+                            height: 50,
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(horizontal: 15),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(5),
+                              border: Border.all(color: Colors.grey),
+                              color: const Color(0xFFF5F7FA),
+                            ),
+                          ),
+                          iconStyleData: const IconStyleData(
+                            icon: Icon(Icons.arrow_drop_down, color: Colors.grey),
+                            iconSize: 24,
+                          ),
+                          underline: const SizedBox(),
                         ),
                         const SizedBox(height: 20),
                         // Question Text Field
@@ -360,12 +401,33 @@ class _QuestionPageState extends State<QuestionPage> {
                                 borderRadius: BorderRadius.circular(5),
                                 border: Border.all(color: Colors.grey),
                               ),
-                              child: DropdownButton<String>(
+                              child: DropdownButton2<String>(
                                 value: _displayGrade,
-                                dropdownColor: const Color(0xFFF5F7FA),
-                                underline: const SizedBox(), // Remove default underline
+                                dropdownStyleData: DropdownStyleData(
+                                  maxHeight: 200,
+                                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(5),
+                                    color: const Color(0xFFF5F7FA),
+                                  ),
+                                  elevation: 8,
+                                  offset: const Offset(0, -5),
+                                ),
+                                buttonStyleData: ButtonStyleData(
+                                  height: 40,
+                                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(5),
+                                    color: const Color(0xFFF5F7FA),
+                                  ),
+                                ),
+                                iconStyleData: const IconStyleData(
+                                  icon: Icon(Icons.arrow_drop_down, color: Colors.grey),
+                                  iconSize: 24,
+                                ),
+                                underline: const SizedBox(),
                                 items: ['Grade 1', 'Grade 2', 'Grade 3']
-                                    .map((grade) => DropdownMenuItem(
+                                    .map((grade) => DropdownMenuItem<String>(
                                           value: grade,
                                           child: Text(grade),
                                         ))

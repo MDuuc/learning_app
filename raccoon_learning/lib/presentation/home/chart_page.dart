@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/analysis_data_notifier.dart';
 import 'package:raccoon_learning/presentation/widgets/appbar/app_bar.dart';
+import 'package:dropdown_button2/dropdown_button2.dart';
 
 class ChartPage extends StatefulWidget {
   const ChartPage({super.key});
@@ -59,34 +60,51 @@ class _ChartPageState extends State<ChartPage> {
             padding: const EdgeInsets.only(left: 20, right: 20 ,bottom: 50),
             child: Align(
               alignment: Alignment.centerLeft,
-              child: DropdownButtonFormField<String>(
+              child: DropdownButton2<String>(
                 value: _selectedGrade,
-                decoration: const InputDecoration(
-                  labelText: 'Choose your grade',
-                  labelStyle: TextStyle(color: Colors.white),
-                  border: OutlineInputBorder(),
-                  filled: true,
-                  fillColor: Color(0xFF1A2A6C),
-                ),
-                dropdownColor: const Color(0xFF1A2A6C),
-                style: const TextStyle(color: Colors.white),
-                items: ['Grade 1', 'Grade 2', 'Grade 3'].map((String grade) {
-                  return DropdownMenuItem<String>(
-                    value: grade,
-                    child: Text(
-                      '$grade',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500
-                      ),
-                    ),
-                  );
-                }).toList(),
                 onChanged: (String? newValue) {
                   setState(() {
                     _selectedGrade = newValue!;
                   });
                 },
+                items: ['Grade 1', 'Grade 2', 'Grade 3'].map((String grade) {
+                  return DropdownMenuItem<String>(
+                    value: grade,
+                    child: Text(
+                      grade,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white,
+                      ),
+                    ),
+                  );
+                }).toList(),
+                dropdownStyleData: DropdownStyleData(
+                  maxHeight: 200,
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(5),
+                    color: const Color(0xFF1A2A6C),
+                  ),
+                  elevation: 8,
+                  offset: const Offset(0, -5),
+                ),
+                buttonStyleData: ButtonStyleData(
+                  height: 50,
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 15),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(5),
+                    border: Border.all(color: Colors.white.withOpacity(0.3)),
+                    color: const Color(0xFF1A2A6C),
+                  ),
+                ),
+                iconStyleData: const IconStyleData(
+                  icon: Icon(Icons.arrow_drop_down, color: Colors.white),
+                  iconSize: 24,
+                ),
+                underline: const SizedBox(), 
               ),
             ),
           ),

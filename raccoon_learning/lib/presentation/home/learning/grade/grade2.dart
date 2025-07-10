@@ -33,8 +33,8 @@ class Grade2 {
 
     switch (operation) {
       case 'addition':
-        a = random.nextInt(6) + 1;
-        b = random.nextInt(11 - a);
+        a = random.nextInt(51) + 1; // Generate a: 1 to 51
+        b = random.nextInt(101 - a); // Generate b so that a + b <= 100
         operator = "+";
         correctAnswer = a + b;
         correctCompare = '';
@@ -42,8 +42,8 @@ class Grade2 {
         break;
 
       case 'subtraction':
-        a = random.nextInt(11);
-        b = random.nextInt(a + 1);
+        a = random.nextInt(101); // Generate a: 0 to 100
+        b = random.nextInt(a + 1); // Generate b so that a - b >= 0
         operator = "-";
         correctAnswer = a - b;
         correctCompare = '';
@@ -133,15 +133,15 @@ class Grade2 {
 
         switch (operator) {
           case "+":
-            a = random.nextInt(6) + 1;
-            b = random.nextInt(11 - a);
+            a = random.nextInt(51) + 1; // Generate a: 1 to 51
+            b = random.nextInt(101 - a); // Generate b so that a + b <= 100
             correctAnswer = a + b;
             correctCompare = '';
             question = "$a $operator $b = ?";
             break;
           case "-":
-            a = random.nextInt(11);
-            b = random.nextInt(a + 1);
+            a = random.nextInt(101); // Generate a: 0 to 100
+            b = random.nextInt(a + 1); // Generate b so that a - b >= 0
             correctAnswer = a - b;
             correctCompare = '';
             question = "$a $operator $b = ?";

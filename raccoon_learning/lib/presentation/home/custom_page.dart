@@ -10,6 +10,8 @@ import 'package:raccoon_learning/presentation/user/notify_provider/User_notifier
 import 'package:raccoon_learning/presentation/user/notify_provider/custom_competitive_notifier.dart';
 import 'package:raccoon_learning/presentation/user/notify_provider/custom_notifier.dart';
 import 'package:raccoon_learning/presentation/widgets/button/basic_app_button.dart';
+import 'package:dropdown_button2/dropdown_button2.dart';
+
 
 class CustomPage extends StatefulWidget {
   const CustomPage({super.key});
@@ -157,68 +159,119 @@ class _CustomPageState extends State<CustomPage> {
               ),
             ),
             Positioned(
-              top: screenHeight / 9 + 20,
-              left: 16,
-              right: 16,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  DropdownButton<String>(
-                    value: _gradeSelected,
-                    items: <String>['Grade 1', 'Grade 2', 'Grade 3']
-                        .map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                    onChanged: (String? newValue) {
-                      if (newValue != null) {
-                        setState(() {
-                          _gradeSelected = newValue;
-                        });
-                      }
-                    },
-                  ),
-                  DropdownButton<String>(
-                    value: _operationSelected,
-                    items: <String>[
-                      'Addition',
-                      'Subtraction',
-                      'Multiplication',
-                      'Division',
-                      'Mix Operation'
-                    ].map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                    onChanged: (String? newValue) {
-                      if (newValue != null) {
-                        setState(() {
-                          _operationSelected = newValue;
-                        });
-                      }
-                    },
-                  ),
-                  IconButton(
-                    icon: const Icon(
-                      Icons.logout,
-                      color: Colors.red,
+            top: screenHeight / 9 + 20,
+            left: 16,
+            right: 16,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                DropdownButton2<String>(
+                  value: _gradeSelected,
+                  items: <String>['Grade 1', 'Grade 2', 'Grade 3']
+                      .map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                  onChanged: (String? newValue) {
+                    if (newValue != null) {
+                      setState(() {
+                        _gradeSelected = newValue;
+                      });
+                    }
+                  },
+                  buttonStyleData: const ButtonStyleData(
+                    height: 50,
+                    width: 120,
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.all(Radius.circular(8)),
+                      border: Border(
+                        bottom: BorderSide(color: Colors.grey),
+                        top: BorderSide(color: Colors.grey),
+                        left: BorderSide(color: Colors.grey),
+                        right: BorderSide(color: Colors.grey),
+                      ),
                     ),
-                    onPressed: () async {
-                      await customNotifier.clearAcceptedInvitations();
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(builder: (context) => ControlPage()),
-                        (Route<dynamic> route) => false,
-                      );
-                    },
                   ),
-                ],
-              ),
+                  dropdownStyleData: DropdownStyleData(
+                    maxHeight: 200,
+                    decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(5),
+                    color: AppColors.lightBackground,
+                  ),
+                  ),
+                  iconStyleData: const IconStyleData(
+                    icon: Icon(Icons.arrow_drop_down),
+                    iconSize: 24,
+                  ),
+                underline: const SizedBox(), 
+                ),
+                DropdownButton2<String>(
+                  value: _operationSelected,
+                  items: <String>[
+                    'Addition',
+                    'Subtraction',
+                    'Multiplication',
+                    'Division',
+                    'Mix Operation'
+                  ].map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                  onChanged: (String? newValue) {
+                    if (newValue != null) {
+                      setState(() {
+                        _operationSelected = newValue;
+                      });
+                    }
+                  },
+                  buttonStyleData: const ButtonStyleData(
+                    height: 50,
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.all(Radius.circular(8)),
+                      border: Border(
+                        bottom: BorderSide(color: Colors.grey),
+                        top: BorderSide(color: Colors.grey),
+                        left: BorderSide(color: Colors.grey),
+                        right: BorderSide(color: Colors.grey),
+                      ),
+                    ),
+                  ),
+                  dropdownStyleData: DropdownStyleData(
+                    maxHeight: 200,
+                    decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(5),
+                    color: AppColors.lightBackground,
+                  ),
+                  ),
+                  iconStyleData: const IconStyleData(
+                    icon: Icon(Icons.arrow_drop_down),
+                    iconSize: 24,
+                  ),
+                underline: const SizedBox(), 
+                ),
+                IconButton(
+                  icon: const Icon(
+                    Icons.logout,
+                    color: Colors.red,
+                  ),
+                  onPressed: () async {
+                    await customNotifier.clearAcceptedInvitations();
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (context) => ControlPage()),
+                      (Route<dynamic> route) => false,
+                    );
+                  },
+                ),
+              ],
             ),
+          ),
             Positioned(
               top: screenHeight / 9 + 80,
               left: 0,
