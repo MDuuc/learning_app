@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -448,19 +449,44 @@ Future<void> clearAcceptedInvitations() async {
     }
     try {
       final username = Provider.of<UserNotifier>(context, listen: false).username;
+      final encodedMessage = base64Encode(utf8.encode(message));
       await _firestore
           .collection('message')
           .doc(_messageId)
           .collection('messages')
           .add({
             'username': username,
-            'message': message,
+            'message': encodedMessage,
             'timestamp': FieldValue.serverTimestamp(),
           });
     } catch (e) {
       flutter_toast('Error sending message', Colors.red);
     }
   }
+
+  // void fetchMessages() {
+  //   if (_messageStream != null) {
+  //     _messageStream!.cancel();
+  //   }
+  //   try {
+  //     _messageStream = FirebaseFirestore.instance
+  //         .collection('message')
+  //         .doc(_messageId)
+  //         .collection('messages')
+  //         .orderBy('timestamp', descending: false)
+  //         .snapshots()
+  //         .listen((querySnapshot) {
+  //       _messages = querySnapshot.docs.map((doc) => Message.fromFirestore(doc)).toList().reversed.toList();
+  //       notifyListeners();
+  //     }, onError: (e) {
+  //       _messages = [];
+  //       notifyListeners();
+  //     });
+  //   } catch (e) {
+  //     _messages = [];
+  //     notifyListeners();
+  //   }
+  // }
 
   void fetchMessages() {
     if (_messageStream != null) {
@@ -474,7 +500,20 @@ Future<void> clearAcceptedInvitations() async {
           .orderBy('timestamp', descending: false)
           .snapshots()
           .listen((querySnapshot) {
-        _messages = querySnapshot.docs.map((doc) => Message.fromFirestore(doc)).toList().reversed.toList();
+        _messages = querySnapshot.docs.map((doc) {
+          Map<String, dynamic> data = doc.data();
+          // Decode the Base64 message
+          String decodedMessage = '';
+          try {
+            decodedMessage = utf8.decode(base64Decode(data['message']));
+          } catch (e) {
+            decodedMessage = 'Error decoding message';
+          }
+          return Message(
+            username: data['username'] ?? '',
+            message: decodedMessage,
+          );
+        }).toList().reversed.toList();
         notifyListeners();
       }, onError: (e) {
         _messages = [];
